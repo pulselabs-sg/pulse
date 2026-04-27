@@ -1,65 +1,489 @@
-import Image from "next/image";
+'use client';
+
+import { motion, useScroll, useVelocity, useSpring, useTransform, useMotionValue, useAnimationFrame } from 'framer-motion';
+import { ArrowRight, AudioLines, Zap, Terminal, Wand2, Type, Mic, Check, Layers, Code, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+// --- INTERACTIVE SCROLL-DRIVEN LIQUID BACKGROUND ---
+const ScrollLiquidBackground = () => {
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+
+  const smoothVelocity = useSpring(scrollVelocity, {
+    damping: 45,
+    stiffness: 380,
+    mass: 0.8
+  });
+
+  const velocityFactor = useTransform(smoothVelocity, [-1200, 0, 1200], [-4.5, 0, 4.5], { clamp: false });
+  const scaleMorph = useTransform(smoothVelocity, [-1200, 0, 1200], [1.22, 1, 1.22]);
+
+  const rotate1 = useMotionValue(0);
+  const rotate2 = useMotionValue(0);
+  const rotate3 = useMotionValue(0);
+
+  useAnimationFrame((t, delta) => {
+    const v = velocityFactor.get();
+    const frameDelta = delta / 16;
+    rotate1.set(rotate1.get() + v * frameDelta * 1.1);
+    rotate2.set(rotate2.get() - v * frameDelta * 0.9);
+    rotate3.set(rotate3.get() + v * frameDelta * 1.3);
+  });
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden flex items-center justify-center">
+      <motion.div
+        style={{ rotate: rotate1, scale: scaleMorph }}
+        className="absolute w-[82vw] h-[82vw] bg-gradient-to-br from-cyan-500/25 via-indigo-600/20 to-transparent blur-[130px] rounded-[45%_55%_60%_40%/50%_40%_55%_45%] mix-blend-screen opacity-70"
+      />
+      <motion.div
+        style={{ rotate: rotate2, scale: scaleMorph }}
+        className="absolute w-[58vw] h-[58vw] bg-gradient-to-tr from-white/10 via-cyan-400/15 to-transparent blur-[110px] rounded-[55%_45%_40%_60%/40%_55%_45%_60%] mix-blend-overlay opacity-75"
+      />
+      <motion.div
+        style={{ rotate: rotate3, scale: scaleMorph }}
+        className="absolute w-[95vw] h-[95vw] bg-gradient-to-r from-indigo-400/10 to-transparent blur-[160px] rounded-[30%_70%_65%_35%/60%_30%_70%_40%] mix-blend-soft-light opacity-40"
+      />
+    </div>
+  );
+};
+
+// --- SOUND WAVE VISUALIZER (Dùng cho Hero section) ---
+const SoundWaveVisualizer = () => {
+  const barCount = 42;
+  const bars = Array.from({ length: barCount }, (_, i) => i);
+
+  return (
+    <div className="relative w-full flex flex-col items-center justify-center py-8">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        className="absolute w-64 h-64 rounded-full"
+      />
+
+      <div className="flex items-end justify-center gap-[3px] h-40 relative z-10">
+        {bars.map((i) => (
+          <motion.div
+            key={i}
+            className="w-[2.5px] bg-gradient-to-t from-cyan-400 to-white rounded-full origin-bottom shadow-[0_0_8px_rgba(103,232,249,0.5)]"
+            animate={{
+              height: [14, 68, 22, 82, 18, 55, 28, 71, 15],
+            }}
+            transition={{
+              duration: 1.35,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.018,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 mt-6">
+        <div className="w-2 h-2 bg-cyan-400 animate-pulse rounded-full"></div>
+        <p className="text-[10px] font-mono tracking-[2px] uppercase text-cyan-400">
+          LIVE • NEURAL • WAVEFORM
+        </p>
+        <div className="w-2 h-2 bg-cyan-400 animate-pulse rounded-full"></div>
+      </div>
+
+      <AudioLines className="w-6 h-6 text-cyan-300/60 mt-3" />
+    </div>
+  );
+};
+
+// --- NEURAL ORBIT VISUALIZER (Hiệu ứng mới cho Studio Sessions) ---
+const NeuralOrbitVisualizer = () => {
+  return (
+    <div className="relative w-full h-48 flex items-center justify-center overflow-hidden py-4">
+      {/* Lõi năng lượng nền */}
+      <motion.div
+        animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0.1, 0.4] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute w-20 h-20 bg-cyan-500/20 rounded-full blur-2xl"
+      />
+
+      {/* Các vòng sóng tỏa ra */}
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="absolute w-12 h-12 border border-cyan-400/60 rounded-full"
+          animate={{
+            scale: [1, 5],
+            opacity: [0.8, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            delay: i * 1,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+
+      {/* Vòng xoay đứt đoạn quỹ đạo */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute w-36 h-36 border border-white/20 border-dashed rounded-full"
+      />
+
+      {/* Vòng xoay quỹ đạo ngược */}
+      <motion.div
+        animate={{ rotate: -360 }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+        className="absolute w-24 h-24 border border-cyan-400/30 rounded-full flex items-center justify-center"
+      >
+        <div className="absolute top-0 w-2 h-2 bg-cyan-300 rounded-full shadow-[0_0_10px_#67e8f9] -mt-1" />
+      </motion.div>
+
+      {/* Lõi trung tâm */}
+      <div className="relative z-10 w-12 h-12 bg-black border border-cyan-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(103,232,249,0.5)]">
+        <Zap className="w-5 h-5 text-cyan-300" />
+      </div>
+    </div>
+  );
+};
+
+// --- BRAND ICONS (Thay thế cho lucide-react) ---
+const FacebookIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
+
+const InstagramIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
+
+const XIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4 4l11.733 16h4.267l-11.733-16z" />
+    <path d="M4 20l6.768-6.768m2.46-2.46l6.772-6.772" />
+  </svg>
+);
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-black text-zinc-300 font-sans relative selection:bg-white/20 overflow-x-hidden">
+
+      {/* 1. Dynamic Liquid Background */}
+      <ScrollLiquidBackground />
+
+      {/* 2. Static Noise & Grid Overlays */}
+      <div className="fixed inset-0 bg-[url('/noise.png')] bg-repeat opacity-40 mix-blend-overlay z-0 pointer-events-none"></div>
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#4f4f4f1a_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_100%)] z-0 pointer-events-none"></div>
+
+      {/* NAVBAR */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
+        <div className="max-w-screen-2xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="relative w-7 h-7 flex items-center justify-center overflow-hidden">
+              <img src="/logo.webp" alt="pulseLabs Logo" className="w-full h-full object-cover" />
+            </div>
+            <span className="font-mono text-sm text-white tracking-widest">pulse</span>
+            <span className="text-[9px] px-1.5 py-0.5 bg-white/5 text-zinc-500 rounded-sm border border-white/10 uppercase tracking-widest hidden sm:inline-block">Sys_Core</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+            <Link href="#features" className="hover:text-white transition-colors">Modules</Link>
+            <Link href="#fluid" className="hover:text-white transition-colors">Integration</Link>
+            <Link href="#pricing" className="hover:text-white transition-colors">Allocation</Link>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 bg-white text-black text-[10px] font-mono font-bold uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-all"
+            >
+              Init_Session
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO SECTION */}
+      <div className="relative pt-40 pb-24 max-w-screen-2xl mx-auto px-8 flex flex-col lg:flex-row items-center gap-16 z-10">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="flex-1 space-y-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[10px] font-mono uppercase tracking-widest backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full"></span>
+            <span className="text-zinc-400">SYSTEM ONLINE •</span>
+          </div>
+
+          <h1 className="text-5xl lg:text-7xl font-mono font-bold tracking-tighter leading-[1.1] text-white uppercase">
+            Synthesize.<br />
+            <span className="bg-gradient-to-r from-cyan-300 to-indigo-300 bg-clip-text text-transparent">Beyond_Reality.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="text-sm font-mono text-zinc-400 max-w-lg leading-relaxed uppercase tracking-wider backdrop-blur-sm">
+            Neural-powered voice engine. Real-time TTS • STT • Voice Cloning • Emotional Synthesis.
           </p>
+
+          <div className="flex flex-wrap items-center gap-4 pt-4">
+            <Link href="/dashboard" className="px-6 py-3 bg-white text-black font-bold font-mono text-[10px] uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-colors">
+              Execute Engine
+              <Zap className="w-3 h-3" />
+            </Link>
+
+            <button className="px-6 py-3 bg-black/50 backdrop-blur-md border border-white/10 hover:border-cyan-400 hover:bg-white/5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-widest text-white transition-all flex items-center gap-2">
+              <Terminal className="w-3 h-3 text-zinc-400" />
+              View Logs
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Hero Visual */}
+        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.2 }} className="flex-1 w-full relative">
+          <div className="aspect-[4/3] bg-black/40 backdrop-blur-xl rounded-sm border border-white/10 p-2 shadow-2xl relative overflow-hidden">
+
+            <div className="absolute top-0 left-0 right-0 h-8 border-b border-white/10 bg-black/80 flex items-center px-4 justify-between z-20">
+              <div className="flex gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-zinc-700"></div>
+                <div className="w-2 h-2 rounded-full bg-zinc-700"></div>
+                <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
+              </div>
+              <div className="text-[9px] font-mono text-cyan-400 uppercase tracking-widest">Visual_Matrix</div>
+            </div>
+
+            <div className="absolute inset-0 flex items-center justify-center z-10 pt-8">
+              <SoundWaveVisualizer />
+            </div>
+
+            <div className="absolute bottom-4 left-4 right-4 h-24 bg-black/80 border border-white/5 rounded-sm p-3 font-mono text-[9px] text-zinc-500 overflow-hidden z-20">
+              <motion.div initial={{ y: 20 }} animate={{ y: -20 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="space-y-1">
+                <p>&gt; Booting neural core...</p>
+                <p>&gt; Loading audio models: <span className="text-cyan-400">SUCCESS</span></p>
+                <p>&gt; Connecting to pulseLabs endpoint...</p>
+                <p className="text-white">&gt; SYSTEM READY. Awaiting inputs.</p>
+                <p>&gt; Processing live waveform_001...</p>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* --- MODULES / FEATURES GRID --- */}
+      <div id="features" className="relative z-10 max-w-screen-2xl mx-auto px-8 py-24 border-t border-white/5 bg-black/40 backdrop-blur-md">
+        <div className="mb-16">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-white mb-2 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-cyan-400" />
+            System_Modules
+          </h2>
+          <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Professional-grade neural audio tools. Built for creators and developers.</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { icon: Wand2, title: "Text to Speech", desc: "Convert text to natural voice" },
+            { icon: Type, title: "Speech to Text", desc: "Transcribe audio to text" },
+            { icon: AudioLines, title: "Voice Changer", desc: "Transform voice style" },
+            { icon: Mic, title: "Audio Cleaner", desc: "Remove noise & enhance" },
+          ].map((feature, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ y: -4, scale: 1.02 }}
+              className="bg-black/60 backdrop-blur-sm border border-white/10 rounded-sm p-6 transition-all duration-300 hover:border-cyan-400 hover:bg-white/5 group"
+            >
+              <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center mb-6 group-hover:bg-cyan-400 group-hover:border-cyan-400 transition-all">
+                <feature.icon className="w-4 h-4 text-zinc-400 group-hover:text-black transition-colors" />
+              </div>
+              <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-white mb-3">{feature.title}</h3>
+              <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest leading-relaxed">{feature.desc}</p>
+            </motion.div>
+          ))}
         </div>
-      </main>
+      </div>
+
+      {/* --- STUDIO SESSIONS --- */}
+      <div className="relative z-10 max-w-screen-2xl mx-auto px-8 py-24 border-t border-white/5 bg-black/40 backdrop-blur-md">
+        <div className="mb-16">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-white mb-2 flex items-center gap-2">
+            <Wand2 className="w-4 h-4 text-cyan-400" />
+            Studio_Sessions
+          </h2>
+          <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Non-uniform interfaces. Infinite creative possibilities.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+          {/* Large card - 5/12 */}
+          <div className="lg:col-span-5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-sm p-4 flex flex-col overflow-hidden relative">
+            <div className="text-xs font-mono uppercase tracking-widest text-cyan-400 mb-6">Live Neural Orbit</div>
+            <NeuralOrbitVisualizer />
+            <div className="mt-auto pt-8">
+              <p className="text-[10px] font-mono text-zinc-400">Real-time neural spatial rendering.<br />Scroll to feel the liquid core.</p>
+            </div>
+          </div>
+
+          {/* Medium card 1 - 4/12 */}
+          <div className="lg:col-span-4 bg-black/60 backdrop-blur-sm border border-white/10 rounded-sm p-8 flex flex-col">
+            <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center mb-6">
+              <Mic className="w-6 h-6 text-cyan-400" />
+            </div>
+            <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-white mb-3">Voice Cloning Studio</h3>
+            <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-8">Zero-shot. Instant. Your voice, reimagined in seconds.</p>
+            <div className="mt-auto flex justify-between items-center text-[10px] font-mono">
+              <span className="text-emerald-400">READY</span>
+              <span className="px-4 py-1 bg-white/10 hover:bg-cyan-400 hover:text-black rounded-sm cursor-pointer transition-colors">CLONE NOW</span>
+            </div>
+          </div>
+
+          {/* Medium card 2 - 3/12 */}
+          <div className="lg:col-span-3 bg-black/60 backdrop-blur-sm border border-white/10 rounded-sm p-8 flex flex-col justify-between">
+            <div>
+              <Terminal className="w-8 h-8 text-zinc-400 mb-6" />
+              <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-white mb-3">API Terminal</h3>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed">One line of code.<br />Full neural power at your fingertips.</p>
+            </div>
+            <div className="mt-12 pt-6 border-t border-white/10 text-[9px] font-mono text-cyan-400 tracking-widest break-all">
+              curl https://api.pulselabs.ai/generate
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- FLUID INTEGRATION INFO SECTION --- */}
+      <div id="fluid" className="relative z-10 w-full py-32 border-t border-white/5 bg-black/20 backdrop-blur-sm">
+        <div className="max-w-screen-xl mx-auto px-8 text-center flex flex-col items-center">
+          <div className="w-12 h-12 bg-black border border-cyan-400/30 rounded-sm flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(103,232,249,0.15)]">
+            <Code className="w-5 h-5 text-cyan-400" />
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-mono font-bold text-white uppercase tracking-tighter mb-4">
+            Fluid_Integration
+          </h2>
+          <p className="text-xs font-mono text-zinc-400 uppercase tracking-widest max-w-2xl mx-auto leading-relaxed mb-8">
+            Cuộn chuột để kích hoạt lõi chất lỏng neural. API pipeline tự động scale theo workflow của bạn. Kết nối voice AI chỉ trong vài dòng code.
+          </p>
+          <Link href="/docs" className="px-6 py-3 bg-black/50 backdrop-blur-md border border-cyan-400/30 text-white font-mono text-[10px] uppercase tracking-widest font-bold rounded-sm flex items-center gap-2 hover:bg-cyan-400 hover:text-black transition-all">
+            Read Documentation <Sparkles className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+
+      {/* --- RESOURCE_ALLOCATION SECTION --- */}
+      <div id="pricing" className="relative z-10 max-w-screen-xl mx-auto px-8 py-24 border-t border-white/5 bg-black/60 backdrop-blur-md">
+        <div className="mb-16 text-center">
+          <h2 className="text-sm font-mono uppercase tracking-widest text-white mb-2">Resource_Allocation</h2>
+          <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Scale voice generation effortlessly with our neural infrastructure.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* FREE */}
+          <div className="bg-black border border-white/10 rounded-sm p-8 flex flex-col hover:border-white/30 transition-colors backdrop-blur-md">
+            <div className="text-sm font-mono uppercase tracking-widest text-white mb-1">Free</div>
+            <div className="flex items-baseline gap-1 mb-4">
+              <span className="text-3xl font-mono font-bold text-white">$0</span>
+              <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
+            </div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-8 h-8">Test the engine.</p>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              {['5 generations/month', '50 MB files', '5,000 characters TTS'].map((feature, i) => (
+                <li key={i} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full py-3 rounded-sm border border-white/20 hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-widest font-bold transition-all">INITIALIZE</button>
+          </div>
+
+          {/* BASIC - RECOMMENDED */}
+          <div className="bg-white/5 border border-cyan-400/40 rounded-sm p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(103,232,249,0.15)] backdrop-blur-md">
+            <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-white inline-block px-2 py-0.5 mb-4 self-start absolute top-0 -translate-y-1/2 left-8">
+              RECOMMENDED
+            </div>
+            <div className="text-sm font-mono uppercase tracking-widest text-white mb-1">Basic</div>
+            <div className="flex items-baseline gap-1 mb-4">
+              <span className="text-3xl font-mono font-bold text-white">$5</span>
+              <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
+            </div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-8 h-8">For regular creators.</p>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              {['20 generations/month', '300 MB files', '10,000 characters TTS', 'Commercial license'].map((feature, i) => (
+                <li key={i} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-white">
+                  <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full py-3 rounded-sm bg-white hover:bg-cyan-300 text-black text-[10px] font-mono uppercase tracking-widest font-bold transition-all shadow-[0_0_15px_rgba(103,232,249,0.3)]">INITIALIZE</button>
+          </div>
+
+          {/* PREMIUM */}
+          <div className="bg-black border border-white/10 rounded-sm p-8 flex flex-col hover:border-white/30 transition-colors backdrop-blur-md">
+            <div className="text-sm font-mono uppercase tracking-widest text-white mb-1">Premium</div>
+            <div className="flex items-baseline gap-1 mb-4">
+              <span className="text-3xl font-mono font-bold text-white">$10</span>
+              <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
+            </div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-8 h-8">For serious creators.</p>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              {['100 generations/month', '500 MB files', '15,000 characters TTS', 'Priority support'].map((feature, i) => (
+                <li key={i} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full py-3 rounded-sm border border-white/20 hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-widest font-bold transition-all">INITIALIZE</button>
+          </div>
+
+          {/* PRO */}
+          <div className="bg-black border border-white/10 rounded-sm p-8 flex flex-col hover:border-white/30 transition-colors backdrop-blur-md">
+            <div className="text-sm font-mono uppercase tracking-widest text-white mb-1">Pro</div>
+            <div className="flex items-baseline gap-1 mb-4">
+              <span className="text-3xl font-mono font-bold text-white">$50</span>
+              <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
+            </div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-8 h-8">High-volume production.</p>
+
+            <ul className="space-y-4 mb-8 flex-1">
+              {['300 generations/month', '50 MB files', '5,000 characters TTS', 'Enterprise ready'].map((feature, i) => (
+                <li key={i} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}
+                </li>
+              ))}
+            </ul>
+            <button className="w-full py-3 rounded-sm border border-white/20 hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-widest font-bold transition-all">INITIALIZE</button>
+          </div>
+        </div>
+      </div>
+
+      {/* --- CẬP NHẬT FOOTER MỚI --- */}
+      <footer className="relative z-10 border-t border-white/5 bg-black py-12">
+        <div className="max-w-screen-2xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Trái: Logo và Info */}
+          <div className="flex items-center gap-4">
+            <div className="relative w-10 h-10 overflow-hidden flex items-center justify-center">
+              <img src="/logo.webp" alt="pulseLabs Logo" className="w-full h-full object-cover" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-mono text-white tracking-widest">pulse</span>
+              <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mt-0.5">
+                © 2026 • Built for the future of voice AI
+              </span>
+            </div>
+          </div>
+
+          {/* Phải: Social Icons đã được thay tên */}
+          <div className="flex items-center gap-3">
+            <Link href="#" className="p-2.5 rounded-sm hover:border-cyan-400 hover:text-cyan-400 text-zinc-500 transition-all group">
+              <XIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            </Link>
+            <Link href="#" className="p-2.5 rounded-sm hover:border-cyan-400 hover:text-cyan-400 text-zinc-500 transition-all group">
+              <FacebookIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            </Link>
+            <Link href="#" className="p-2.5 rounded-sm hover:border-cyan-400 hover:text-cyan-400 text-zinc-500 transition-all group">
+              <InstagramIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
