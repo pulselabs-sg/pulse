@@ -8,7 +8,7 @@ const TIER_LIMITS = {
   FREE: { generations: 5, maxFileMB: 50 },
   BASIC: { generations: 20, maxFileMB: 300 },
   PREMIUM: { generations: 100, maxFileMB: 500 },
-  PRO: { generations: 300, maxFileMB: 50 },
+  PRO: { generations: 300, maxFileMB: 500 },
 } as const;
 
 export async function POST(req: Request) {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     if (!user) return new NextResponse("User not found", { status: 404 });
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
-    const limit = tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier].generations;
+    const limit = TIER_LIMITS[tier].generations;
 
     if (user.usageCount >= limit) {
       return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const targetVoice = formData.get('targetVoice') as string || 'eve';
+    const format = formData.get('format') as string || 'mp3';
 
     if (!file) return new NextResponse("No file provided", { status: 400 });
 
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       return new NextResponse(`File too large. Maximum ${TIER_LIMITS[tier].maxFileMB} MB allowed for your plan.`, { status: 413 });
     }
 
-    // 1. STT
+    // 1. STT 
     const sttFormData = new FormData();
     sttFormData.append('file', file, file.name || 'input_audio.mp3');
     const sttResponse = await fetch('https://api.x.ai/v1/stt', {
@@ -54,7 +55,12 @@ export async function POST(req: Request) {
     const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.XAI_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: transcribedText, voice_id: targetVoice, language: 'auto' }),
+      body: JSON.stringify({ 
+        text: transcribedText, 
+        voice_id: targetVoice, 
+        language: 'auto',
+        response_format: format 
+      }),
     });
     if (!ttsResponse.ok) throw new Error(`TTS failed: ${await ttsResponse.text()}`);
 
@@ -67,8 +73,8 @@ export async function POST(req: Request) {
 
     return new NextResponse(audioBuffer, {
       headers: {
-        'Content-Type': 'audio/mpeg',
-        'Content-Disposition': `attachment; filename="voice_changed_${targetVoice}.mp3"`,
+        'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+        'Content-Disposition': `attachment; filename="voice_changed_${targetVoice}.${format}"`,
         'X-User-Usage': (user.usageCount + 1).toString(),
       },
     });

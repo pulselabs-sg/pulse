@@ -8,7 +8,7 @@ const TIER_LIMITS = {
   FREE: { generations: 5, maxChars: 5000 },
   BASIC: { generations: 20, maxChars: 10000 },
   PREMIUM: { generations: 100, maxChars: 15000 },
-  PRO: { generations: 300, maxChars: 5000 },
+  PRO: { generations: 300, maxChars: 15000 },
 } as const;
 
 export async function POST(req: Request) {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     if (!user) return new NextResponse("User not found", { status: 404 });
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
-    const limit = tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier].generations;
+    const limit = TIER_LIMITS[tier].generations;
 
     if (user.usageCount >= limit) {
       return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const text = formData.get('text') as string;
     const voiceId = formData.get('voiceId') as string || 'eve';
+    const format = formData.get('format') as string || 'mp3';
 
     if (!text) return new NextResponse("Text is required", { status: 400 });
 
@@ -45,10 +46,15 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${process.env.XAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ text, voice_id: voiceId, language: 'auto' }),
+      body: JSON.stringify({ 
+        text, 
+        voice_id: voiceId, 
+        language: 'auto',
+        response_format: format 
+      }),
     });
 
-    if (!response.ok) throw new Error(`Grok TTS failed: ${await response.text()}`);
+    if (!response.ok) throw new Error(`TTS failed: ${await response.text()}`);
 
     const audioBuffer = await response.arrayBuffer();
 
@@ -59,8 +65,8 @@ export async function POST(req: Request) {
 
     return new NextResponse(audioBuffer, {
       headers: {
-        'Content-Type': 'audio/mpeg',
-        'Content-Disposition': 'attachment; filename="voice.mp3"',
+        'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+        'Content-Disposition': `attachment; filename="voice.${format}"`,
         'X-User-Usage': (user.usageCount + 1).toString(),
       },
     });
