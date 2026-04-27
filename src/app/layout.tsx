@@ -6,7 +6,7 @@ import Providers from '@/components/providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'VoiceLab AI | Premium AI Voice Generator & Speech to Text Free',
+  title: 'iPulse | Premium AI Voice Generator & Speech to Text Free',
   description: 'The ultimate voice changer online. Clean audio, generate realistic AI voices, and convert speech to text instantly. Built for creators.',
   keywords: ['AI voice generator', 'voice changer online', 'speech to text free', 'clean audio', 'content creator tools'],
 };

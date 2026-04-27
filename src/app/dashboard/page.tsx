@@ -7,7 +7,7 @@ import {
   Zap, Mic, UploadCloud, Wand2, Type, Loader2, Download, AudioLines,
   Settings2, CheckCircle2, Menu, X, ChevronRight, Crown, LogIn,
   User, LogOut, Check, CreditCard, Sparkles, Mail, AlertTriangle, ShieldCheck,
-  Terminal, ChevronDown
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -82,7 +82,7 @@ function DashboardContent() {
     }
   }, [session]);
 
-  // Paddle initialization (giữ nguyên)
+  // Paddle initialization
   useEffect(() => {
     initializePaddle({
       environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as 'sandbox' | 'production',
@@ -183,13 +183,11 @@ function DashboardContent() {
       return;
     }
 
-    // Kiểm tra giới hạn text TTS dựa vào gói của user
     if (activeTab === 'tts' && textInput.length > userState.maxChars) {
       alert(`Text too long! Maximum ${userState.maxChars} characters allowed.`);
       return;
     }
 
-    // Kiểm tra file size cho STT và Voice Changer (đổi maxFileMB sang Bytes để so sánh)
     if ((activeTab === 'stt' || activeTab === 'changer') && file && file.size > userState.maxFileMB * 1024 * 1024) {
       alert(`File too large. Maximum ${userState.maxFileMB} MB allowed.`);
       return;
@@ -254,7 +252,7 @@ function DashboardContent() {
     const priceMap: Record<Tier, string> = {
       BASIC: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_BASIC!,
       PREMIUM: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PREMIUM!,
-      PRO: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PRO!, // ← Thêm env var này
+      PRO: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PRO!, 
       FREE: '',
     };
 
@@ -322,10 +320,10 @@ function DashboardContent() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-black/50 backdrop-blur-xl border border-white/10 rounded-sm p-8 max-w-sm w-full mx-4 text-center relative z-10 shadow-2xl"
         >
-          <div className="w-16 h-16 mx-auto mb-6 bg-white rounded-sm flex items-center justify-center">
-            <Terminal className="w-8 h-8 text-black" />
+          <div className="relative w-16 h-16 mx-auto mb-6 overflow-hidden flex items-center justify-center">
+            <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
           </div>
-          <h2 className="text-xl font-mono text-white mb-2 uppercase tracking-tight">VoiceLab OS</h2>
+          <h2 className="text-xl font-mono text-white mb-2 tracking-tight">iPulse</h2>
           <p className="text-xs font-mono text-zinc-500 mb-8 uppercase tracking-wider">Sign in to access AI voice engine</p>
           <button
             onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
@@ -348,8 +346,10 @@ function DashboardContent() {
         <div className="h-14 flex items-center border-b border-white/5 px-4">
           {isSidebarOpen && (
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-5 h-5 bg-white rounded-sm flex items-center justify-center text-black font-bold text-[10px]">V</div>
-              <span className="font-mono text-xs text-white uppercase tracking-widest">VoiceLab OS</span>
+              <div className="relative w-6 h-6 flex items-center justify-center overflow-hidden">
+                <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
+              </div>
+              <span className="font-mono text-xs text-white uppercase tracking-widest">iPulse</span>
             </div>
           )}
           <button
@@ -463,7 +463,7 @@ function DashboardContent() {
                 />
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
                   <div>
-                    <h3 className="text-xl font-mono uppercase tracking-widest text-white">{session.user.name}</h3>
+                    <h3 className="text-xl font-mono tracking-widest text-white">{session.user.name}</h3>
                     <p className="text-zinc-500 font-mono text-[10px] uppercase mt-1">UID: {(session.user as any).id}</p>
                   </div>
                   <div className="flex flex-col md:flex-row gap-3 items-center md:items-start">

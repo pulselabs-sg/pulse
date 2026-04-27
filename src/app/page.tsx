@@ -49,7 +49,7 @@ const ScrollLiquidBackground = () => {
   );
 };
 
-// --- SOUND WAVE VISUALIZER (Dùng cho Hero section) ---
+// --- SOUND WAVE VISUALIZER ---
 const SoundWaveVisualizer = () => {
   const barCount = 42;
   const bars = Array.from({ length: barCount }, (_, i) => i);
@@ -93,7 +93,7 @@ const SoundWaveVisualizer = () => {
   );
 };
 
-// --- NEURAL ORBIT VISUALIZER (Hiệu ứng mới cho Studio Sessions) ---
+// --- NEURAL ORBIT VISUALIZER  ---
 const NeuralOrbitVisualizer = () => {
   return (
     <div className="relative w-full h-48 flex items-center justify-center overflow-hidden py-4">
@@ -103,8 +103,6 @@ const NeuralOrbitVisualizer = () => {
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         className="absolute w-20 h-20 bg-cyan-500/20 rounded-full blur-2xl"
       />
-
-      {/* Các vòng sóng tỏa ra */}
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
@@ -122,14 +120,12 @@ const NeuralOrbitVisualizer = () => {
         />
       ))}
 
-      {/* Vòng xoay đứt đoạn quỹ đạo */}
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         className="absolute w-36 h-36 border border-white/20 border-dashed rounded-full"
       />
 
-      {/* Vòng xoay quỹ đạo ngược */}
       <motion.div
         animate={{ rotate: -360 }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
@@ -138,7 +134,6 @@ const NeuralOrbitVisualizer = () => {
         <div className="absolute top-0 w-2 h-2 bg-cyan-300 rounded-full shadow-[0_0_10px_#67e8f9] -mt-1" />
       </motion.div>
 
-      {/* Lõi trung tâm */}
       <div className="relative z-10 w-12 h-12 bg-black border border-cyan-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(103,232,249,0.5)]">
         <Zap className="w-5 h-5 text-cyan-300" />
       </div>
@@ -146,7 +141,7 @@ const NeuralOrbitVisualizer = () => {
   );
 };
 
-// --- BRAND ICONS (Thay thế cho lucide-react) ---
+// --- BRAND ICONS ---
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
@@ -184,10 +179,10 @@ export default function Home() {
         <div className="max-w-screen-2xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="relative w-7 h-7 flex items-center justify-center overflow-hidden">
-              <img src="/logo.webp" alt="pulseLabs Logo" className="w-full h-full object-cover" />
+              <img src="/logo.webp" alt="ipulse Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="font-mono text-sm text-white tracking-widest">pulse</span>
-            <span className="text-[9px] px-1.5 py-0.5 bg-white/5 text-zinc-500 rounded-sm border border-white/10 uppercase tracking-widest hidden sm:inline-block">Sys_Core</span>
+            <span className="font-mono text-sm text-white tracking-widest">iPulse</span>
+            <span className="text-[9px] px-1.5 py-0.5 bg-white/5 text-zinc-500 rounded-sm border border-white/10 uppercase tracking-widest hidden sm:inline-block">Core</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
@@ -201,7 +196,7 @@ export default function Home() {
               href="/dashboard"
               className="px-4 py-2 bg-white text-black text-[10px] font-mono font-bold uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-all"
             >
-              Init_Session
+              App
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -226,10 +221,10 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-4">
-            <Link href="/dashboard" className="px-6 py-3 bg-white text-black font-bold font-mono text-[10px] uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-colors">
-              Execute Engine
+            {/* <Link href="/dashboard" className="px-6 py-3 bg-white text-black font-bold font-mono text-[10px] uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-colors">
+              App Engine
               <Zap className="w-3 h-3" />
-            </Link>
+            </Link> */}
 
             <button className="px-6 py-3 bg-black/50 backdrop-blur-md border border-white/10 hover:border-cyan-400 hover:bg-white/5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-widest text-white transition-all flex items-center gap-2">
               <Terminal className="w-3 h-3 text-zinc-400" />
@@ -341,7 +336,7 @@ export default function Home() {
               <p className="text-xs font-mono text-zinc-400 leading-relaxed">One line of code.<br />Full neural power at your fingertips.</p>
             </div>
             <div className="mt-12 pt-6 border-t border-white/10 text-[9px] font-mono text-cyan-400 tracking-widest break-all">
-              curl https://api.pulselabs.ai/generate
+              curl https://api.ipulselabs.net/generate
             </div>
           </div>
         </div>
@@ -454,23 +449,21 @@ export default function Home() {
         </div>
       </div>
 
-      {/* --- CẬP NHẬT FOOTER MỚI --- */}
       <footer className="relative z-10 border-t border-white/5 bg-black py-12">
         <div className="max-w-screen-2xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Trái: Logo và Info */}
           <div className="flex items-center gap-4">
             <div className="relative w-10 h-10 overflow-hidden flex items-center justify-center">
               <img src="/logo.webp" alt="pulseLabs Logo" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-mono text-white tracking-widest">pulse</span>
+              <span className="text-sm font-mono text-white tracking-widest">iPulse</span>
               <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mt-0.5">
                 © 2026 • Built for the future of voice AI
               </span>
             </div>
           </div>
 
-          {/* Phải: Social Icons đã được thay tên */}
+          {/* Social Icons */}
           <div className="flex items-center gap-3">
             <Link href="#" className="p-2.5 rounded-sm hover:border-cyan-400 hover:text-cyan-400 text-zinc-500 transition-all group">
               <XIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
