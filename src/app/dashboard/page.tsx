@@ -183,15 +183,15 @@ function DashboardContent() {
       return;
     }
 
-    // Kiểm tra giới hạn text TTS
-    if (activeTab === 'tts' && textInput.length > MAX_TTS_CHARS) {
-      alert(`Text too long! Maximum ${MAX_TTS_CHARS} characters allowed.`);
+    // Kiểm tra giới hạn text TTS dựa vào gói của user
+    if (activeTab === 'tts' && textInput.length > userState.maxChars) {
+      alert(`Text too long! Maximum ${userState.maxChars} characters allowed.`);
       return;
     }
 
-    // Kiểm tra file size cho STT và Voice Changer
-    if ((activeTab === 'stt' || activeTab === 'changer') && file && file.size > MAX_FILE_SIZE) {
-      alert("File too large. Maximum 500 MB allowed.");
+    // Kiểm tra file size cho STT và Voice Changer (đổi maxFileMB sang Bytes để so sánh)
+    if ((activeTab === 'stt' || activeTab === 'changer') && file && file.size > userState.maxFileMB * 1024 * 1024) {
+      alert(`File too large. Maximum ${userState.maxFileMB} MB allowed.`);
       return;
     }
 
