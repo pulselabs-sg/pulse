@@ -1,109 +1,81 @@
 'use client';
 
-import { useState, useCallback, useEffect, Suspense, useRef } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { useDropzone } from 'react-dropzone';
-import {
-  Zap, Mic, UploadCloud, Wand2, Type, Loader2, AudioLines,
-  Settings2, CheckCircle2, Menu, X, ChevronRight, Crown, LogIn,
-  User, LogOut, Check, CreditCard, Sparkles, Mail, AlertTriangle, ShieldCheck,
-  ChevronDown, Copy 
+import { 
+  Loader2, LogIn, ChevronRight, Settings2, Mail, 
+  LogOut, CheckCircle2, X, Sparkles, Check, 
+  ShieldCheck, CreditCard, AlertTriangle, Crown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
 import { initializePaddle, Paddle } from '@paddle/paddle-js';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-type Tab = 'tts' | 'stt' | 'clean' | 'changer' | 'profile';
-type Tier = 'FREE' | 'BASIC' | 'PREMIUM' | 'PRO';
-
-const VOICES = [
-  { id: 'eve', name: 'Eve', gender: 'Female', tone: 'Energetic & Upbeat' },
-  { id: 'ara', name: 'Ara', gender: 'Female', tone: 'Warm & Friendly' },
-  { id: 'rex', name: 'Rex', gender: 'Male', tone: 'Confident & Clear' },
-  { id: 'sal', name: 'Sal', gender: 'Neutral', tone: 'Smooth & Versatile' },
-  { id: 'leo', name: 'Leo', gender: 'Male', tone: 'Authoritative & Strong' },
-  { id: 'una', name: 'Una', gender: 'Female', tone: 'Gentle & Natural' },
-];
-
-const TIER_LIMITS = {
-  FREE: { generations: 5, maxFileMB: 50, maxChars: 5000 },
-  BASIC: { generations: 20, maxFileMB: 300, maxChars: 10000 },
-  PREMIUM: { generations: 100, maxFileMB: 500, maxChars: 15000 },
-  PRO: { generations: 300, maxFileMB: 500, maxChars: 15000 },
-} as const;
-
-const PLANS = [
-  { id: 'FREE' as Tier, name: 'Free', price: 0, period: '/mo', desc: 'Test the engine', features: ['5 generations/month', '50 MB files', '5,000 characters TTS'], popular: false },
-  { id: 'BASIC' as Tier, name: 'Basic', price: 5.00, period: '/mo', desc: 'For regular creators', features: ['20 generations/month', '300 MB files', '10,000 characters TTS', 'Commercial license'], popular: true },
-  { id: 'PREMIUM' as Tier, name: 'Premium', price: 10.00, period: '/mo', desc: 'For serious creators', features: ['100 generations/month', '500 MB files', '15,000 characters TTS', 'Priority support'], popular: false },
-  { id: 'PRO' as Tier, name: 'Pro', price: 50.00, period: '/mo', desc: 'High-volume production', features: ['300 generations/month', '500 MB files', '15,000 characters TTS', 'Enterprise ready'], popular: false },
-] as const;
+import Sidebar from '@/components/dashboard/Sidebar';
+import HistoryPanel from '@/components/dashboard/HistoryPanel';
+import WorkspacePanel from '@/components/dashboard/WorkspacePanel';
+import { Tab, Tier, TIER_LIMITS, VOICES, TABS, PLANS } from '@/lib/dashboard-constants';
+import { cn } from '@/lib/utils';
 
 function DashboardContent() {
   const { data: session, status, update } = useSession();
-  const [activeTab, setActiveTab] = useState<Tab>('tts');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [textInput, setTextInput] = useState('');
-  const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id);
-  const [showVoiceList, setShowVoiceList] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isCanceling, setIsCanceling] = useState(false);
-  const [result, setResult] = useState<{ type: 'text' | 'audio'; content: string } | null>(null);
-  const [showPlanModal, setShowPlanModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav'>('mp3');
-
-  const voiceMenuRef = useRef<HTMLDivElement>(null);
-
-  const [userState, setUserState] = useState({
-    tier: 'FREE' as Tier,
-    usage: 0,
-    limit: 5,
-    maxFileMB: 50,
-    maxChars: 5000,
-  });
-
-  const [paddle, setPaddle] = useState<Paddle>();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const successParam = searchParams.get('success');
 
-  const tierConfig = TIER_LIMITS[userState.tier];
+  // Core States
+  const [activeTab, setActiveTab] = useState<Tab>('tts');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  // Workspace States
+  const [textInput, setTextInput] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id);
+  const [result, setResult] = useState<{ type: 'text' | 'audio'; content: string } | null>(null);
+
+  // User & Billing States
+  const [userState, setUserState] = useState({ 
+    tier: 'FREE' as Tier, 
+    usage: 0, 
+    limit: 5, 
+    maxFileMB: 50, 
+    maxChars: 5000 
+  });
+  const [isCanceling, setIsCanceling] = useState(false);
+  
+  // Paddle States
+  const [paddle, setPaddle] = useState<Paddle>();
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [checkoutPlanContext, setCheckoutPlanContext] = useState<Tier | null>(null);
+
+  const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
 
   useEffect(() => {
-    if (window.innerWidth >= 768) setIsSidebarOpen(true);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (voiceMenuRef.current && !voiceMenuRef.current.contains(event.target as Node)) {
-        setShowVoiceList(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    if (window.innerWidth < 768) setIsSidebarOpen(false);
   }, []);
 
   useEffect(() => {
     if (session?.user) {
-      const user = session.user as any;
-      const tier = (user.tier || 'FREE') as Tier;
+      const tier = (session.user as any).tier || 'FREE';
       setUserState({
         tier,
-        usage: user.usageCount || 0,
-        limit: tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier].generations,
-        maxFileMB: TIER_LIMITS[tier].maxFileMB,
-        maxChars: TIER_LIMITS[tier].maxChars,
+        usage: (session.user as any).usageCount || 0,
+        limit: tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier as keyof typeof TIER_LIMITS].generations,
+        maxFileMB: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxFileMB,
+        maxChars: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxChars,
       });
     }
   }, [session]);
 
+  // Initialize Paddle
   useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) return;
+
     initializePaddle({
-      environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as 'sandbox' | 'production',
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+      environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
       eventCallback: (event) => {
         if (event.name === 'checkout.completed') {
           setShowPlanModal(false);
@@ -116,375 +88,96 @@ function DashboardContent() {
     });
   }, [update]);
 
+  // Handle Checkout logic
   useEffect(() => {
-    if (successParam === 'true') {
-      setShowPlanModal(false);
-      setShowSuccessModal(true);
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-      update().catch(console.error);
+    if (showCheckoutModal && checkoutPlanContext && paddle && session?.user) {
+      const priceMap: Record<Tier, string> = {
+        BASIC: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_BASIC || '',
+        PREMIUM: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PREMIUM || '',
+        PRO: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PRO || '',
+        FREE: '',
+      };
+      const priceId = priceMap[checkoutPlanContext];
+      if (!priceId) return;
+
+      const timer = setTimeout(() => {
+        try {
+          paddle.Checkout.open({
+            items: [{ priceId, quantity: 1 }],
+            customData: { userId: String((session.user as any).id), plan: checkoutPlanContext },
+            settings: {
+              displayMode: 'inline',
+              frameTarget: 'paddle-inline-container',
+              frameInitialHeight: 500,
+              frameStyle: 'width: 100%; background-color: transparent; border: none;',
+              theme: 'dark',
+              successUrl: `${window.location.origin}/dashboard?success=true`,
+            },
+          });
+        } catch (err) {
+          console.error("Paddle Checkout Error:", err);
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
     }
-  }, [successParam, update]);
-
-  const isLimitReached = userState.tier !== 'PREMIUM' && userState.tier !== 'PRO' && userState.usage >= userState.limit;
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles[0]) setFile(acceptedFiles[0]);
-  }, []);
-
-  const selectedVoiceObj = VOICES.find(v => v.id === selectedVoice) || VOICES[0];
-
-  const handleCopy = () => {
-    if (result?.content) {
-      navigator.clipboard.writeText(result.content);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
-
-  const VoiceSelector = () => (
-    <div className="relative" ref={voiceMenuRef}>
-      <button
-        onClick={() => setShowVoiceList(!showVoiceList)}
-        className="w-full flex items-center justify-between px-3 py-2.5 bg-[#050505] border border-white/10 hover:border-white/30 rounded-sm text-left transition-all h-[46px]"
-      >
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-6 h-6 shrink-0 bg-white/10 rounded-sm flex items-center justify-center text-xs font-mono font-bold">
-            {selectedVoiceObj.name[0]}
-          </div>
-          <div className="flex-1 truncate">
-            <span className="font-mono font-bold text-white uppercase text-xs">{selectedVoiceObj.name}</span>
-            <span className="text-[10px] text-zinc-400 ml-2 font-mono">
-              - {selectedVoiceObj.gender}, {selectedVoiceObj.tone}
-            </span>
-          </div>
-        </div>
-        <ChevronDown className={cn("w-4 h-4 shrink-0 transition-transform ml-2", showVoiceList && "rotate-180")} />
-      </button>
-
-      <AnimatePresence>
-        {showVoiceList && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="absolute z-50 bottom-[calc(100%+4px)] md:bottom-auto md:top-[calc(100%+4px)] w-full bg-[#050505] border border-white/10 rounded-sm shadow-2xl max-h-52 md:max-h-60 overflow-y-auto py-1"
-          >
-            {VOICES.map((voice) => (
-              <button
-                key={voice.id}
-                onClick={() => { setSelectedVoice(voice.id); setShowVoiceList(false); }}
-                className={cn(
-                  "w-full px-3 py-2 flex items-center gap-3 hover:bg-white/5 text-left transition-colors",
-                  selectedVoice === voice.id && "bg-emerald-400/10"
-                )}
-              >
-                <div className="flex-1 truncate">
-                  <span className="font-mono font-bold uppercase text-xs text-white">{voice.name}</span>
-                  <span className="text-[10px] text-zinc-500 ml-2 font-mono">
-                    - {voice.gender}, {voice.tone}
-                  </span>
-                </div>
-                {selectedVoice === voice.id && <Check className="w-4 h-4 text-emerald-400 shrink-0" />}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'audio/*': ['.mp3', '.wav', '.m4a', '.ogg'] },
-    maxFiles: 1,
-    maxSize: tierConfig.maxFileMB * 1024 * 1024,
-  });
-
-  const handleProcess = async () => {
-    if (!session?.user?.id) { alert("Unauthorized"); return; }
-    if (isLimitReached) { alert("Quota exceeded. Please upgrade your plan."); return; }
-    if (activeTab === 'tts' && textInput.length > userState.maxChars) { alert(`Text too long! Maximum ${userState.maxChars} characters allowed.`); return; }
-    if ((activeTab === 'stt' || activeTab === 'changer') && file && file.size > userState.maxFileMB * 1024 * 1024) { alert(`File too large. Maximum ${userState.maxFileMB} MB allowed.`); return; }
-
-    setLoading(true);
-    setResult(null);
-
-    const formData = new FormData();
-    formData.append('format', outputFormat);
-    let endpoint = '';
-
-    if (activeTab === 'tts') {
-      endpoint = 'text-to-speech';
-      formData.append('text', textInput);
-      formData.append('voiceId', selectedVoice);
-    } else if (activeTab === 'stt') {
-      endpoint = 'speech-to-text';
-      if (file) formData.append('file', file);
-    } else if (activeTab === 'changer') {
-      endpoint = 'voice-changer';
-      if (file) formData.append('file', file);
-      formData.append('targetVoice', selectedVoice);
-    } else {
-      alert("This module is currently offline.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch(`/api/${endpoint}`, { method: 'POST', body: formData });
-      if (!res.ok) { const errorText = await res.text(); throw new Error(errorText || 'API error'); }
-
-      const newUsage = parseInt(res.headers.get('X-User-Usage') || String(userState.usage + 1));
-      setUserState((prev) => ({ ...prev, usage: newUsage }));
-
-      if (activeTab === 'stt') {
-        const data = await res.json();
-        setResult({ type: 'text', content: data.text });
-      } else {
-        const audioBlob = await res.blob();
-        const url = URL.createObjectURL(audioBlob);
-        setResult({ type: 'audio', content: url });
-      }
-    } catch (err: any) {
-      console.error(err);
-      alert(`Error: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpgrade = (plan: Tier) => {
-    if (!paddle || !session?.user || plan === 'FREE') return;
-
-    const priceMap: Record<Tier, string> = {
-      BASIC: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_BASIC!,
-      PREMIUM: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PREMIUM!,
-      PRO: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PRO!,
-      FREE: '',
-    };
-
-    const priceId = priceMap[plan];
-    if (!priceId) return;
-
-    const checkoutConfig: any = {
-      items: [{ priceId, quantity: 1 }],
-      customData: { userId: String((session.user as any).id), plan },
-      settings: {
-        displayMode: 'overlay',
-        theme: 'dark',
-        successUrl: `${window.location.origin}/dashboard?success=true`,
-      },
-    };
-
-    paddle.Checkout.open(checkoutConfig);
-  };
+  }, [showCheckoutModal, checkoutPlanContext, paddle, session]);
 
   const handleCancelSubscription = async () => {
-    if (!confirm("Are you sure you want to cancel your subscription? You will keep access until the end of the current billing cycle.")) {
-      return;
-    }
-
+    if (!confirm("Are you sure you want to cancel? You will keep access until the end of the billing cycle.")) return;
     setIsCanceling(true);
     try {
       const res = await fetch('/api/paddle/cancel', { method: 'POST' });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Cancellation failed");
-
-      alert("Subscription has been scheduled for cancellation.");
+      if (!res.ok) throw new Error("Cancellation failed");
+      alert("Subscription scheduled for cancellation.");
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      alert(err.message);
     } finally {
       setIsCanceling(false);
     }
   };
 
-  const tabs = [
-    { id: 'tts', label: 'Text to Speech', icon: Wand2, desc: 'Convert text to natural voice' },
-    { id: 'stt', label: 'Speech to Text', icon: Type, desc: 'Transcribe audio to text' },
-    { id: 'changer', label: 'Voice Changer', icon: AudioLines, desc: 'Transform voice style' },
-    { id: 'clean', label: 'Audio Cleaner', icon: Mic, desc: 'Remove noise & enhance' },
-    { id: 'profile', label: 'Profile', icon: User, desc: 'Account & Billing' },
-  ] as const;
+  const handleLoadRecord = (record: any) => {
+    const recordType = record.type.toLowerCase(); 
+    
+    setActiveTab(recordType as Tab);
+    setResult({ type: recordType === 'stt' ? 'text' : 'audio', content: record.output });
+    if (recordType === 'tts' && record.input) setTextInput(record.input);
+  };
 
-  if (status === "loading") {
-    return (
-      <div className="flex h-screen items-center justify-center bg-black">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-6 h-6 animate-spin text-white" />
-          <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Booting System...</span>
-        </div>
-      </div>
-    );
-  }
+  if (status === "loading") return <div className="flex h-screen items-center justify-center bg-black"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>;
 
-  if (!session) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-black relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-900/40 via-black to-black" />
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-black/50 backdrop-blur-xl border border-white/10 rounded-sm p-8 max-w-sm w-full mx-4 text-center relative z-10 shadow-2xl"
-        >
-          <div className="relative w-16 h-16 mx-auto mb-6 overflow-hidden flex items-center justify-center">
-            <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
-          </div>
-          <h2 className="text-xl font-mono text-white mb-2 tracking-tight">iPulse</h2>
-          <p className="text-xs font-mono text-zinc-500 mb-8 uppercase tracking-wider">Sign in to access AI voice engine</p>
-          <button
-            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
-            className="w-full h-12 bg-white text-black font-mono font-bold uppercase tracking-widest rounded-sm flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all text-xs"
-          >
-            <LogIn className="w-4 h-4" /> Sign in with Google
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
+  if (!session) return <div className="flex h-screen items-center justify-center bg-black"><button onClick={() => signIn('google')} className="bg-white text-black px-6 py-3 font-mono uppercase font-bold">Sign In</button></div>;
 
   return (
-    <div className="flex h-screen bg-black text-zinc-300 font-sans overflow-hidden selection:bg-white/20">
+    <div className="flex h-screen bg-black text-zinc-300 font-sans overflow-hidden">
+      <Sidebar 
+        isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} 
+        activeTab={activeTab} setActiveTab={setActiveTab} 
+        userState={userState} session={session} setShowPlanModal={setShowPlanModal}
+      />
 
-      {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
-        {isSidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* ==================== SIDEBAR ==================== */}
-      <motion.aside
-        initial={false}
-        animate={{ width: isSidebarOpen ? 260 : 70 }}
-        className={cn(
-          "bg-[#050505] border-r border-white/5 flex flex-col shrink-0 transition-transform duration-300 z-50",
-          "absolute md:relative h-full",
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        )}
-      >
-        <div className="h-14 flex items-center border-b border-white/5 px-4">
-          {isSidebarOpen && (
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="relative w-6 h-6 flex items-center justify-center overflow-hidden">
-                <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
-              </div>
-              <span className="font-mono text-xs text-white uppercase tracking-widest">iPulse</span>
-            </div>
-          )}
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-1.5 hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm ml-auto transition-colors"
-          >
-            {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
-        </div>
-
-        <div className="flex-1 py-4 flex flex-col gap-1 px-2 overflow-y-auto">
-          {isSidebarOpen && <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mb-2 px-2">AI Modules</p>}
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setResult(null);
-                if (window.innerWidth < 768) setIsSidebarOpen(false); // Auto close on mobile
-              }}
-              className={cn(
-                "group relative flex items-center gap-3 p-2.5 rounded-sm text-xs transition-all",
-                activeTab === tab.id ? "bg-white/10 text-white" : "text-zinc-500 hover:bg-white/5 hover:text-zinc-300",
-                tab.id === 'profile' && "mt-auto border-t border-white/5 pt-3"
-              )}
-            >
-              {activeTab === tab.id && <motion.div layoutId="active-pill" className="absolute left-0 top-0 bottom-0 w-[2px] bg-white" />}
-              <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-white" : "text-zinc-500")} />
-              {isSidebarOpen && (
-                <div className="flex flex-col min-w-0 text-left">
-                  <span className="font-mono uppercase tracking-wider text-[11px] truncate">{tab.label}</span>
-                  <span className="text-[9px] truncate font-mono text-zinc-600 uppercase">{tab.desc}</span>
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* User Mini Panel */}
-        {isSidebarOpen ? (
-          <div
-            className="p-3 mx-2 mb-3 bg-black border border-white/10 rounded-sm cursor-pointer hover:border-white/30 transition-all group"
-            onClick={() => { setActiveTab('profile'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
-          >
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 text-zinc-400 group-hover:text-white transition-colors">
-                <Crown className={cn("w-3 h-3", userState.tier === 'FREE' ? "text-zinc-600" : "text-emerald-400")} />
-                {userState.tier}
-              </span>
-              <span className="text-[9px] font-mono text-zinc-500">
-                {userState.usage} / {userState.limit === Infinity ? '∞' : userState.limit}
-              </span>
-            </div>
-            <div className="w-full h-1 bg-zinc-900 rounded-none mb-3 overflow-hidden">
-              <motion.div
-                animate={{ width: `${Math.min((userState.usage / (userState.limit === Infinity ? 100 : userState.limit)) * 100, 100)}%` }}
-                className={cn("h-full", isLimitReached ? "bg-red-500" : "bg-emerald-400")}
-              />
-            </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowPlanModal(true); }}
-              className="w-full py-1.5 bg-white/5 hover:bg-white/10 text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 flex items-center justify-center gap-2 transition-all"
-            >
-              <CreditCard className="w-3 h-3" /> Manage Plan
-            </button>
-          </div>
-        ) : (
-          <div className="p-3 flex justify-center border-t border-white/5 mt-auto">
-            <button onClick={() => setActiveTab('profile')} className="w-8 h-8 rounded-sm bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/10">
-              {session?.user?.image ? (
-                <img src={session.user.image} alt="" className="w-full h-full rounded-sm opacity-80 hover:opacity-100 transition-opacity" />
-              ) : (
-                <User className="w-4 h-4 text-zinc-500" />
-              )}
-            </button>
-          </div>
-        )}
-      </motion.aside>
-
-      {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-[url('/noise.png')] bg-repeat opacity-95 min-w-0">
-        <header className="h-14 border-b border-white/5 bg-black/80 backdrop-blur-md flex items-center px-4 md:px-6 justify-between z-30 shrink-0">
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-zinc-600">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden p-1.5 -ml-1.5 hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm transition-colors"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-            <span className="hidden md:inline">Root</span>
-            <ChevronRight className="w-3 h-3 hidden md:block" />
-            <span className="text-white">{tabs.find((t) => t.id === activeTab)?.label}</span>
-          </div>
+      <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0">
+        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center px-6 text-[10px] font-mono uppercase text-zinc-600">
+          Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white">{TABS.find(t => t.id === activeTab)?.label}</span>
         </header>
 
-        {activeTab === 'profile' ? (
+        {activeTab === 'history' ? (
+          <HistoryPanel onLoadRecord={handleLoadRecord} />
+        ) : activeTab === 'profile' ? (
           <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full">
             <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto space-y-6 pb-10">
               <h2 className="text-lg font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2">
                 <Settings2 className="w-5 h-5 text-zinc-500" /> Account Settings
               </h2>
-              {/* User Identity Card */}
+              
+              {/* Profile Card */}
               <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
                 <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-sm object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
                   <div>
                     <h3 className="text-xl font-mono tracking-widest text-white">{session?.user?.name}</h3>
-                    <p className="text-zinc-500 font-mono text-[10px] uppercase mt-1">UID: {(session?.user as any)?.id}</p>
+                    <p className="text-zinc-500 font-mono text-[10px] uppercase mt-1">UID: {(session.user as any).id}</p>
                   </div>
                   <div className="flex flex-col md:flex-row gap-3 items-center md:items-start">
                     <div className="flex items-center gap-2 text-zinc-400 bg-white/5 px-3 py-1.5 rounded-sm border border-white/5 text-[11px] font-mono">
@@ -500,13 +193,13 @@ function DashboardContent() {
                 </button>
               </div>
 
-              {/* Billing & Subscription Card */}
+              {/* Billing & Usage Section */}
               <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-6">
                 <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-zinc-500" /> Subscription & Billing
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Current Plan */}
+                  {/* Plan Card */}
                   <div className="bg-[#050505] border border-white/5 rounded-sm p-5 flex flex-col justify-between">
                     <div>
                       <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-1">Current Plan</p>
@@ -530,7 +223,8 @@ function DashboardContent() {
                       </div>
                     )}
                   </div>
-                  {/* Usage Stats */}
+
+                  {/* Usage Card */}
                   <div className="bg-[#050505] border border-white/5 rounded-sm p-5">
                     <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Usage this month</p>
                     <div className="flex justify-between items-end mb-3">
@@ -549,183 +243,22 @@ function DashboardContent() {
             </motion.div>
           </div>
         ) : (
-          <div className="flex-1 p-4 md:p-6 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row gap-4 md:gap-6 relative z-10">
-            {/* INPUT AREA */}
-            <div className="flex-1 lg:max-w-xl flex flex-col min-h-0">
-              <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-4 md:p-5 relative z-10 flex flex-col h-full min-h-0">
-                <h2 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2 border-b border-white/5 pb-3 shrink-0">
-                  <Settings2 className="w-4 h-4 text-white" /> Input Parameters
-                </h2>
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="flex-1 flex flex-col gap-4 min-h-0"
-                  >
-                    {/* TTS Input */}
-                    {activeTab === 'tts' && (
-                      <div className="h-32 md:h-36 flex flex-col shrink-0">
-                        <div className="flex justify-between text-[9px] uppercase font-mono text-zinc-500 tracking-widest mb-1.5">
-                          <span>Text Input</span>
-                          <span className={textInput.length > userState.maxChars ? "text-red-400" : ""}>
-                            {textInput.length} / {userState.maxChars}
-                          </span>
-                        </div>
-                        <textarea
-                          value={textInput}
-                          onChange={(e) => setTextInput(e.target.value)}
-                          placeholder="Type or paste your text here..."
-                          className="flex-1 w-full min-h-[80px] overflow-y-auto bg-[#050505] border border-white/10 rounded-sm p-3 text-zinc-300 text-sm font-mono focus:border-white/40 focus:bg-white/5 transition-all resize-none outline-none"
-                        />
-                      </div>
-                    )}
-
-                    {/* STT / Changer / Clean Input */}
-                    {(activeTab === 'stt' || activeTab === 'changer' || activeTab === 'clean') && (
-                      <div
-                        {...getRootProps()}
-                        className={cn(
-                          "h-32 md:h-36 border border-dashed rounded-sm p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center shrink-0",
-                          isDragActive ? "border-emerald-400 bg-emerald-400/5" : "border-white/20 hover:border-white/40 bg-[#050505]"
-                        )}
-                      >
-                        <input {...getInputProps()} />
-                        {file ? (
-                          <div className="flex flex-col items-center">
-                            <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-emerald-400 mb-2 md:mb-3" />
-                            <p className="text-white font-mono text-[10px] md:text-xs uppercase tracking-wider truncate max-w-[200px] md:max-w-xs">{file.name}</p>
-                            <p className="text-[9px] md:text-[10px] text-zinc-500 mt-1">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center">
-                            <UploadCloud className="w-5 h-5 md:w-6 md:h-6 text-zinc-500 mb-2 md:mb-3" />
-                            <p className="text-zinc-500 font-mono text-[9px] md:text-[10px] uppercase tracking-widest">Drop audio file here</p>
-                            <p className="text-[8px] md:text-[9px] text-zinc-600 mt-1">Max {userState.maxFileMB} MB</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Voice Selection (TTS & Changer) */}
-                    {(activeTab === 'tts' || activeTab === 'changer') && (
-                      <div className="space-y-1.5 shrink-0">
-                        <span className="text-[9px] uppercase font-mono text-zinc-500 tracking-widest block">Choose Voice</span>
-                        <VoiceSelector />
-                      </div>
-                    )}
-
-                    {/* Output Format Selection (TTS, STT, Changer, Clean) */}
-                    <div className="space-y-1.5 shrink-0 mt-2">
-                      <span className="text-[9px] uppercase font-mono text-zinc-500 tracking-widest block">Output Format</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setOutputFormat('mp3')}
-                          className={cn(
-                            "flex-1 py-2 text-[10px] font-mono uppercase tracking-widest rounded-sm transition-all border",
-                            outputFormat === 'mp3' ? "bg-cyan-400/10 border-cyan-400 text-cyan-400" : "bg-black border-white/10 text-zinc-500 hover:border-white/30"
-                          )}
-                        >
-                          MP3
-                        </button>
-                        <button
-                          onClick={() => setOutputFormat('wav')}
-                          className={cn(
-                            "flex-1 py-2 text-[10px] font-mono uppercase tracking-widest rounded-sm transition-all border",
-                            outputFormat === 'wav' ? "bg-cyan-400/10 border-cyan-400 text-cyan-400" : "bg-black border-white/10 text-zinc-500 hover:border-white/30"
-                          )}
-                        >
-                          WAV
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Process Button */}
-                    <button
-                      onClick={handleProcess}
-                      disabled={loading || isLimitReached || (activeTab === 'tts' ? !textInput.trim() : !file)}
-                      className={cn(
-                        "w-full h-11 md:h-12 shrink-0 font-mono text-[11px] md:text-xs font-bold uppercase tracking-widest rounded-sm flex items-center justify-center gap-2 transition-all mt-auto",
-                        isLimitReached
-                          ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                          : "bg-white text-black hover:bg-zinc-200 disabled:opacity-50"
-                      )}
-                    >
-                      {loading ? (
-                        <><Loader2 className="w-3 h-3 animate-spin" /> Processing...</>
-                      ) : isLimitReached ? (
-                        <>Quota Exceeded</>
-                      ) : (
-                        <><Zap className="w-3 h-3" /> Generate Now</>
-                      )}
-                    </button>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* OUTPUT AREA */}
-            <div className="flex-1 bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm flex flex-col relative overflow-hidden z-10 min-h-[220px] lg:min-h-0">
-              <div className="h-10 border-b border-white/10 flex items-center px-4 bg-black shrink-0">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Output</span>
-              </div>
-
-              <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 relative bg-[#050505] overflow-y-auto">
-                {!result && !loading && (
-                  <div className="text-center text-zinc-700 font-mono text-xs uppercase tracking-widest">Waiting for output...</div>
-                )}
-
-                {loading && (
-                  <div className="flex flex-col items-center text-white">
-                    <div className="relative w-12 h-12 md:w-16 md:h-16 mb-4 md:mb-6">
-                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute inset-0 border border-dashed border-white/30 rounded-full" />
-                      <AudioLines className="w-5 h-5 md:w-6 md:h-6 animate-pulse mx-auto mt-3.5 md:mt-5 text-zinc-400" />
-                    </div>
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 animate-pulse">Generating...</p>
-                  </div>
-                )}
-
-                {/*Render Text */}
-                {result?.type === 'text' && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-full relative group">
-                    <div className="w-full h-full bg-black p-4 md:p-5 pr-12 rounded-sm border border-white/10 overflow-y-auto font-mono text-xs leading-relaxed text-zinc-300">
-                      {result.content}
-                    </div>
-                    <button
-                      onClick={handleCopy}
-                      title="Copy to clipboard"
-                      className="absolute top-2 right-2 p-2 hover:bg-white/10 rounded-sm text-zinc-400 hover:text-white transition-all backdrop-blur-md"
-                    >
-                      {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  </motion.div>
-                )}
-
-                {/* Render Audio  */}
-                {result?.type === 'audio' && (
-                  <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md space-y-3 md:space-y-4">
-                    <div className="p-3 md:p-4 bg-black border border-white/10 rounded-sm">
-                      <audio controls src={result.content} className="w-full h-8 md:h-10" />
-                    </div>
-
-                    <a href={result.content} download={`output.${outputFormat}`} className="block w-full text-center py-2.5 bg-white text-black hover:bg-zinc-200 rounded-sm text-[10px] font-mono uppercase tracking-widest font-bold transition-all">
-                      Download {outputFormat.toUpperCase()}
-                    </a>
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </div>
+          <WorkspacePanel 
+            activeTab={activeTab} session={session} 
+            userState={userState} setUserState={setUserState}
+            textInput={textInput} setTextInput={setTextInput}
+            file={file} setFile={setFile}
+            selectedVoice={selectedVoice} setSelectedVoice={setSelectedVoice}
+            result={result} setResult={setResult}
+          />
         )}
       </main>
 
-      {/* ==================== PLAN MODAL ==================== */}
+      {/* --- PADDLE MODALS  --- */}
       <AnimatePresence>
         {showPlanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4" onClick={() => setShowPlanModal(false)}>
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-[#050505] border border-white/10 rounded-sm max-w-5xl w-full max-h-[90vh] overflow-auto shadow-2xl">
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-[#050505] border border-white/10 rounded-sm max-w-5xl w-full max-h-[90vh] overflow-auto shadow-2xl custom-scrollbar">
               <div className="px-5 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 bg-black sticky top-0 z-10">
                 <div>
                   <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white">System Upgrade</h2>
@@ -748,14 +281,13 @@ function DashboardContent() {
                       </div>
                       <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-6">{plan.desc}</p>
                       <ul className="space-y-3 mb-8 flex-1">
-                        {plan.features.map((feature, i) => (
+                        {plan.features.map((f, i) => (
                           <li key={i} className="flex items-start gap-2 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-300">
-                            <Check className="w-3 h-3 text-white shrink-0 mt-0.5" />
-                            <span>{feature}</span>
+                            <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> <span>{f}</span>
                           </li>
                         ))}
                       </ul>
-                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') handleUpgrade(plan.id as 'BASIC' | 'PREMIUM'); }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] md:text-[10px] uppercase tracking-widest font-bold rounded-sm transition-all border", isCurrent ? "bg-white/10 text-zinc-400 border-transparent cursor-not-allowed" : "bg-white hover:bg-zinc-200 text-black border-transparent")}>
+                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-sm border", isCurrent ? "bg-white/10 text-zinc-400 cursor-not-allowed" : "bg-white text-black")}>
                         {isCurrent ? '[ ACTIVE ]' : 'INITIALIZE'}
                       </button>
                     </div>
@@ -767,44 +299,38 @@ function DashboardContent() {
         )}
       </AnimatePresence>
 
-      {/* ==================== SUCCESS MODAL ==================== */}
+      {/* Checkout Modal Frame */}
       <AnimatePresence>
-        {showSuccessModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4" onClick={() => setShowSuccessModal(false)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} onClick={(e) => e.stopPropagation()} className="bg-[#050505] border border-white/20 rounded-sm max-w-sm w-full relative overflow-hidden shadow-2xl">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
-              <div className="p-8 text-center relative z-10">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 15, delay: 0.1 }} className="w-16 h-16 mx-auto rounded-none bg-white text-black flex items-center justify-center mb-6">
-                  <CheckCircle2 className="w-8 h-8" />
-                </motion.div>
-                <h2 className="text-xl font-mono uppercase tracking-widest text-white mb-2">Patch Applied</h2>
-                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-8 leading-relaxed">
-                  System updated to <span className="text-white">[{userState.tier}]</span>. New constraints are live.
-                </p>
-                <button onClick={() => setShowSuccessModal(false)} className="w-full py-3 bg-white hover:bg-zinc-200 text-black font-mono text-[10px] uppercase tracking-widest font-bold rounded-sm transition-all flex items-center justify-center gap-2">
-                  Return to Terminal <Sparkles className="w-3 h-3" />
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
+        {showCheckoutModal && (
+          <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4">
+             <div className="bg-[#050505] border border-white/10 w-full max-w-4xl p-6 rounded-sm relative">
+                <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white"><X/></button>
+                <div id="paddle-inline-container" className="min-h-[500px]"></div>
+             </div>
+          </div>
         )}
       </AnimatePresence>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center">
+            <div className="bg-black border border-white/20 p-8 text-center max-w-sm">
+              <CheckCircle2 className="w-16 h-16 text-white mx-auto mb-4" />
+              <h2 className="text-xl font-mono text-white">Patch Applied</h2>
+              <button onClick={() => setShowSuccessModal(false)} className="mt-8 bg-white text-black px-6 py-2 font-mono uppercase text-xs font-bold">Return</button>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
 
 export default function Dashboard() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center bg-black">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="w-6 h-6 animate-spin text-white" />
-            <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Loading Dashboard...</span>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-black"><Loader2 className="animate-spin text-white" /></div>}>
       <DashboardContent />
     </Suspense>
   );

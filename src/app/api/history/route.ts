@@ -1,0 +1,25 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]/route';
+import { getPrisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
+
+    const prisma = getPrisma();
+    const history = await prisma.history.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50 
+    });
+
+    return NextResponse.json(history);
+  } catch (error) {
+    console.error("[HISTORY_GET_ERROR]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

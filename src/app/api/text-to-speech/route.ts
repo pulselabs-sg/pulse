@@ -18,61 +18,115 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: session.user.id },
+      select: { id: true, tier: true, usageCount: true } 
+    });
     if (!user) return new NextResponse("User not found", { status: 404 });
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
     const limit = TIER_LIMITS[tier].generations;
-
-    if (user.usageCount >= limit) {
-      return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
-    }
-
-    const formData = await req.formData();
-    const text = formData.get('text') as string;
-    const voiceId = formData.get('voiceId') as string || 'eve';
-    const format = formData.get('format') as string || 'mp3';
-
-    if (!text) return new NextResponse("Text is required", { status: 400 });
-
     const maxChars = TIER_LIMITS[tier].maxChars;
-    if (text.length > maxChars) {
-      return new NextResponse(`Text too long. Maximum ${maxChars} characters allowed for your plan.`, { status: 400 });
+    const body = await req.json();
+    const textRaw = body.text as string;
+    const text = textRaw ? textRaw.trim() : '';
+    const voiceId = body.voiceId as string || 'eve';
+    const format = body.format as string || 'mp3';
+
+    if (!text) {
+      return new NextResponse("Text is required", { status: 400 });
     }
 
-    const response = await fetch('https://api.x.ai/v1/tts', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.XAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        text, 
-        voice_id: voiceId, 
-        language: 'auto',
-        response_format: format 
-      }),
-    });
+    if (text.length > maxChars) {
+      return new NextResponse(`Text too long. Maximum ${maxChars} characters allowed.`, { status: 413 });
+    }
 
-    if (!response.ok) throw new Error(`TTS failed: ${await response.text()}`);
+    if (limit !== Infinity) {
+      const updatedUser = await prisma.user.updateMany({
+        where: { 
+          id: user.id,
+          usageCount: { lt: limit }
+        },
+        data: { usageCount: { increment: 1 } },
+      });
 
-    const audioBuffer = await response.arrayBuffer();
+      if (updatedUser.count === 0) {
+        return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
+      }
+    } else {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { usageCount: { increment: 1 } },
+      });
+    }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { usageCount: { increment: 1 } },
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    return new NextResponse(audioBuffer, {
-      headers: {
-        'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
-        'Content-Disposition': `attachment; filename="voice.${format}"`,
-        'X-User-Usage': (user.usageCount + 1).toString(),
-      },
-    });
+    try {
+      const response = await fetch('https://api.x.ai/v1/tts', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          text, 
+          voice_id: voiceId, 
+          language: 'auto',
+          response_format: format 
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[X.AI TTS ERROR] Status: ${response.status}`, errorText);
+        throw new Error("External API processing failed");
+      }
+
+      const audioBuffer = await response.arrayBuffer();
+
+      // --- TTS ---
+      await prisma.history.create({
+        data: {
+          userId: user.id,
+          type: 'TTS',
+          input: text.length > 80 ? text.substring(0, 80) + '...' : text,
+          output: `Audio Rendered (${voiceId.toUpperCase()})`
+        }
+      });
+
+      return new NextResponse(audioBuffer, {
+        headers: {
+          'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+          'Content-Disposition': `attachment; filename="voice.${format}"`,
+          'X-User-Usage': (user.usageCount + 1).toString(),
+        },
+      });
+
+    } catch (fetchError: any) {
+      throw fetchError;
+    } finally {
+      clearTimeout(timeoutId); 
+    }
 
   } catch (error: any) {
-    console.error("TTS Error:", error);
-    return new NextResponse(error.message || "Internal Server Error", { status: 500 });
+    const isTimeout = error.name === 'AbortError';
+    console.error("[TTS_CRITICAL_ERROR]", error);
+
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+       await prisma.user.updateMany({
+         where: { id: session.user.id, usageCount: { gt: 0 } },
+         data: { usageCount: { decrement: 1 } }
+       });
+    }
+
+    const clientMessage = isTimeout 
+      ? "AI Engine is taking too long to respond. Please try again." 
+      : "An internal error occurred during processing.";
+
+    return new NextResponse(clientMessage, { status: isTimeout ? 504 : 500 });
   }
 }

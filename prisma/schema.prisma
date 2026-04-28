@@ -15,10 +15,11 @@ model User {
   tier                 Tier      @default(FREE)
   usageCount           Int       @default(0)
   paddleCustomerId     String?   @unique 
-  paddleSubscriptionId String?   @unique // Add this line
+  paddleSubscriptionId String?   @unique
 
   accounts             Account[]
   sessions             Session[]
+  histories            History[]
 }
 
 model Account {
@@ -56,8 +57,28 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model WebhookEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now())
+}
+
 enum Tier {
   FREE
   BASIC
   PREMIUM
+  PRO
+}
+
+model History {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // 'tts', 'stt', 'changer'
+  input     String?  @db.Text // Text đã nhập hoặc Tên file gốc
+  output    String?  @db.Text // Text kết quả (STT) hoặc ghi chú Audio
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

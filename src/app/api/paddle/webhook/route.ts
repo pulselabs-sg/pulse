@@ -1,7 +1,7 @@
-// src/app/api/paddle/webhook/route.ts
 import { NextResponse } from 'next/server';
 import { Environment, Paddle } from '@paddle/paddle-node-sdk';
 import { getPrisma } from '@/lib/prisma';
+import { Tier } from '@prisma/client';
 
 const paddle = new Paddle(process.env.PADDLE_SECRET_KEY!, {
   environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production'
@@ -10,56 +10,87 @@ const paddle = new Paddle(process.env.PADDLE_SECRET_KEY!, {
 });
 
 export async function POST(req: Request) {
-  const signature = req.headers.get('paddle-signature') || '';
+  const signature = req.headers.get('paddle-signature');
+  if (!signature) {
+    return new NextResponse("Missing signature", { status: 401 });
+  }
+
   const rawBody = await req.text();
   const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET!;
-
-  console.log('🔥 Paddle Webhook received!');
+  const prisma = getPrisma();
 
   try {
     const eventData = await paddle.webhooks.unmarshal(rawBody, webhookSecret, signature);
-    console.log('✅ Event type:', eventData.eventType);
+    const eventId = eventData.eventId;
+
+    // ==========================================
+    // BẢO MẬT: Chống Webhook Replay (Idempotency)
+    // ==========================================
+    
+    // 1. Kiểm tra xem event này đã được xử lý thành công trước đó chưa
+    const existingEvent = await prisma.webhookEvent.findUnique({ 
+      where: { id: eventId } 
+    });
+    
+    if (existingEvent) {
+      console.log(`⚠️ Webhook event ${eventId} already processed. Skipping...`);
+      return NextResponse.json({ received: true, eventId: eventId });
+    }
+
+    // 2. Ghi nhận event vào database để "khóa" (tránh gọi trùng lặp song song)
+    await prisma.webhookEvent.create({ 
+      data: { id: eventId, type: eventData.eventType } 
+    });
+
+    console.log(`🔥 Processing Paddle Webhook [${eventData.eventType}] - Event ID: ${eventId}`);
+
+    // ==========================================
+    // LOGIC XỬ LÝ THANH TOÁN
+    // ==========================================
 
     if (eventData.eventType === 'transaction.completed' || eventData.eventType === 'transaction.paid') {
       const transaction = eventData.data as any;
       const userId = transaction.customData?.userId;
-      const plan = transaction.customData?.plan as 'BASIC' | 'PREMIUM';
-      
-      // Paddle includes subscriptionId if this transaction is part of a recurring plan
+
+      // Ép kiểu chuẩn theo Prisma Enum
+      const plan = transaction.customData?.plan as Tier;
+
       const subscriptionId = transaction.subscriptionId || transaction.subscription?.id;
 
-      if (userId && plan) {
-        const prisma = getPrisma();
+      if (userId && plan && transaction.status === 'completed') {
         await prisma.user.update({
           where: { id: userId },
           data: {
-            tier: plan,
+            tier: plan, 
             usageCount: 0,
             paddleCustomerId: transaction.customerId || transaction.customer?.id,
-            paddleSubscriptionId: subscriptionId || null, // Save this!
+            paddleSubscriptionId: subscriptionId || null,
           },
         });
-        console.log(`✅ User ${userId} upgraded to ${plan} successfully!`);
+        console.log(`✅ User ${userId} upgraded to ${plan}`);
       }
     }
 
-    // Optional: Handle subscription cancellation webhooks to downgrade the user automatically
     if (eventData.eventType === 'subscription.canceled') {
-       const subscription = eventData.data as any;
-       const customData = subscription.customData;
-       if (customData?.userId) {
-         const prisma = getPrisma();
-         await prisma.user.update({
-           where: { id: customData.userId },
-           data: { tier: 'FREE', paddleSubscriptionId: null }
-         });
-         console.log(`❌ User ${customData.userId} downgraded to FREE.`);
-       }
+      const subscription = eventData.data as any;
+      const customData = subscription.customData;
+      
+      if (customData?.userId) {
+        // Chỉ downgrade khi subscription thực sự hết hạn (không phải hủy ngang)
+        if (subscription.status === 'canceled') {
+          await prisma.user.update({
+            where: { id: customData.userId },
+            data: { tier: 'FREE', paddleSubscriptionId: null }
+          });
+          console.log(`❌ User ${customData.userId} downgraded to FREE.`);
+        }
+      }
     }
 
-    return NextResponse.json({ received: true, event: eventData.eventType });
+    return NextResponse.json({ received: true, eventId: eventId });
   } catch (err: any) {
-    console.error('❌ Paddle Webhook Error:', err.message);
-    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
+    // Không leak Error Stack cho client/Paddle
+    console.error('❌ Paddle Webhook Verification Failed:', err.message);
+    return new NextResponse("Invalid webhook signature or payload", { status: 400 });
   }
 }

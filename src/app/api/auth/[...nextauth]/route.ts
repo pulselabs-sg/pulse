@@ -1,23 +1,23 @@
 import NextAuth, { NextAuthOptions, DefaultSession } from "next-auth";
-import Google from "next-auth/providers/google";
+import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { getPrisma } from "@/lib/prisma";
 
-// 1. interface Session
+// Mở rộng kiểu dữ liệu cho Session để Frontend nhận diện được tự động
 declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      tier?: string | null;
-      usageCount?: number | null;
+      tier: 'FREE' | 'BASIC' | 'PREMIUM' | 'PRO';
+      usageCount: number;
     } & DefaultSession["user"];
   }
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(getPrisma()),           //  getPrisma()
+  adapter: PrismaAdapter(getPrisma()),
   providers: [
-    Google({
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
@@ -27,21 +27,21 @@ export const authOptions: NextAuthOptions = {
       if (session.user && user?.id) {
         session.user.id = user.id;
 
-        const prisma = getPrisma();          
+        const prisma = getPrisma();
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: { tier: true, usageCount: true },
         });
 
-        if (dbUser) {
-          session.user.tier = dbUser.tier;
-          session.user.usageCount = dbUser.usageCount;
-        }
+        // Đảm bảo luôn có giá trị fallback an toàn
+        session.user.tier = (dbUser?.tier as any) || 'FREE';
+        session.user.usageCount = dbUser?.usageCount || 0;
       }
       return session;
     },
   },
   pages: { signIn: "/" },
+  session: { strategy: "database" }, // Explicitly set strategy
 };
 
 const handler = NextAuth(authOptions);
