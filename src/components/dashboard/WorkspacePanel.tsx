@@ -83,7 +83,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
 
     return (
         <div className="flex-1 p-4 md:p-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative z-10 min-h-0 overflow-y-auto lg:overflow-hidden">
-            {/* Cột Trái: Input */}
+            {/* Input */}
             <div className="flex-1 lg:max-w-xl flex flex-col min-h-0">
                 <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-4 md:p-5 flex flex-col h-full">
                     <h2 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2 border-b border-white/5 pb-3">
@@ -104,23 +104,57 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             <div className="flex gap-2">
                                 {(activeTab === 'tts' || activeTab === 'changer') && (
                                     <div className="flex-1 relative" ref={voiceMenuRef}>
-                                        <button onClick={() => setShowVoiceList(!showVoiceList)} className="w-full h-[46px] px-3 bg-[#050505] border border-white/10 flex items-center justify-between text-left">
-                                            <span className="font-mono text-xs uppercase text-white">{selectedVoiceObj.name} <span className="text-[10px] text-zinc-500">- {selectedVoiceObj.tone}</span></span>
-                                            <ChevronDown className="w-4 h-4 text-zinc-500" />
-                                        </button>
-                                        {showVoiceList && (
-                                            <div className="absolute bottom-full mb-1 w-full bg-[#050505] border border-white/10 max-h-40 overflow-auto z-50">
-                                                {VOICES.map(v => (
-                                                    <button key={v.id} onClick={() => { setSelectedVoice(v.id); setShowVoiceList(false); }} className="w-full px-3 py-2 hover:bg-white/5 text-left flex justify-between">
-                                                        <span className="font-mono text-xs uppercase text-white">{v.name}</span>
-                                                        {selectedVoice === v.id && <Check className="w-4 h-4 text-emerald-400" />}
-                                                    </button>
-                                                ))}
+                                        <button
+                                            onClick={() => setShowVoiceList(!showVoiceList)}
+                                            className="w-full flex items-center justify-between px-3 py-2.5 bg-[#050505] border border-white/10 hover:border-white/30 rounded-sm text-left transition-all h-[46px]"
+                                        >
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className={cn("w-6 h-6 shrink-0 rounded-full bg-gradient-to-br flex items-center justify-center shadow-lg shadow-black/50 border border-white/20", selectedVoiceObj.gradient)}>
+                                                    <span className="text-[10px] font-mono font-bold text-white drop-shadow-md">{selectedVoiceObj.name[0]}</span>
+                                                </div>
+                                                <div className="flex-1 truncate">
+                                                    <span className="font-mono font-bold text-white uppercase text-xs">{selectedVoiceObj.name}</span>
+                                                    <span className="text-[10px] text-zinc-400 ml-2 font-mono hidden sm:inline-block">
+                                                        - {selectedVoiceObj.gender}, {selectedVoiceObj.tone}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        )}
+                                            <ChevronDown className={cn("w-4 h-4 shrink-0 transition-transform ml-2 text-zinc-500", showVoiceList && "rotate-180")} />
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {showVoiceList && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                                                    className="absolute z-50 bottom-[calc(100%+4px)] w-full bg-[#050505] border border-white/10 rounded-sm shadow-2xl max-h-52 overflow-y-auto py-1 custom-scrollbar"
+                                                >
+                                                    {VOICES.map((voice) => (
+                                                        <button
+                                                            key={voice.id}
+                                                            onClick={() => { setSelectedVoice(voice.id); setShowVoiceList(false); }}
+                                                            className={cn(
+                                                                "w-full px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 text-left transition-colors",
+                                                                selectedVoice === voice.id && "bg-emerald-400/5"
+                                                            )}
+                                                        >
+                                                            <div className={cn("w-5 h-5 shrink-0 rounded-full bg-gradient-to-br border border-white/10 opacity-80", voice.gradient)} />
+                                                            <div className="flex-1 truncate">
+                                                                <span className={cn("font-mono font-bold uppercase text-xs", selectedVoice === voice.id ? "text-emerald-400" : "text-white")}>
+                                                                    {voice.name}
+                                                                </span>
+                                                                <span className="text-[10px] text-zinc-500 ml-2 font-mono hidden sm:inline-block">
+                                                                    - {voice.gender}, {voice.tone}
+                                                                </span>
+                                                            </div>
+                                                            {selectedVoice === voice.id && <Check className="w-4 h-4 text-emerald-400 shrink-0" />}
+                                                        </button>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 )}
-                                <button onClick={() => setOutputFormat(f => f === 'mp3' ? 'wav' : 'mp3')} className="h-[46px] px-4 bg-[#050505] border border-white/10 font-mono text-[11px] uppercase text-cyan-400 font-bold">{outputFormat}</button>
+                                <button onClick={() => setOutputFormat(f => f === 'mp3' ? 'wav' : 'mp3')} className="w-[70px] shrink-0 h-[46px] px-4 bg-[#050505] border border-white/10 hover:border-white/30 rounded-sm font-mono text-[11px] uppercase transition-colors text-cyan-400 font-bold">{outputFormat}</button>
                             </div>
                         )}
 

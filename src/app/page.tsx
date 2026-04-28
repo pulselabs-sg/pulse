@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
-// --- Các component giữ nguyên (ScrollLiquidBackground, SoundWaveVisualizer, NeuralOrbitVisualizer, Brand Icons) ---
 const ScrollLiquidBackground = () => {
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
@@ -123,7 +122,7 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="px-3 md:px-4 py-1.5 md:py-2 bg-white text-black text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-all">
+            <Link href="/dashboard" target="_blank" className="px-3 md:px-4 py-1.5 md:py-2 bg-white text-black text-[9px] md:text-[10px] font-mono font-bold uppercase tracking-widest rounded-sm flex items-center gap-2 hover:bg-cyan-300 transition-all">
               App <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -246,7 +245,7 @@ export default function Home() {
       </div>
 
       {/* --- FLUID INTEGRATION INFO SECTION --- */}
-      <div id="fluid" className="relative z-10 w-full py-20 md:py-32 border-t border-white/5 bg-black/20 backdrop-blur-sm">
+      {/* <div id="fluid" className="relative z-10 w-full py-20 md:py-32 border-t border-white/5 bg-black/20 backdrop-blur-sm">
         <div className="max-w-screen-xl mx-auto px-4 md:px-8 text-center flex flex-col items-center">
           <div className="w-10 h-10 md:w-12 md:h-12 bg-black border border-cyan-400/30 rounded-sm flex items-center justify-center mb-4 md:mb-6 shadow-[0_0_30px_rgba(103,232,249,0.15)] shrink-0">
             <Code className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
@@ -259,7 +258,7 @@ export default function Home() {
             Read Documentation <Sparkles className="w-3 h-3" />
           </Link>
         </div>
-      </div>
+      </div> */}
 
       {/* --- RESOURCE_ALLOCATION SECTION --- */}
       <div id="pricing" className="relative z-10 max-w-screen-xl mx-auto px-4 md:px-8 py-16 md:py-24 border-t border-white/5 bg-black/60 backdrop-blur-md">
