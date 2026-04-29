@@ -5,7 +5,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { 
   Loader2, LogIn, ChevronRight, Settings2, Mail, 
   LogOut, CheckCircle2, X, Sparkles, Check, 
-  ShieldCheck, CreditCard, AlertTriangle, Crown
+  ShieldCheck, CreditCard, AlertTriangle, Crown, Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { initializePaddle, Paddle } from '@paddle/paddle-js';
@@ -150,15 +150,35 @@ function DashboardContent() {
   if (!session) return <div className="flex h-screen items-center justify-center bg-black"><button onClick={() => signIn('google')} className="bg-white text-black px-6 py-3 font-mono uppercase font-bold">Sign In</button></div>;
 
   return (
-    <div className="flex h-screen bg-black text-zinc-300 font-sans overflow-hidden">
+    <div className="flex h-[100dvh] bg-black text-zinc-300 font-sans overflow-hidden">
+      
+      {/* Mobile Backdrop Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            onClick={() => setIsSidebarOpen(false)} 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" 
+          />
+        )}
+      </AnimatePresence>
+
       <Sidebar 
         isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} 
         activeTab={activeTab} setActiveTab={setActiveTab} 
         userState={userState} session={session} setShowPlanModal={setShowPlanModal}
       />
 
-      <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0">
-        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center px-6 text-[10px] font-mono uppercase text-zinc-600">
+      <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0 h-full">
+        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-600 z-10 relative">
+          <button 
+            onClick={() => setIsSidebarOpen(true)} 
+            className="md:hidden mr-3 p-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
           Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white">{TABS.find(t => t.id === activeTab)?.label}</span>
         </header>
 
@@ -330,7 +350,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center bg-black"><Loader2 className="animate-spin text-white" /></div>}>
+    <Suspense fallback={<div className="flex h-[100dvh] items-center justify-center bg-black"><Loader2 className="animate-spin text-white" /></div>}>
       <DashboardContent />
     </Suspense>
   );

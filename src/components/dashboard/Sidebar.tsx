@@ -28,7 +28,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
       initial={false}
       animate={{ width: isSidebarOpen ? 260 : 70 }}
       className={cn(
-        "bg-[#050505] border-r border-white/5 flex flex-col shrink-0 transition-transform duration-300 z-50 absolute md:relative h-full",
+        "bg-[#050505] border-r border-white/5 flex flex-col shrink-0 transition-transform duration-300 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}
     >
@@ -42,7 +42,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
           </div>
         )}
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-1.5 hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm ml-auto transition-colors">
-          {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4 hidden md:block" />}
         </button>
       </div>
 

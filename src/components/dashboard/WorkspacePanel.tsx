@@ -114,7 +114,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                                 </div>
                                                 <div className="flex-1 truncate">
                                                     <span className="font-mono font-bold text-white uppercase text-xs">{selectedVoiceObj.name}</span>
-                                                    <span className="text-[10px] text-zinc-400 ml-2 font-mono hidden sm:inline-block">
+                                                    <span className="text-[10px] text-zinc-400 ml-2 font-mono inline-block truncate">
                                                         - {selectedVoiceObj.gender}, {selectedVoiceObj.tone}
                                                     </span>
                                                 </div>
@@ -142,7 +142,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                                                 <span className={cn("font-mono font-bold uppercase text-xs", selectedVoice === voice.id ? "text-emerald-400" : "text-white")}>
                                                                     {voice.name}
                                                                 </span>
-                                                                <span className="text-[10px] text-zinc-500 ml-2 font-mono hidden sm:inline-block">
+                                                                <span className="text-[10px] text-zinc-500 ml-2 font-mono inline-block truncate">
                                                                     - {voice.gender}, {voice.tone}
                                                                 </span>
                                                             </div>
