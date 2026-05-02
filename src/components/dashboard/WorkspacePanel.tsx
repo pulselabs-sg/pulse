@@ -82,10 +82,10 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     };
 
     return (
-        <div className="flex-1 p-4 md:p-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative z-10 min-h-0 overflow-y-auto lg:overflow-hidden">
+        <div className="flex-1 p-4 md:p-6 flex flex-col lg:flex-row gap-4 md:gap-6 relative z-10 min-h-0 overflow-y-auto">
             {/* Input */}
             <div className="flex-1 lg:max-w-xl flex flex-col min-h-0">
-                <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-4 md:p-5 flex flex-col h-full">
+                <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-4 md:p-5 flex flex-col h-full min-h-[400px] lg:min-h-0">
                     <h2 className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2 border-b border-white/5 pb-3">
                         <Settings2 className="w-4 h-4 text-white" /> Input Parameters
                     </h2>
@@ -166,7 +166,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
             </div>
 
             {/* Output */}
-            <div className="flex-1 bg-black/50 border border-white/10 rounded-sm flex flex-col min-h-[220px]">
+            <div className="flex-none lg:flex-1 bg-black/50 border border-white/10 rounded-sm flex flex-col min-h-[160px] lg:min-h-[220px]">
                 <div className="h-10 border-b border-white/10 px-4 flex items-center bg-black"><span className="text-[10px] font-mono text-zinc-500 uppercase">Output</span></div>
                 <div className="flex-1 flex flex-col items-center justify-center p-6 relative bg-[#050505] overflow-y-auto">
                     {!result && !loading && <div className="text-zinc-700 font-mono text-xs uppercase">Waiting for output...</div>}
@@ -182,7 +182,13 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                     {result?.type === 'audio' && (
                         <div className="w-full max-w-md space-y-4">
                             <audio controls src={result.content} className="w-full" />
-                            <a href={result.content} download={`output.${outputFormat}`} className="block text-center py-3 bg-white text-black font-mono text-[10px] uppercase font-bold rounded-sm">Download {outputFormat.toUpperCase()}</a>
+                            <a 
+                                href={result.content} 
+                                download={result.content.startsWith('http') ? `output_${Date.now()}.${result.content.split('.').pop()}` : `output.${outputFormat}`} 
+                                className="block text-center py-3 bg-white text-black font-mono text-[10px] uppercase font-bold rounded-sm"
+                            >
+                                Download {(result.content.startsWith('http') ? result.content.split('.').pop() : outputFormat)?.toUpperCase()}
+                            </a>
                         </div>
                     )}
                 </div>

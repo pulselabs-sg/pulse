@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
-import { del } from '@vercel/blob';
+import { del, put } from '@vercel/blob';
 
 const TIER_LIMITS = {
   FREE: { generations: 5, maxFileMB: 50 },
@@ -122,13 +122,18 @@ export async function POST(req: Request) {
 
       const audioBuffer = await ttsResponse.arrayBuffer();
 
+      const blob = await put(`changer/${user.id}/${Date.now()}.${format}`, audioBuffer, {
+        access: 'public',
+        contentType: format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+      });
+
       // --- VOICE CHANGER ---
       await prisma.history.create({
         data: {
           userId: user.id,
-          type: 'Voice Changer',
+          type: 'changer',
           input: fileName,
-          output: `Audio Rendered (${targetVoice.toUpperCase()})`
+          output: blob.url
         }
       });
 

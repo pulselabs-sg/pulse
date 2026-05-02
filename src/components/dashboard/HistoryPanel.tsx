@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { History, Loader2, PlaySquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: any) => void }) {
     const [history, setHistory] = useState<any[]>([]);
@@ -39,11 +40,14 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                                     <p className="text-xs font-mono text-zinc-300 truncate mb-1">
                                         <span className="text-zinc-500">Input:</span> {item.input || 'N/A'}
                                     </p>
-                                    <p className="text-[10px] font-mono text-zinc-500 line-clamp-2">
-                                        <span className="text-zinc-600">Out:</span> {
+                                    <p className={cn(
+                                        "text-[10px] font-mono text-zinc-500",
+                                        item.type?.toLowerCase() === 'stt' ? "line-clamp-4" : "line-clamp-1"
+                                    )}>
+                                        <span className="text-zinc-600">Result:</span> {
                                             item.type?.toLowerCase() === 'stt'
                                                 ? item.output
-                                                : 'Audio Rendered'
+                                                : item.output?.startsWith('http') ? 'Audio URL Stored' : 'Audio Rendered'
                                         }
                                     </p>
                                 </div>

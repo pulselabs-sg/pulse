@@ -138,16 +138,26 @@ function DashboardContent() {
   };
 
   const handleLoadRecord = (record: any) => {
-    const recordType = record.type.toLowerCase(); 
+    let recordType = record.type.toLowerCase(); 
+    if (recordType === 'voice changer') recordType = 'changer';
     
     setActiveTab(recordType as Tab);
-    setResult({ type: recordType === 'stt' ? 'text' : 'audio', content: record.output });
+    setResult({ 
+      type: recordType === 'stt' ? 'text' : 'audio', 
+      content: record.output 
+    });
     if (recordType === 'tts' && record.input) setTextInput(record.input);
   };
 
-  if (status === "loading") return <div className="flex h-screen items-center justify-center bg-black"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>;
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/login');
+    }
+  }, [status, router]);
 
-  if (!session) return <div className="flex h-screen items-center justify-center bg-black"><button onClick={() => signIn('google')} className="bg-white text-black px-6 py-3 font-mono uppercase font-bold">Sign In</button></div>;
+  if (status === "loading" || status === "unauthenticated") return <div className="flex h-screen items-center justify-center bg-black"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>;
+
+  if (!session) return null;
 
   return (
     <div className="flex h-[100dvh] bg-black text-zinc-300 font-sans overflow-hidden">
@@ -208,7 +218,7 @@ function DashboardContent() {
                     </div>
                   </div>
                 </div>
-                <button onClick={() => signOut({ callbackUrl: '/' })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 transition-colors flex items-center gap-2 z-10">
+                <button onClick={() => signOut({ callbackUrl: '/dashboard' })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 transition-colors flex items-center gap-2 z-10">
                   <LogOut className="w-3 h-3" /> Sign Out
                 </button>
               </div>

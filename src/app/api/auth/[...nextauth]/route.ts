@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  pages: { signIn: "/" },
+  pages: { signIn: "/login" },
   session: { strategy: "database" }, // Explicitly set strategy
 };
 

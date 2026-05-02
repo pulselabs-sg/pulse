@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
+import { put } from '@vercel/blob';
 
 const TIER_LIMITS = {
   FREE: { generations: 5, maxChars: 5000 },
@@ -86,14 +87,19 @@ export async function POST(req: Request) {
       }
 
       const audioBuffer = await response.arrayBuffer();
+      
+      const blob = await put(`tts/${user.id}/${Date.now()}.${format}`, audioBuffer, {
+        access: 'public',
+        contentType: format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+      });
 
       // --- TTS ---
       await prisma.history.create({
         data: {
           userId: user.id,
-          type: 'TTS',
+          type: 'tts',
           input: text.length > 80 ? text.substring(0, 80) + '...' : text,
-          output: `Audio Rendered (${voiceId.toUpperCase()})`
+          output: blob.url
         }
       });
 
