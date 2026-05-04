@@ -32,6 +32,16 @@ export const metadata: Metadata = {
   authors: [{ name: 'iPulse Team' }],
   creator: 'iPulse AI',
   publisher: 'iPulse AI',
+
+  icons: {
+    icon: [
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+      { url: '/logo.webp', type: 'image/webp' }
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -74,7 +84,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const jsonLd = {
+
+  const softwareSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'iPulse AI',
@@ -91,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       ratingCount: '1250',
     },
     description: 'The ultimate AI voice generator and audio toolkit. Features include Text to Speech, Voice Cloning, and Speech to Text.',
-    screenshot: 'https://ipulselabs.net//og-image.jpg',
+    screenshot: 'https://ipulselabs.net/og-image.jpg',
     featureList: [
       'Neural Text to Speech',
       'Instant Voice Cloning',
@@ -101,12 +112,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     ]
   };
 
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'iPulse AI',
+    url: 'https://ipulselabs.net/',
+    logo: 'https://ipulselabs.net/logo.webp',
+    sameAs: [
+    ]
+  };
+
   return (
     <html lang="en" className="dark">
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
       </head>
       <body className={`${inter.className} bg-zinc-950 text-zinc-50 min-h-screen antialiased custom-scrollbar`}>
