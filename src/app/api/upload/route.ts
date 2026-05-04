@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
+import { apiResponse } from '@/lib/security';
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
@@ -50,9 +51,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error("[BLOB_SERVER_ERROR]:", error);
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }
-    );
+    return apiResponse((error as Error).message, 400);
   }
 }

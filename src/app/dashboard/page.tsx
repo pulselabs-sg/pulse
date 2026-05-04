@@ -2,9 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { 
-  Loader2, LogIn, ChevronRight, Settings2, Mail, 
-  LogOut, CheckCircle2, X, Sparkles, Check, 
+import {
+  Loader2, LogIn, ChevronRight, Settings2, Mail,
+  LogOut, CheckCircle2, X, Sparkles, Check,
   ShieldCheck, CreditCard, AlertTriangle, Crown, Menu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,7 +26,7 @@ function DashboardContent() {
   // Core States
   const [activeTab, setActiveTab] = useState<Tab>('tts');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
+
   // Workspace States
   const [textInput, setTextInput] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -34,15 +34,15 @@ function DashboardContent() {
   const [result, setResult] = useState<{ type: 'text' | 'audio'; content: string } | null>(null);
 
   // User & Billing States
-  const [userState, setUserState] = useState({ 
-    tier: 'FREE' as Tier, 
-    usage: 0, 
-    limit: 5, 
-    maxFileMB: 50, 
-    maxChars: 5000 
+  const [userState, setUserState] = useState({
+    tier: 'FREE' as Tier,
+    usage: 0,
+    limit: 5,
+    maxFileMB: 50,
+    maxChars: 5000
   });
   const [isCanceling, setIsCanceling] = useState(false);
-  
+
   // Paddle States
   const [paddle, setPaddle] = useState<Paddle>();
   const [showPlanModal, setShowPlanModal] = useState(false);
@@ -138,13 +138,13 @@ function DashboardContent() {
   };
 
   const handleLoadRecord = (record: any) => {
-    let recordType = record.type.toLowerCase(); 
+    let recordType = record.type.toLowerCase();
     if (recordType === 'voice changer') recordType = 'changer';
-    
+
     setActiveTab(recordType as Tab);
-    setResult({ 
-      type: recordType === 'stt' ? 'text' : 'audio', 
-      content: record.output 
+    setResult({
+      type: recordType === 'stt' ? 'text' : 'audio',
+      content: record.output
     });
     if (recordType === 'tts' && record.input) setTextInput(record.input);
   };
@@ -161,30 +161,30 @@ function DashboardContent() {
 
   return (
     <div className="flex h-[100dvh] bg-black text-zinc-300 font-sans overflow-hidden">
-      
+
       {/* Mobile Backdrop Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            onClick={() => setIsSidebarOpen(false)} 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
           />
         )}
       </AnimatePresence>
 
-      <Sidebar 
-        isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} 
-        activeTab={activeTab} setActiveTab={setActiveTab} 
+      <Sidebar
+        isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}
+        activeTab={activeTab} setActiveTab={setActiveTab}
         userState={userState} session={session} setShowPlanModal={setShowPlanModal}
       />
 
       <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0 h-full">
         <header className="h-14 border-b border-white/5 bg-black/80 flex items-center px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-600 z-10 relative">
-          <button 
-            onClick={() => setIsSidebarOpen(true)} 
+          <button
+            onClick={() => setIsSidebarOpen(true)}
             className="md:hidden mr-3 p-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors"
           >
             <Menu className="w-4 h-4" />
@@ -200,7 +200,7 @@ function DashboardContent() {
               <h2 className="text-lg font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2">
                 <Settings2 className="w-5 h-5 text-zinc-500" /> Account Settings
               </h2>
-              
+
               {/* Profile Card */}
               <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
                 <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-sm object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
@@ -273,8 +273,8 @@ function DashboardContent() {
             </motion.div>
           </div>
         ) : (
-          <WorkspacePanel 
-            activeTab={activeTab} session={session} 
+          <WorkspacePanel
+            activeTab={activeTab} session={session}
             userState={userState} setUserState={setUserState}
             textInput={textInput} setTextInput={setTextInput}
             file={file} setFile={setFile}
@@ -333,10 +333,10 @@ function DashboardContent() {
       <AnimatePresence>
         {showCheckoutModal && (
           <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4">
-             <div className="bg-[#050505] border border-white/10 w-full max-w-4xl p-6 rounded-sm relative">
-                <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white"><X/></button>
-                <div id="paddle-inline-container" className="min-h-[500px]"></div>
-             </div>
+            <div className="bg-[#050505] border border-white/10 w-full max-w-4xl p-6 rounded-sm relative">
+              <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white"><X /></button>
+              <div id="paddle-inline-container" className="min-h-[500px]"></div>
+            </div>
           </div>
         )}
       </AnimatePresence>

@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { del } from '@vercel/blob';
+import { speechToTextSchema, apiResponse } from '@/lib/security';
 
 const TIER_LIMITS = {
   FREE: { generations: 5, maxFileMB: 50 },
@@ -29,12 +30,14 @@ export async function POST(req: Request) {
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
     const limit = tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier].generations;
-    const body = await req.json();
-    const { fileUrl, fileName = 'Uploaded Audio' } = body;
-
-    if (!fileUrl) {
-      return new NextResponse("No audio file URL provided", { status: 400 });
+    const body = await req.json().catch(() => ({}));
+    const validation = speechToTextSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
     }
+
+    const { fileUrl, fileName } = validation.data;
     uploadedFileUrl = fileUrl;
 
     if (limit !== Infinity) {
@@ -151,7 +154,7 @@ export async function POST(req: Request) {
       ? "AI Engine is taking too long to respond. Please try again."
       : "An internal error occurred during processing.";
 
-    return new NextResponse(clientMessage, { status: isTimeout ? 504 : 500 });
+    return apiResponse(clientMessage, isTimeout ? 504 : 500);
   } finally {
     if (uploadedFileUrl) {
       try {

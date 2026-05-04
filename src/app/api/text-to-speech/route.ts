@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
+import { textToSpeechSchema, apiResponse } from '@/lib/security';
 
 const TIER_LIMITS = {
   FREE: { generations: 5, maxChars: 5000 },
@@ -25,21 +26,20 @@ export async function POST(req: Request) {
     });
     if (!user) return new NextResponse("User not found", { status: 404 });
 
-    const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
-    const limit = TIER_LIMITS[tier].generations;
-    const maxChars = TIER_LIMITS[tier].maxChars;
-    const body = await req.json();
-    const textRaw = body.text as string;
-    const text = textRaw ? textRaw.trim() : '';
-    const voiceId = body.voiceId as string || 'eve';
-    const format = body.format as string || 'mp3';
-
-    if (!text) {
-      return new NextResponse("Text is required", { status: 400 });
+    const body = await req.json().catch(() => ({}));
+    const validation = textToSpeechSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
     }
 
+    const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
+    const { text, voiceId, format } = validation.data;
+    const limit = TIER_LIMITS[tier].generations;
+    const maxChars = TIER_LIMITS[tier].maxChars;
+
     if (text.length > maxChars) {
-      return new NextResponse(`Text too long. Maximum ${maxChars} characters allowed.`, { status: 413 });
+      return apiResponse(`Text too long. Maximum ${maxChars} characters allowed.`, 413);
     }
 
     if (limit !== Infinity) {
@@ -103,36 +103,36 @@ export async function POST(req: Request) {
         }
       });
 
-      return new NextResponse(audioBuffer, {
-        headers: {
-          'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
-          'Content-Disposition': `attachment; filename="voice.${format}"`,
-          'X-User-Usage': (user.usageCount + 1).toString(),
-        },
-      });
+    return new NextResponse(audioBuffer, {
+      headers: {
+        'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+        'Content-Disposition': `attachment; filename="voice.${format}"`,
+        'X-User-Usage': (user.usageCount + 1).toString(),
+      },
+    });
 
-    } catch (fetchError: any) {
-      throw fetchError;
-    } finally {
-      clearTimeout(timeoutId); 
-    }
-
-  } catch (error: any) {
-    const isTimeout = error.name === 'AbortError';
-    console.error("[TTS_CRITICAL_ERROR]", error);
-
-    const session = await getServerSession(authOptions);
-    if (session?.user?.id) {
-       await prisma.user.updateMany({
-         where: { id: session.user.id, usageCount: { gt: 0 } },
-         data: { usageCount: { decrement: 1 } }
-       });
-    }
-
-    const clientMessage = isTimeout 
-      ? "AI Engine is taking too long to respond. Please try again." 
-      : "An internal error occurred during processing.";
-
-    return new NextResponse(clientMessage, { status: isTimeout ? 504 : 500 });
+  } catch (fetchError: any) {
+    throw fetchError;
+  } finally {
+    clearTimeout(timeoutId); 
   }
+
+} catch (error: any) {
+  const isTimeout = error.name === 'AbortError';
+  console.error("[TTS_CRITICAL_ERROR]", error);
+
+  const session = await getServerSession(authOptions);
+  if (session?.user?.id) {
+     await prisma.user.updateMany({
+       where: { id: session.user.id, usageCount: { gt: 0 } },
+       data: { usageCount: { decrement: 1 } }
+     });
+  }
+
+  const clientMessage = isTimeout 
+    ? "AI Engine is taking too long to respond. Please try again." 
+    : "An internal error occurred during processing.";
+
+  return apiResponse(clientMessage, isTimeout ? 504 : 500);
+}
 }

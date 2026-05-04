@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
+import { apiResponse } from '@/lib/security';
 
 const TIER_LIMITS = {
   FREE: { generations: 5, maxFileMB: 50 },
@@ -16,26 +17,26 @@ export async function POST(req: Request) {
 
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
+    if (!session?.user?.id) return apiResponse("Unauthorized", 401);
 
     const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (!user) return new NextResponse("User not found", { status: 404 });
+    if (!user) return apiResponse("User not found", 404);
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
     const limit = TIER_LIMITS[tier].generations;
 
     if (user.usageCount >= limit) {
-      return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
+      return apiResponse("Quota exceeded. Please upgrade your plan.", 429);
     }
 
     const formData = await req.formData();
     const file = formData.get('file') as Blob;
     
-    if (!file) return new NextResponse("No file provided", { status: 400 });
+    if (!file) return apiResponse("No file provided", 400);
 
     const maxFileSize = TIER_LIMITS[tier].maxFileMB * 1024 * 1024;
     if (file.size > maxFileSize) {
-      return new NextResponse(`File too large. Maximum ${TIER_LIMITS[tier].maxFileMB} MB allowed.`, { status: 413 });
+      return apiResponse(`File too large. Maximum ${TIER_LIMITS[tier].maxFileMB} MB allowed.`, 413);
     }
 
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -56,6 +57,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Clean Audio Error:", error);
-    return new NextResponse(error.message || "Error processing audio", { status: 500 });
+    return apiResponse(error.message || "Error processing audio", 500);
   }
 }

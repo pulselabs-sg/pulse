@@ -138,8 +138,8 @@ export default function Home() {
             <span className="text-zinc-400">SYSTEM ONLINE •</span>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-mono font-bold tracking-tighter leading-[1.1] text-white uppercase">
-            Synthesize.<br />
-            <span className="bg-gradient-to-r from-cyan-300 to-indigo-300 bg-clip-text text-transparent break-words">Beyond_Reality.</span>
+            iPulse AI.<br />
+            <span className="bg-gradient-to-r from-cyan-300 to-indigo-300 bg-clip-text text-transparent break-words">Next-Gen Voice_Synthesis.</span>
           </h1>
           <p className="text-xs md:text-sm font-mono text-zinc-400 max-w-lg mx-auto lg:mx-0 leading-relaxed uppercase tracking-wider backdrop-blur-sm">
             Neural-powered voice engine. Real-time TTS • STT • Voice Cloning • Emotional Synthesis.
@@ -182,7 +182,7 @@ export default function Home() {
       <div id="features" className="relative z-10 max-w-screen-2xl mx-auto px-4 md:px-8 py-16 md:py-24 border-t border-white/5 bg-black/40 backdrop-blur-md">
         <div className="mb-10 md:mb-16 text-center md:text-left">
           <h2 className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2 flex items-center justify-center md:justify-start gap-2">
-            <Layers className="w-4 h-4 text-cyan-400" /> System_Modules
+            <Layers className="w-4 h-4 text-cyan-400" /> AI_Voice_Modules
           </h2>
           <p className="text-[10px] md:text-xs font-mono text-zinc-500 uppercase tracking-wider">Professional-grade neural audio tools. Built for creators and developers.</p>
         </div>
@@ -263,8 +263,8 @@ export default function Home() {
       {/* --- RESOURCE_ALLOCATION SECTION --- */}
       <div id="pricing" className="relative z-10 max-w-screen-xl mx-auto px-4 md:px-8 py-16 md:py-24 border-t border-white/5 bg-black/60 backdrop-blur-md">
         <div className="mb-10 md:mb-16 text-center">
-          <h2 className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2">Resource_Allocation</h2>
-          <p className="text-[10px] md:text-xs font-mono text-zinc-500 uppercase tracking-wider">Scale voice generation effortlessly with our neural infrastructure.</p>
+          <h2 className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2">Neural_Resource_Allocation</h2>
+          <p className="text-[10px] md:text-xs font-mono text-zinc-500 uppercase tracking-wider">Premium AI Voice Generator plans for every scale.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {/* FREE */}

@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
+import { apiResponse } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
+    if (!session?.user?.id) return apiResponse("Unauthorized", 401);
 
     const prisma = getPrisma();
     const history = await prisma.history.findMany({
@@ -20,6 +21,6 @@ export async function GET() {
     return NextResponse.json(history);
   } catch (error) {
     console.error("[HISTORY_GET_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return apiResponse("Internal Error", 500);
   }
 }

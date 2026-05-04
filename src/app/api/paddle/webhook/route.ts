@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Environment, Paddle } from '@paddle/paddle-node-sdk';
 import { getPrisma } from '@/lib/prisma';
 import { Tier } from '@prisma/client';
+import { apiResponse } from '@/lib/security';
 
 const paddle = new Paddle(process.env.PADDLE_SECRET_KEY!, {
   environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production'
@@ -12,7 +13,7 @@ const paddle = new Paddle(process.env.PADDLE_SECRET_KEY!, {
 export async function POST(req: Request) {
   const signature = req.headers.get('paddle-signature');
   if (!signature) {
-    return new NextResponse("Missing signature", { status: 401 });
+    return apiResponse("Missing signature", 401);
   }
 
   const rawBody = await req.text();
@@ -91,6 +92,6 @@ export async function POST(req: Request) {
   } catch (err: any) {
     // Không leak Error Stack cho client/Paddle
     console.error('❌ Paddle Webhook Verification Failed:', err.message);
-    return new NextResponse("Invalid webhook signature or payload", { status: 400 });
+    return apiResponse("Invalid webhook signature or payload", 400);
   }
 }
