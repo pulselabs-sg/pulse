@@ -8,10 +8,10 @@ export default function TermsOfUse() {
     <div className="min-h-screen bg-black text-zinc-300">
       <div className="border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
+          {/* <Link href="/" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="font-mono text-sm">Back to iPulse</span>
-          </Link>
+          </Link> */}
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-cyan-400" />
             <span className="font-mono uppercase text-sm tracking-widest">Legal</span>
@@ -20,81 +20,125 @@ export default function TermsOfUse() {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-mono font-bold text-white tracking-tighter">Terms of Service</h1>
-        <p className="text-zinc-500 mt-2 mb-12">Last Updated: April 28, 2026</p>
+        <h1 className="text-4xl font-mono font-bold text-white tracking-tighter">Terms of Use</h1>
+        <p className="text-zinc-500 mt-2 mb-12">Last Updated: May 5, 2026</p>
 
         <div className="prose prose-invert max-w-none font-light text-[15.2px] leading-relaxed space-y-10 text-zinc-300">
+
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-8">
+            <p className="m-0 text-sm">
+              <strong>IMPORTANT NOTICE:</strong> PLEASE READ THESE TERMS CAREFULLY. SECTION 11 CONTAINS A BINDING ARBITRATION CLAUSE AND CLASS ACTION WAIVER THAT AFFECTS YOUR LEGAL RIGHTS AND HOW DISPUTES ARE RESOLVED.
+            </p>
+          </div>
+
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
-            <p>By accessing, registering for, or using the services provided by iPulse Labs (&quot;iPulse&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), including our website, APIs, and AI audio generation tools (collectively, the &quot;Service&quot;), you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use the Service. We reserve the right to modify these terms at any time, and continued use constitutes acceptance of those changes.</p>
+            <p>
+              Welcome to iPulse Labs ("iPulse", "we", "our", or "us"). These Terms of Use (the "Terms") legally govern your access to and use of our AI-powered audio generation platform, website, APIs, and related software (collectively, the "Service"). By registering an account or otherwise accessing the Service, you signify your binding agreement to these Terms.
+            </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">2. Eligibility and Account Registration</h2>
-            <p>You must be at least 18 years of age or the legal age of majority in your jurisdiction to use the Service. By creating an account, you warrant that the information you provide is accurate and complete. You are strictly responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized access.</p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">3. Merchant of Record and Payments</h2>
-            <p>Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all our orders. Paddle handles all billing, tax collection, payment processing, refunds, and customer service inquiries related to transactions. By making a purchase, you agree to Paddle&apos;s Checkout Buyer Terms. Subscriptions are billed in advance on a recurring basis. You may cancel your subscription at any time, but you will remain responsible for all charges incurred prior to cancellation.</p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">4. Acceptable Use Policy (AUP)</h2>
-            <p>You agree to use the Service only for lawful purposes. You are strictly prohibited from using iPulse to generate, upload, or distribute content that:</p>
-            <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>Is illegal, defamatory, harassing, abusive, fraudulent, or obscene.</li>
-              <li>Promotes discrimination, violence, self-harm, or hate speech against any individual or group.</li>
-              <li>Involves Child Sexual Abuse Material (CSAM) or exploits minors in any way.</li>
-              <li>Impersonates any person or entity without their explicit, documented consent (see Section 5).</li>
-              <li>Infringes on any third-party intellectual property rights, including copyrights, trademarks, or rights of publicity.</li>
-              <li>Attempts to bypass or manipulate our API limits, reverse-engineer our models, or distribute malware.</li>
+            <h2 className="text-2xl font-semibold text-white mb-4">1. Eligibility and Account Registration</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>Age Requirement:</strong> You must be at least 18 years old, or the age of legal majority in your jurisdiction, to create an account.</li>
+              <li><strong>Account Security:</strong> You are strictly responsible for maintaining the confidentiality of your login credentials. You agree to notify us immediately of any unauthorized account access. We are not liable for any losses caused by compromised accounts.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">5. Voice Cloning, Deepfakes, and AI Ethics</h2>
-            <p>Our voice cloning technology is powerful and carries significant ethical responsibilities. By using our Voice Cloning feature, you represent and warrant that:</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">2. Acceptable Use and Voice Cloning Ethics</h2>
+            <p>iPulse is committed to the ethical advancement of AI. You agree to use the Service solely for lawful purposes. You expressly agree <strong>NOT</strong> to:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Explicit Consent:</strong> You have the explicit, verifiable, and legally binding consent of the individual whose voice you are cloning.</li>
-              <li><strong>No Deception:</strong> You will not use cloned voices to deceive, commit fraud, spread misinformation, or create non-consensual deepfakes (e.g., generating fake political statements or fraudulent audio evidence).</li>
-              <li><strong>Right to Revoke:</strong> Voice owners have the right to request the removal of their cloned voice models from our systems. We will comply with all valid requests immediately.</li>
+              <li><strong>Clone Voices Without Consent:</strong> Upload audio data or create synthetic voice models of any real person (living or deceased) without securing their explicit, legally binding consent.</li>
+              <li><strong>Create Malicious Deepfakes:</strong> Generate audio intended to deceive, impersonate government officials, commit financial fraud, or spread disinformation.</li>
+              <li><strong>Generate Abusive Content:</strong> Produce audio that promotes hate speech, violence, harassment, defamation, or constitutes strictly explicit (NSFW) material.</li>
+              <li><strong>Interfere with the Platform:</strong> Reverse-engineer our AI models, attempt to bypass rate limits, scrape our web properties, or use automated bots to extract data.</li>
             </ul>
-            <p className="mt-4">Violation of these cloning rules will result in an immediate, permanent ban, forfeiture of all credits, and potential reporting to law enforcement agencies.</p>
+            <p className="mt-3 text-red-400">We reserve the right to deploy automated and manual moderation tools to detect violations. Breach of this section will result in immediate, permanent account termination without refund.</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">6. Intellectual Property Rights</h2>
-            <p><strong>Your Content:</strong> You retain all ownership rights to the text prompts, audio uploads, and other inputs you provide (&quot;User Content&quot;). You grant iPulse a temporary, non-exclusive license to process this content solely for the purpose of generating your requested output.</p>
-            <p><strong>Generated Output:</strong> Subject to your compliance with these Terms, iPulse assigns to you all rights, title, and interest in the audio outputs generated from your prompts. You may use the outputs for both personal and commercial purposes, provided your account tier allows commercial use.</p>
-            <p><strong>Our Technology:</strong> iPulse retains all rights, title, and interest in and to the Service, including all underlying AI models, algorithms, software, and branding. You may not use our generated audio to train competing machine learning models.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">3. Intellectual Property Rights</h2>
+
+            <h3 className="text-lg font-medium text-white mt-4 mb-2">A. Your Content and Generated Output</h3>
+            <p>You retain all ownership rights to the original text prompts and audio files you input into the Service ("User Content"). Subject to your compliance with these Terms, iPulse assigns to you all of its rights, title, and interest in and to the audio generated from your prompts ("Generated Content").</p>
+
+            <h3 className="text-lg font-medium text-white mt-4 mb-2">B. License Granted to iPulse</h3>
+            <p>By using the Service, you grant iPulse a limited, worldwide, non-exclusive, royalty-free license to host, reproduce, and process your User Content <strong>solely for the purpose of operating the Service and delivering the Generated Content to you.</strong> As stated in our Privacy Policy, we do not use your Content to train our base models.</p>
+
+            <h3 className="text-lg font-medium text-white mt-4 mb-2">C. Our Proprietary Technology</h3>
+            <p>iPulse retains all rights, title, and interest in the Service, including the underlying AI models, algorithms, source code, UI/UX designs, and trademarks. You may not copy, modify, or distribute any part of our proprietary technology.</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">7. No Training on User Data</h2>
-            <p>Unlike many AI platforms, iPulse has a strict privacy-first architecture. We <strong>do not</strong> use your User Content, cloned voices, or generated outputs to train, fine-tune, or improve our base foundational AI models. Your data is your own.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">4. DMCA and Copyright Infringement</h2>
+            <p>We respect intellectual property rights. If you believe that your copyrighted work has been infringed by content residing on our Service, please submit a written notification to our Copyright Agent at <strong>legal@ipulse.ai</strong> including:</p>
+            <ul className="list-disc pl-6 mt-3 space-y-2">
+              <li>A physical or electronic signature of the copyright owner.</li>
+              <li>Identification of the copyrighted work claimed to have been infringed.</li>
+              <li>A description of where the allegedly infringing material is located on our Service.</li>
+              <li>Your contact information (email and phone number).</li>
+            </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">8. Termination and Suspension</h2>
-            <p>We reserve the right to suspend or terminate your access to the Service at any time, with or without notice, if we reasonably believe you have violated these Terms, our AUP, or for any other operational or legal reason. Upon termination, your right to use the Service ceases immediately.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">5. Billing, Subscriptions, and API Usage</h2>
+            <p>All payments, subscriptions, and billing cycles are processed securely via our Merchant of Record, Paddle.com. By upgrading to a paid tier, you agree to the pricing and limits specified at checkout.</p>
+            <ul className="list-disc pl-6 mt-3 space-y-2">
+              <li>
+                <strong>Refunds:</strong> Due to the immediate and non-recoverable compute costs associated with AI generation, all purchases are generally final. Please review our{' '}
+                <Link
+                  href="/refund-policy"
+                  target='_blank'
+                  className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors"
+                >
+                  Refund Policy
+                </Link>{' '}
+                for specific terms.
+              </li>
+              <li>
+                <strong>API Limits:</strong> If you utilize our API, you must adhere to the documented rate limits. We reserve the right to throttle or suspend API access if your usage degrades system performance.
+              </li>
+            </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">9. Disclaimers and Limitation of Liability</h2>
-            <p><strong>&quot;AS IS&quot; Basis:</strong> The Service is provided &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; without warranties of any kind, either express or implied, including fitness for a particular purpose or non-infringement.</p>
-            <p><strong>Limitation of Liability:</strong> To the maximum extent permitted by law, in no event shall iPulse Labs, its directors, or employees be liable for any indirect, incidental, special, consequential, or punitive damages. iPulse&apos;s total aggregate liability arising out of or related to these terms shall not exceed the total amount paid by you to iPulse in the three (3) months preceding the event giving rise to the claim.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">6. Disclaimer of Warranties</h2>
+            <p>THE SERVICE AND GENERATED CONTENT ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. IPULSE MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, BUG-FREE, OR PERFECTLY ACCURATE. YOU USE THE SYNTHETIC AUDIO AT YOUR OWN RISK.</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">10. Indemnification</h2>
-            <p>You agree to indemnify, defend, and hold harmless iPulse Labs from any claims, damages, liabilities, costs, and expenses (including reasonable attorneys&apos; fees) arising out of your User Content, your violation of these Terms, or your violation of any rights of a third party, particularly concerning unauthorized voice cloning.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">7. Limitation of Liability</h2>
+            <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL IPULSE LABS, ITS FOUNDERS, OR DIRECTORS BE LIABLE FOR ANY INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL, ARISING OUT OF OR IN ANY WAY CONNECTED WITH YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY TO YOU FOR ALL CLAIMS SHALL NOT EXCEED THE GREATER OF $100 USD OR THE AMOUNT YOU PAID TO US IN THE PAST 12 MONTHS.</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">11. Governing Law and Jurisdiction</h2>
-            <p>These Terms shall be governed by and construed in accordance with the laws of the Republic of Singapore, without regard to its conflict of law principles. Any legal action or proceeding arising out of or related to these Terms shall be brought exclusively in the courts located in Singapore.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">8. Indemnification</h2>
+            <p>You agree to defend, indemnify, and hold harmless iPulse Labs from any claims, damages, obligations, losses, liabilities, costs, or debts (including attorney's fees) arising from: (a) your use of and access to the Service; (b) your violation of any term of these Terms (specifically including unauthorized voice cloning); or (c) your violation of any third-party right, including copyright or privacy rights.</p>
           </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">9. Dispute Resolution and Arbitration</h2>
+            <p><strong>Please read this section carefully. It affects your legal rights.</strong></p>
+            <ul className="list-disc pl-6 mt-3 space-y-2">
+              <li><strong>Binding Arbitration:</strong> Any dispute, claim, or controversy arising out of or relating to these Terms or the breach thereof shall be settled by binding arbitration, rather than in court.</li>
+              <li><strong>Class Action Waiver:</strong> You and iPulse agree that any dispute resolution proceedings will be conducted only on an individual basis and NOT in a class, consolidated, or representative action.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">10. Modifications and Termination</h2>
+            <p>We may modify these Terms at any time. Material changes will be communicated via email or an in-app notification. We reserve the right to suspend or terminate your account at any time, without notice or liability, for conduct that we determine, in our sole discretion, violates these Terms or is harmful to other users or our business interests.</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">11. Contact Information</h2>
+            <p>
+              For legal notices, DMCA takedown requests, or questions regarding these Terms, please contact us at: <br />
+              <strong>Email:</strong> legal@ipulse.ai
+            </p>
+          </section>
+
         </div>
       </div>
     </div>

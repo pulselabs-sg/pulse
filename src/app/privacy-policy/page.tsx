@@ -8,10 +8,10 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen bg-black text-zinc-300">
       <div className="border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
+          {/* <Link href="/" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="font-mono text-sm">Back to iPulse</span>
-          </Link>
+          </Link> */}
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-cyan-400" />
             <span className="font-mono uppercase text-sm tracking-widest">Legal</span>
@@ -21,92 +21,110 @@ export default function PrivacyPolicy() {
 
       <div className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-4xl font-mono font-bold text-white tracking-tighter">Privacy Policy</h1>
-        <p className="text-zinc-500 mt-2 mb-12">Last Updated: April 28, 2026</p>
+        <p className="text-zinc-500 mt-2 mb-12">Last Updated: May 5, 2026</p>
 
         <div className="prose prose-invert max-w-none font-light text-[15.2px] leading-relaxed space-y-10 text-zinc-300">
           <section>
-            <p>At iPulse Labs (&quot;iPulse&quot;), protecting your privacy and biometric data is our highest priority. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our AI audio generation platform.</p>
+            <p>At iPulse Labs ("iPulse", "we", "us", or "our"), protecting your privacy and sensitive biometric data is our fundamental commitment. This Privacy Policy outlines our practices regarding the collection, use, disclosure, and safeguarding of your information when you use our website, APIs, and AI audio generation services (collectively, the "Service").</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">1. The Golden Rule: Model Training Policy</h2>
-            <p><strong>We do not use your data to train our base AI models.</strong> We understand the sensitivity of voice data. Any text prompts you submit, audio files you upload, voice clones you create, and the outputs you generate are used <strong>strictly</strong> to provide the Service to you. They are never pooled into datasets to train or improve our foundational AI engines.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">1. Our Core Promise: AI Model Training Policy</h2>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <p className="m-0"><strong>We do not use your personal data or user-generated content to train our foundational AI models.</strong></p>
+              <p className="mt-2 mb-0">We recognize the profound sensitivity of voice and audio data. Any text prompts you submit, audio files you upload, voice clones you create, and the resulting audio outputs are utilized <strong>strictly</strong> to provide the Service directly to you. Your data is isolated and never pooled into shared datasets to improve our base generative AI engines.</p>
+            </div>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">2. Information We Collect</h2>
-            <p>We collect information in the following ways:</p>
-            <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Information You Provide:</strong> 
-                <ul className="list-circle pl-6 mt-2">
-                  <li><strong>Account Data:</strong> Name, email address, profile picture (via OAuth like Google), and authentication credentials.</li>
-                  <li><strong>Generative Data:</strong> Text prompts, uploaded audio samples for cloning, and specific generation settings.</li>
-                  <li><strong>Support Data:</strong> Information you provide when contacting customer support.</li>
-                </ul>
+            <h2 className="text-2xl font-semibold text-white mb-4">2. Categories of Information We Collect</h2>
+            <p>Depending on how you interact with our Service, we may collect the following categories of information:</p>
+            <ul className="list-disc pl-6 mt-3 space-y-3">
+              <li>
+                <strong>Identifiers & Account Data:</strong> Name, email address, username, account password, and authentication tokens (e.g., Google OAuth data).
               </li>
-              <li><strong>Information Collected Automatically:</strong>
-                <ul className="list-circle pl-6 mt-2">
-                  <li><strong>Usage Data:</strong> Interaction logs, generation history, credits consumed, and feature utilization.</li>
-                  <li><strong>Device & Technical Data:</strong> IP addresses, browser types, operating systems, and session timestamps to ensure security and prevent abuse.</li>
-                </ul>
+              <li>
+                <strong>Biometric Information (Voice Data):</strong> When you use our voice cloning features, you may upload audio recordings of a voice. We process these recordings to extract acoustic and vocal characteristics (a "voiceprint") solely to map and synthesize the requested audio output.
               </li>
-              <li><strong>Financial Data:</strong> We do not collect or store full credit card numbers. All payment processing is securely handled by Paddle.com. We only receive billing status and subscription tier information.</li>
+              <li>
+                <strong>User Content:</strong> Text prompts, generated audio files, project settings, and any customer support communications.
+              </li>
+              <li>
+                <strong>Commercial Information:</strong> Subscription tier, transaction history, and service usage. (Note: Full payment details are processed directly by Paddle, our Merchant of Record; we only retain billing status and limited identifiers).
+              </li>
+              <li>
+                <strong>Internet & Network Activity:</strong> IP addresses, browser types, device identifiers, operating systems, log data, and interaction metrics with our platform.
+              </li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">3. How We Use Your Data</h2>
-            <p>We use your data exclusively to:</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">3. Biometric Data Notice and Consent</h2>
+            <p>Compliance with laws such as the Illinois Biometric Information Privacy Act (BIPA) and similar regulations is a priority.</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>Process your generative requests and deliver audio outputs.</li>
-              <li>Manage your account, subscription, and billing cycle.</li>
-              <li>Provide customer support and respond to technical issues.</li>
-              <li>Enforce our Terms of Service and prevent fraud, abuse, or unauthorized voice cloning.</li>
-              <li>Comply with legal obligations and respond to lawful requests from authorities.</li>
+              <li><strong>Purpose:</strong> Voiceprints are created and used <em>exclusively</em> to provide the voice synthesis and cloning features you explicitly request.</li>
+              <li><strong>Consent:</strong> By uploading audio for cloning, you certify that you have the explicit legal right and consent from the speaker to process their biometric data.</li>
+              <li><strong>Retention & Destruction:</strong> We retain your custom voice models only for as long as your account is active and you choose to keep the model. If you delete a voice model or your account, the associated voiceprints and biometric identifiers are permanently destroyed from our systems within 30 days. In no event will biometric data be kept for more than 3 years after your last interaction with the Service.</li>
+              <li><strong>No Disclosure:</strong> We do not sell, lease, trade, or otherwise profit from your biometric data.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">4. Data Sharing and Third-Party Subprocessors</h2>
-            <p>We do not sell your personal data. We only share minimal data with strictly vetted third-party subprocessors necessary to run the Service:</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">4. How We Use Your Information</h2>
+            <p>We process your information for the following legitimate business purposes:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Paddle.com:</strong> Acts as our Merchant of Record for billing, invoicing, and tax compliance.</li>
-              <li><strong>Cloud Infrastructure (AWS / GCP):</strong> We host our application and process inferences on secure cloud environments. Data is encrypted in transit and at rest.</li>
-              <li><strong>Legal & Compliance:</strong> We may disclose information if required by law or if we believe in good faith that such action is necessary to protect the safety of the public or prevent illegal activities (e.g., investigating malicious deepfakes).</li>
+              <li>To provide, operate, and maintain the Service.</li>
+              <li>To process payments and manage your subscription via Paddle.</li>
+              <li>To detect, prevent, and address technical issues, fraud, or violations of our Terms of Service (e.g., detecting unauthorized deepfakes).</li>
+              <li>To communicate with you regarding updates, security alerts, and support.</li>
+              <li>To comply with legal obligations.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">5. Data Retention and Deletion</h2>
-            <p>We retain your account data for as long as your account is active. You may delete your account at any time from your Dashboard. Upon deletion:</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">5. Third-Party Subprocessors and Data Sharing</h2>
+            <p>We share information only with trusted third parties necessary to operate iPulse:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>Your profile data, custom voice clones, and generation history will be permanently deleted from our active servers within 30 days.</li>
-              <li>Transient audio uploads used for immediate processing are automatically purged shortly after generation.</li>
-              <li>We may retain certain transactional records as required by law for accounting and tax purposes.</li>
+              <li><strong>Cloud Infrastructure Providers:</strong> (e.g., AWS, Google Cloud) for secure data hosting and GPU processing.</li>
+              <li><strong>Payment Processors:</strong> Paddle.com acts as our Merchant of Record and processes all transactions safely.</li>
+              <li><strong>Law Enforcement:</strong> We may disclose data if legally required by a valid subpoena, court order, or to protect the safety and rights of iPulse, our users, or the public.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">6. Security Measures</h2>
-            <p>We employ enterprise-grade security protocols, including AES-256 encryption at rest and TLS 1.3 in transit. Access to production environments is strictly limited to authorized personnel. Despite these measures, no system over the internet is completely immune to breaches. You are responsible for securing your account credentials.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">6. Regional Privacy Rights</h2>
+
+            <h3 className="text-lg font-medium text-white mt-6 mb-2">A. European Economic Area (EEA) and UK (GDPR)</h3>
+            <p>If you are located in the EEA or UK, you have the following rights regarding your personal data: Right to Access, Right to Rectification, Right to Erasure ("Right to be Forgotten"), Right to Restrict Processing, Right to Data Portability, and Right to Object.</p>
+            <p className="mt-2">Our legal bases for processing include: performance of a contract (delivering the Service), legitimate interests (security and fraud prevention), and compliance with legal obligations.</p>
+
+            <h3 className="text-lg font-medium text-white mt-6 mb-2">B. United States Privacy Laws (California CCPA/CPRA, Virginia, Colorado, etc.)</h3>
+            <p>If you are a resident of certain US states, you may have the right to request: disclosure of the categories and specific pieces of personal information we have collected; deletion of your personal information; correction of inaccuracies; and the right to opt-out of the "sale" or "sharing" of personal data. <strong>iPulse does not sell your personal data.</strong></p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">7. Your Privacy Rights (GDPR, CCPA, etc.)</h2>
-            <p>Depending on your location, you may have specific rights regarding your personal data:</p>
-            <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>The right to <strong>Access</strong> the personal data we hold about you.</li>
-              <li>The right to <strong>Rectification</strong> of inaccurate data.</li>
-              <li>The right to <strong>Erasure</strong> (&quot;Right to be Forgotten&quot;).</li>
-              <li>The right to <strong>Restrict or Object</strong> to processing.</li>
-              <li>The right to <strong>Data Portability</strong>.</li>
-            </ul>
-            <p className="mt-4">To exercise any of these rights, please contact our Data Protection Officer via the support portal in your dashboard. We will respond within 30 days.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">7. Data Security and International Transfers</h2>
+            <p>We implement robust, industry-standard security measures, including AES-256 encryption at rest and TLS 1.3 in transit. However, no internet transmission is 100% secure. By using the Service, you acknowledge that your data may be transferred to, stored, and processed in the United States or other countries where our subprocessors operate, utilizing Standard Contractual Clauses (SCCs) where applicable.</p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">8. Children&apos;s Privacy</h2>
-            <p>iPulse is explicitly not intended for children under 18 years of age. We do not knowingly collect personal data from minors. If we discover a user is under 18, we will immediately terminate the account and delete all associated data.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">8. Children's Privacy</h2>
+            <p>iPulse is intended for a general audience and is not directed at children under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a minor has provided us with personal data, we will take immediate steps to delete such information and terminate the account.</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">9. Changes to This Privacy Policy</h2>
+            <p>We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of any material changes by posting the updated policy on this page and updating the "Last Updated" date. Continued use of the Service constitutes your acceptance of the changes.</p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-white mb-4">10. Contact Us</h2>
+            <p>
+              To exercise your privacy rights, request data deletion, or ask questions about this Privacy Policy, please contact our Data Protection Officer at: <br />
+              <br />
+              <strong>Email:</strong> legal@ipulse.ai <br />
+              <strong>Subject:</strong> Privacy / Data Rights Request
+            </p>
           </section>
         </div>
       </div>

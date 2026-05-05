@@ -244,22 +244,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* --- FLUID INTEGRATION INFO SECTION --- */}
-      {/* <div id="fluid" className="relative z-10 w-full py-20 md:py-32 border-t border-white/5 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-screen-xl mx-auto px-4 md:px-8 text-center flex flex-col items-center">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-black border border-cyan-400/30 rounded-sm flex items-center justify-center mb-4 md:mb-6 shadow-[0_0_30px_rgba(103,232,249,0.15)] shrink-0">
-            <Code className="w-4 h-4 md:w-5 md:h-5 text-cyan-400" />
-          </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-mono font-bold text-white uppercase tracking-tighter mb-3 md:mb-4">Fluid_Integration</h2>
-          <p className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest max-w-2xl mx-auto leading-relaxed mb-6 md:mb-8">
-            Cuộn chuột để kích hoạt lõi chất lỏng neural. API pipeline tự động scale theo workflow của bạn. Kết nối voice AI chỉ trong vài dòng code.
-          </p>
-          <Link href="/docs" className="w-full sm:w-auto px-6 py-3 md:py-3 bg-black/50 backdrop-blur-md border border-cyan-400/30 text-white font-mono text-[9px] md:text-[10px] uppercase tracking-widest font-bold rounded-sm flex items-center justify-center gap-2 hover:bg-cyan-400 hover:text-black transition-all">
-            Read Documentation <Sparkles className="w-3 h-3" />
-          </Link>
-        </div>
-      </div> */}
-
       {/* --- RESOURCE_ALLOCATION SECTION --- */}
       <div id="pricing" className="relative z-10 max-w-screen-xl mx-auto px-4 md:px-8 py-16 md:py-24 border-t border-white/5 bg-black/60 backdrop-blur-md">
         <div className="mb-10 md:mb-16 text-center">
@@ -350,13 +334,13 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-              <Link href="/terms-of-use" className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
+              <Link href="/terms-of-use" target='_blank' className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/privacy-policy" className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
+              <Link href="/privacy-policy" target='_blank' className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/refund-policy" className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
+              <Link href="/refund-policy" target='_blank' className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
                 Refund Policy
               </Link>
             </div>

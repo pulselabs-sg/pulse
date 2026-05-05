@@ -1,3 +1,4 @@
+// src/app/dashboard/page.tsx
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -5,11 +6,13 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   Loader2, LogIn, ChevronRight, Settings2, Mail,
   LogOut, CheckCircle2, X, Sparkles, Check,
-  ShieldCheck, CreditCard, AlertTriangle, Crown, Menu
+  ShieldCheck, CreditCard, AlertTriangle, Crown, Menu,
+  FileText, Scale, Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { initializePaddle, Paddle } from '@paddle/paddle-js';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import Sidebar from '@/components/dashboard/Sidebar';
 import HistoryPanel from '@/components/dashboard/HistoryPanel';
@@ -50,10 +53,21 @@ function DashboardContent() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [checkoutPlanContext, setCheckoutPlanContext] = useState<Tier | null>(null);
 
+  // Terms & Privacy States
+  const [showGlobalTermsModal, setShowGlobalTermsModal] = useState(false);
+  const [hasAgreedGlobalTerms, setHasAgreedGlobalTerms] = useState(false);
+  const [checkoutTermsAgreed, setCheckoutTermsAgreed] = useState(false);
+
   const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
 
   useEffect(() => {
     if (window.innerWidth < 768) setIsSidebarOpen(false);
+
+    // Check if user has agreed to terms
+    const agreed = localStorage.getItem('voicelab_agreed_to_terms') === 'true';
+    if (!agreed) {
+      setShowGlobalTermsModal(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -79,6 +93,7 @@ function DashboardContent() {
       eventCallback: (event) => {
         if (event.name === 'checkout.completed') {
           setShowPlanModal(false);
+          setShowCheckoutModal(false);
           setShowSuccessModal(true);
           update().catch(console.error);
         }
@@ -90,7 +105,7 @@ function DashboardContent() {
 
   // Handle Checkout logic
   useEffect(() => {
-    if (showCheckoutModal && checkoutPlanContext && paddle && session?.user) {
+    if (showCheckoutModal && checkoutPlanContext && paddle && session?.user && checkoutTermsAgreed) {
       const priceMap: Record<Tier, string> = {
         BASIC: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_BASIC || '',
         PREMIUM: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PREMIUM || '',
@@ -100,28 +115,52 @@ function DashboardContent() {
       const priceId = priceMap[checkoutPlanContext];
       if (!priceId) return;
 
-      const timer = setTimeout(() => {
-        try {
-          paddle.Checkout.open({
-            items: [{ priceId, quantity: 1 }],
-            customData: { userId: String((session.user as any).id), plan: checkoutPlanContext },
-            settings: {
-              displayMode: 'inline',
-              frameTarget: 'paddle-inline-container',
-              frameInitialHeight: 500,
-              frameStyle: 'width: 100%; background-color: transparent; border: none;',
-              theme: 'dark',
-              successUrl: `${window.location.origin}/dashboard?success=true`,
-            },
-          });
-        } catch (err) {
-          console.error("Paddle Checkout Error:", err);
-        }
-      }, 300);
+      let attempts = 0;
+      let timeoutId: NodeJS.Timeout;
 
-      return () => clearTimeout(timer);
+      // Safe DOM check function
+      const initPaddleCheckout = () => {
+        // Note: Search by Class (.) instead of ID
+        const container = document.querySelector('.paddle-inline-container');
+
+        if (container) {
+          // If DOM is ready, proceed to open checkout
+          try {
+            paddle.Checkout.open({
+              items: [{ priceId, quantity: 1 }],
+              customData: { userId: String((session.user as any).id), plan: checkoutPlanContext },
+              settings: {
+                displayMode: 'inline',
+                frameTarget: 'paddle-inline-container', // This configuration of Paddle requires Class Name
+                frameInitialHeight: 500,
+                frameStyle: 'width: 100%; background-color: transparent; border: none;',
+                theme: 'dark',
+                successUrl: `${window.location.origin}/dashboard?success=true`,
+              },
+            });
+          } catch (err) {
+            console.error("Paddle Checkout Error:", err);
+          }
+        } else if (attempts < 20) {
+          // Try again every 50ms, up to 20 times (1 second)
+          attempts++;
+          timeoutId = setTimeout(initPaddleCheckout, 50);
+        } else {
+          console.error("Paddle Error: Cannot find .paddle-inline-container element");
+        }
+      };
+
+      initPaddleCheckout();
+
+      // Cleanup function
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        try {
+          paddle.Checkout.close();
+        } catch (e) { }
+      };
     }
-  }, [showCheckoutModal, checkoutPlanContext, paddle, session]);
+  }, [showCheckoutModal, checkoutPlanContext, paddle, session, checkoutTermsAgreed]);
 
   const handleCancelSubscription = async () => {
     if (!confirm("Are you sure you want to cancel? You will keep access until the end of the billing cycle.")) return;
@@ -284,7 +323,7 @@ function DashboardContent() {
         )}
       </main>
 
-      {/* --- PADDLE MODALS  --- */}
+      {/* --- PADDLE MODALS --- */}
       <AnimatePresence>
         {showPlanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4" onClick={() => setShowPlanModal(false)}>
@@ -331,13 +370,114 @@ function DashboardContent() {
 
       {/* Checkout Modal Frame */}
       <AnimatePresence>
-        {showCheckoutModal && (
-          <div className="fixed inset-0 bg-black/95 z-[150] flex items-center justify-center p-4">
-            <div className="bg-[#050505] border border-white/10 w-full max-w-4xl p-6 rounded-sm relative">
-              <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white"><X /></button>
-              <div id="paddle-inline-container" className="min-h-[500px]"></div>
+        {showCheckoutModal && checkoutPlanContext && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 backdrop-blur-md z-[150] flex items-center justify-center p-4 md:p-6"
+          >
+            {/* Box Container */}
+            <div className="bg-[#050505] border border-white/10 w-full max-w-5xl rounded-sm relative flex flex-col md:flex-row overflow-hidden shadow-2xl">
+
+              {/* Close button */}
+              <button
+                onClick={() => setShowCheckoutModal(false)}
+                className="absolute top-4 right-4 text-zinc-500 hover:text-white z-20 bg-black/50 md:bg-transparent p-1.5 rounded-sm transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* --- LEFT: Plan Information --- */}
+              <div className="w-full md:w-1/3 bg-black/40 border-b md:border-b-0 md:border-r border-white/10 p-6 md:p-8 flex flex-col">
+                {PLANS.filter(p => p.id === checkoutPlanContext).map(selectedPlan => (
+                  <div key={selectedPlan.id} className="h-full flex flex-col">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">
+                      Selected Tier
+                    </span>
+                    <h3 className="text-2xl font-mono font-bold uppercase tracking-widest text-white mb-4">
+                      {selectedPlan.name}
+                    </h3>
+
+                    <div className="flex items-baseline gap-1 mb-6">
+                      <span className="text-4xl font-mono font-bold text-emerald-400">
+                        ${selectedPlan.price}
+                      </span>
+                      <span className="text-[10px] font-mono uppercase text-zinc-500">
+                        {selectedPlan.period}
+                      </span>
+                    </div>
+
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-8 leading-relaxed">
+                      {selectedPlan.desc}
+                    </p>
+
+                    <div className="flex-1">
+                      <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Included capabilities:</p>
+                      <ul className="space-y-4">
+                        {selectedPlan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-300">
+                            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span className="mt-0.5">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-2 text-zinc-600">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span className="text-[9px] font-mono uppercase tracking-widest">Secure checkout via Paddle</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* --- RIGHT: Paddle payment form --- */}
+              <div className="w-full md:w-2/3 bg-[#050505] relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">
+                {!checkoutTermsAgreed ? (
+                  <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
+                    <div className="p-4 bg-zinc-900/50 rounded-full border border-white/5">
+                      <Lock className="w-8 h-8 text-zinc-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-white text-lg font-mono uppercase tracking-widest mb-2">Terms & Privacy</h3>
+                      <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest leading-relaxed">
+                        Please review and agree to our Terms of Use and Privacy Policy to proceed with the secure checkout process.
+                      </p>
+                    </div>
+
+                    <label className="flex items-start gap-3 cursor-pointer group bg-white/5 hover:bg-white/10 p-4 border border-white/10 rounded-sm transition-colors text-left w-full mt-4">
+                      <div className="relative flex items-center justify-center mt-0.5">
+                        <input
+                          type="checkbox"
+                          className="peer appearance-none w-4 h-4 border border-white/20 rounded-sm bg-black checked:bg-emerald-400 checked:border-emerald-400 transition-colors"
+                          checked={checkoutTermsAgreed}
+                          onChange={(e) => setCheckoutTermsAgreed(e.target.checked)}
+                        />
+                        <Check className="w-3 h-3 text-black absolute opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+                      </div>
+                      <div className="text-[10px] font-mono text-zinc-400 tracking-wider">
+                        I have read and agree to the{' '}
+                        <Link href="/terms-of-use" target="_blank" className="text-white hover:underline hover:text-emerald-400" onClick={e => e.stopPropagation()}>Terms of Use</Link>
+                        {' '}and{' '}
+                        <Link href="/privacy-policy" target="_blank" className="text-white hover:underline hover:text-emerald-400" onClick={e => e.stopPropagation()}>Privacy Policy</Link>.
+                      </div>
+                    </label>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-full flex items-center justify-center mb-4 text-emerald-400 gap-2">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span className="text-[10px] font-mono uppercase tracking-widest">Connection Secure</span>
+                    </div>
+                    {/* Class bắt buộc để Paddle nhận diện DOM */}
+                    <div className="paddle-inline-container w-full min-h-[450px]"></div>
+                  </>
+                )}
+              </div>
+
             </div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -351,6 +491,87 @@ function DashboardContent() {
               <button onClick={() => setShowSuccessModal(false)} className="mt-8 bg-white text-black px-6 py-2 font-mono uppercase text-xs font-bold">Return</button>
             </div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Terms & Privacy Modal */}
+      <AnimatePresence>
+        {showGlobalTermsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 backdrop-blur-md z-[300] flex items-center justify-center p-4 md:p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              className="bg-[#050505] border border-white/10 w-full max-w-lg rounded-sm relative shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 md:p-10 flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mb-6">
+                  <Scale className="w-8 h-8 text-white" />
+                </div>
+
+                <h2 className="text-2xl font-mono uppercase tracking-widest text-white mb-4">
+                  Terms & Privacy
+                </h2>
+
+                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 leading-relaxed mb-8">
+                  Welcome to VoiceLab AI. Before you can access the dashboard, you must read and agree to our operational guidelines and privacy protocols.
+                </p>
+
+                <div className="w-full space-y-4 mb-8">
+                  <Link href="/terms-of-use" target="_blank" className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-sm transition-colors group">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors">Terms of Use</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" />
+                  </Link>
+
+                  <Link href="/privacy-policy" target="_blank" className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-sm transition-colors group">
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors" />
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-300 group-hover:text-white transition-colors">Privacy Policy</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" />
+                  </Link>
+                </div>
+
+                <label className="flex items-start gap-3 cursor-pointer group text-left w-full mb-8">
+                  <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                    <input
+                      type="checkbox"
+                      className="peer appearance-none w-5 h-5 border border-white/20 rounded-sm bg-black checked:bg-emerald-400 checked:border-emerald-400 transition-colors cursor-pointer"
+                      checked={hasAgreedGlobalTerms}
+                      onChange={(e) => setHasAgreedGlobalTerms(e.target.checked)}
+                    />
+                    <Check className="w-3.5 h-3.5 text-black absolute opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+                  </div>
+                  <div className="text-[10px] font-mono text-zinc-400 tracking-wider">
+                    I acknowledge that I have read, understood, and agree to be bound by the Terms of Use and Privacy Policy.
+                  </div>
+                </label>
+
+                <button
+                  disabled={!hasAgreedGlobalTerms}
+                  onClick={() => {
+                    localStorage.setItem('voicelab_agreed_to_terms', 'true');
+                    setShowGlobalTermsModal(false);
+                  }}
+                  className={cn(
+                    "w-full py-4 font-mono text-xs uppercase font-bold tracking-widest rounded-sm transition-all duration-300",
+                    hasAgreedGlobalTerms
+                      ? "bg-white text-black hover:bg-emerald-400 border border-transparent shadow-[0_0_20px_rgba(52,211,153,0.2)]"
+                      : "bg-white/5 text-zinc-500 border border-white/10 cursor-not-allowed"
+                  )}
+                >
+                  Confirm & Proceed
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
