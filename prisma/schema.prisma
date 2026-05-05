@@ -16,6 +16,7 @@ model User {
   usageCount           Int       @default(0)
   paddleCustomerId     String?   @unique 
   paddleSubscriptionId String?   @unique
+  cancelAtPeriodEnd    Boolean   @default(false)
 
   accounts             Account[]
   sessions             Session[]

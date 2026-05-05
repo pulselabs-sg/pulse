@@ -42,7 +42,8 @@ function DashboardContent() {
     usage: 0,
     limit: 5,
     maxFileMB: 50,
-    maxChars: 5000
+    maxChars: 5000,
+    cancelAtPeriodEnd: false
   });
   const [isCanceling, setIsCanceling] = useState(false);
 
@@ -57,6 +58,7 @@ function DashboardContent() {
   const [showGlobalTermsModal, setShowGlobalTermsModal] = useState(false);
   const [hasAgreedGlobalTerms, setHasAgreedGlobalTerms] = useState(false);
   const [checkoutTermsAgreed, setCheckoutTermsAgreed] = useState(false);
+  const [checkoutTermsConfirmed, setCheckoutTermsConfirmed] = useState(false);
 
   const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
 
@@ -79,6 +81,7 @@ function DashboardContent() {
         limit: tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier as keyof typeof TIER_LIMITS].generations,
         maxFileMB: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxFileMB,
         maxChars: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxChars,
+        cancelAtPeriodEnd: (session.user as any).cancelAtPeriodEnd || false // <-- Đọc từ session
       });
     }
   }, [session]);
@@ -105,7 +108,7 @@ function DashboardContent() {
 
   // Handle Checkout logic
   useEffect(() => {
-    if (showCheckoutModal && checkoutPlanContext && paddle && session?.user && checkoutTermsAgreed) {
+    if (showCheckoutModal && checkoutPlanContext && paddle && session?.user && checkoutTermsConfirmed) {
       const priceMap: Record<Tier, string> = {
         BASIC: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_BASIC || '',
         PREMIUM: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PREMIUM || '',
@@ -160,7 +163,7 @@ function DashboardContent() {
         } catch (e) { }
       };
     }
-  }, [showCheckoutModal, checkoutPlanContext, paddle, session, checkoutTermsAgreed]);
+  }, [showCheckoutModal, checkoutPlanContext, paddle, session, checkoutTermsConfirmed]);
 
   const handleCancelSubscription = async () => {
     if (!confirm("Are you sure you want to cancel? You will keep access until the end of the billing cycle.")) return;
@@ -168,7 +171,9 @@ function DashboardContent() {
     try {
       const res = await fetch('/api/paddle/cancel', { method: 'POST' });
       if (!res.ok) throw new Error("Cancellation failed");
-      alert("Subscription scheduled for cancellation.");
+
+      setUserState(prev => ({ ...prev, cancelAtPeriodEnd: true }));
+      update();
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -246,7 +251,7 @@ function DashboardContent() {
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
                   <div>
                     <h3 className="text-xl font-mono tracking-widest text-white">{session?.user?.name}</h3>
-                    <p className="text-zinc-500 font-mono text-[10px] uppercase mt-1">UID: {(session.user as any).id}</p>
+                    {/* <p className="text-zinc-500 font-mono text-[10px] uppercase mt-1">UID: {(session.user as any).id}</p> */}
                   </div>
                   <div className="flex flex-col md:flex-row gap-3 items-center md:items-start">
                     <div className="flex items-center gap-2 text-zinc-400 bg-white/5 px-3 py-1.5 rounded-sm border border-white/5 text-[11px] font-mono">
@@ -285,10 +290,18 @@ function DashboardContent() {
                       </button>
                     ) : (
                       <div className="space-y-2">
-                        <button onClick={() => setShowPlanModal(true)} className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-mono tracking-widest rounded-sm transition-colors border border-white/10">Change Plan</button>
-                        <button onClick={handleCancelSubscription} disabled={isCanceling} className="w-full py-2 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-widest rounded-sm transition-colors border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2">
-                          {isCanceling ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertTriangle className="w-3 h-3" />} Cancel Subscription
-                        </button>
+                        {userState.cancelAtPeriodEnd ? (
+                          <div className="w-full py-2 bg-red-500/10 text-red-400 text-xs font-mono tracking-widest rounded-sm border border-red-500/20 text-center flex items-center justify-center gap-2">
+                            <AlertTriangle className="w-3 h-3" /> Cancels at Period End
+                          </div>
+                        ) : (
+                          <>
+                            <button onClick={() => setShowPlanModal(true)} className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-mono tracking-widest rounded-sm transition-colors border border-white/10">Change Plan</button>
+                            <button onClick={handleCancelSubscription} disabled={isCanceling} className="w-full py-2 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-widest rounded-sm transition-colors border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2">
+                              {isCanceling ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertTriangle className="w-3 h-3" />} Cancel Subscription
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -326,9 +339,9 @@ function DashboardContent() {
       {/* --- PADDLE MODALS --- */}
       <AnimatePresence>
         {showPlanModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4" onClick={() => setShowPlanModal(false)}>
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-[#050505] border border-white/10 rounded-sm max-w-5xl w-full max-h-[90vh] overflow-auto shadow-2xl custom-scrollbar">
-              <div className="px-5 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 bg-black sticky top-0 z-10">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center md:p-4" onClick={() => setShowPlanModal(false)}>
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-[#050505] border-y md:border border-white/10 md:rounded-sm max-w-5xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-auto shadow-2xl custom-scrollbar">
+              <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 bg-black sticky top-0 z-10">
                 <div>
                   <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white">System Upgrade</h2>
                   <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-1">Select new capability matrix</p>
@@ -337,26 +350,26 @@ function DashboardContent() {
                   <X className="w-4 md:w-5 h-4 md:h-5" />
                 </button>
               </div>
-              <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-20 md:pb-6">
                 {PLANS.map((plan) => {
                   const isCurrent = userState.tier === plan.id;
                   return (
                     <div key={plan.id} className={cn("rounded-sm border p-4 md:p-5 transition-all bg-black flex flex-col", isCurrent ? "border-white bg-white/5" : "border-white/10 hover:border-white/30")}>
-                      {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-white inline-block px-2 py-0.5 mb-3 self-start">RECOMMENDED</div>}
-                      <div className="text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
-                      <div className="flex items-baseline gap-1 mb-4">
-                        <span className="text-2xl md:text-3xl font-mono font-bold text-white">${plan.price}</span>
+                      {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-white inline-block px-2 py-0.5 mb-2 md:mb-3 self-start">RECOMMENDED</div>}
+                      <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
+                      <div className="flex items-baseline gap-1 mb-3 md:mb-4">
+                        <span className="text-xl md:text-3xl font-mono font-bold text-white">${plan.price}</span>
                         <span className="text-[9px] md:text-[10px] font-mono uppercase text-zinc-500">{plan.period}</span>
                       </div>
-                      <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-6">{plan.desc}</p>
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4 md:mb-6">{plan.desc}</p>
+                      <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-1">
                         {plan.features.map((f, i) => (
                           <li key={i} className="flex items-start gap-2 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-300">
                             <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> <span>{f}</span>
                           </li>
                         ))}
                       </ul>
-                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-sm border", isCurrent ? "bg-white/10 text-zinc-400 cursor-not-allowed" : "bg-white text-black")}>
+                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); setCheckoutTermsAgreed(false); setCheckoutTermsConfirmed(false); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-sm border", isCurrent ? "bg-white/10 text-zinc-400 cursor-not-allowed" : "bg-white text-black")}>
                         {isCurrent ? '[ ACTIVE ]' : 'INITIALIZE'}
                       </button>
                     </div>
@@ -434,7 +447,7 @@ function DashboardContent() {
 
               {/* --- RIGHT: Paddle payment form --- */}
               <div className="w-full md:w-2/3 bg-[#050505] relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">
-                {!checkoutTermsAgreed ? (
+                {!checkoutTermsConfirmed ? (
                   <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
                     <div className="p-4 bg-zinc-900/50 rounded-full border border-white/5">
                       <Lock className="w-8 h-8 text-zinc-500" />
@@ -463,6 +476,19 @@ function DashboardContent() {
                         <Link href="/privacy-policy" target="_blank" className="text-white hover:underline hover:text-emerald-400" onClick={e => e.stopPropagation()}>Privacy Policy</Link>.
                       </div>
                     </label>
+
+                    <button
+                      disabled={!checkoutTermsAgreed}
+                      onClick={() => setCheckoutTermsConfirmed(true)}
+                      className={cn(
+                        "w-full py-3 md:py-4 font-mono text-[10px] md:text-xs uppercase font-bold tracking-widest rounded-sm transition-all duration-300 mt-2",
+                        checkoutTermsAgreed
+                          ? "bg-white text-black hover:bg-emerald-400 border border-transparent shadow-[0_0_20px_rgba(52,211,153,0.2)]"
+                          : "bg-white/5 text-zinc-500 border border-white/10 cursor-not-allowed"
+                      )}
+                    >
+                      Agree & Continue
+                    </button>
                   </div>
                 ) : (
                   <>

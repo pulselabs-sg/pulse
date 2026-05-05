@@ -28,13 +28,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No active subscription found' }, { status: 404 });
     }
 
-    // Tell Paddle to cancel the subscription at the end of the current billing cycle
     await paddle.subscriptions.cancel(user.paddleSubscriptionId, {
       effectiveFrom: 'next_billing_period'
     });
 
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { cancelAtPeriodEnd: true }
+    });
+
     return NextResponse.json({ success: true, message: 'Subscription scheduled for cancellation.' });
   } catch (error: any) {
+    if (error?.code === 'subscription_locked_pending_changes') {
+      const prisma = getPrisma();
+      const session = await getServerSession(authOptions);
+      if (session?.user?.id) {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { cancelAtPeriodEnd: true }
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Subscription is already scheduled for cancellation.'
+      });
+    }
+
     console.error('Cancel Subscription Error:', error);
     return NextResponse.json({ error: error.message || 'Failed to cancel' }, { status: 500 });
   }

@@ -85,7 +85,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         <div className="flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 relative z-10 min-h-0 overflow-y-auto custom-scrollbar">
             {/* Input */}
             <div className="flex-1 lg:max-w-2xl flex flex-col min-h-0">
-                <div className="glass border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col h-full min-h-[450px] lg:min-h-0 relative overflow-hidden group">
+                <div className="glass border border-white/10 rounded-2xl p-4 md:p-8 flex flex-col h-full min-h-[300px] lg:min-h-0 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                         <Settings2 className="w-32 h-32 text-white rotate-12" />
                     </div>
@@ -98,11 +98,11 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                     <div className="flex-1 flex flex-col gap-6 relative z-10">
                         {activeTab === 'tts' && (
                             <div className="flex-1 flex flex-col group/textarea">
-                                <textarea 
-                                    value={textInput} 
-                                    onChange={(e) => setTextInput(e.target.value)} 
-                                    placeholder="Enter your script for neural synthesis..." 
-                                    className="flex-1 w-full min-h-[150px] bg-black/40 border border-white/5 rounded-xl p-5 text-white font-sans text-sm md:text-base leading-relaxed resize-none outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-700 custom-scrollbar shadow-inner" 
+                                <textarea
+                                    value={textInput}
+                                    onChange={(e) => setTextInput(e.target.value)}
+                                    placeholder="Enter your script for neural synthesis..."
+                                    className="flex-1 w-full min-h-[150px] bg-black/40 border border-white/5 rounded-xl p-5 text-white font-sans text-sm md:text-base leading-relaxed resize-none outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-700 custom-scrollbar shadow-inner"
                                 />
                                 <div className="flex justify-between mt-2 px-1">
                                     <span className="text-[9px] font-mono uppercase text-zinc-600">Max Chars: {userState.maxChars}</span>
@@ -115,7 +115,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
 
                         {(activeTab === 'stt' || activeTab === 'changer' || activeTab === 'clean') && (
                             <div {...getRootProps()} className={cn(
-                                "relative h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden group/drop",
+                                "relative flex-1 min-h-[120px] max-h-[160px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden group/drop",
                                 isDragActive ? "border-blue-500 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.1)]" : "border-white/10 bg-black/40 hover:border-white/20 hover:bg-white/[0.02]"
                             )}>
                                 <input {...getInputProps()} />
@@ -128,7 +128,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         <p className="text-[10px] font-mono text-zinc-500 uppercase mt-1">{(file.size / (1024 * 1024)).toFixed(2)} MB • READY</p>
                                     </motion.div>
                                 ) : (
-                                    <div className="text-center z-10 transition-transform group-hover/drop:scale-105 duration-500">
+                                    <div className="text-center z-10 transition-transform group-hover/drop:scale-101 duration-500">
                                         <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5 group-hover/drop:border-blue-500/30 transition-colors">
                                             <UploadCloud className="w-8 h-8 text-zinc-500 group-hover/drop:text-blue-400 transition-colors" />
                                         </div>
@@ -140,85 +140,84 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             </div>
                         )}
 
-                        <div className="space-y-4">
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                {(activeTab === 'tts' || activeTab === 'changer') && (
-                                    <div className="flex-1 relative" ref={voiceMenuRef}>
-                                        <button
-                                            onClick={() => setShowVoiceList(!showVoiceList)}
-                                            className="w-full flex items-center justify-between px-4 py-3 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl text-left transition-all h-14 group/voice"
-                                        >
-                                            <div className="flex items-center gap-4 overflow-hidden">
-                                                <div className={cn("w-8 h-8 shrink-0 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg border border-white/20 group-hover/voice:scale-110 transition-transform", selectedVoiceObj.gradient)}>
-                                                    <span className="text-xs font-bold text-white drop-shadow-md">{selectedVoiceObj.name[0]}</span>
-                                                </div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="font-bold text-white uppercase text-[11px] tracking-wider">{selectedVoiceObj.name}</span>
-                                                    <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-tighter truncate">
-                                                        {selectedVoiceObj.gender} • {selectedVoiceObj.tone}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <ChevronDown className={cn("w-4 h-4 shrink-0 transition-all ml-2 text-zinc-600", showVoiceList && "rotate-180 text-blue-400")} />
-                                        </button>
-
-                                        <AnimatePresence>
-                                            {showVoiceList && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    className="absolute z-50 bottom-[calc(100%+8px)] w-full glass border border-white/10 rounded-2xl shadow-2xl max-h-64 overflow-y-auto py-2 custom-scrollbar"
-                                                >
-                                                    {VOICES.map((voice) => (
-                                                        <button
-                                                            key={voice.id}
-                                                            onClick={() => { setSelectedVoice(voice.id); setShowVoiceList(false); }}
-                                                            className={cn(
-                                                                "w-full px-4 py-3 flex items-center gap-4 hover:bg-white/[0.03] text-left transition-colors relative",
-                                                                selectedVoice === voice.id && "bg-blue-500/5"
-                                                            )}
-                                                        >
-                                                            {selectedVoice === voice.id && <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500 rounded-full" />}
-                                                            <div className={cn("w-7 h-7 shrink-0 rounded-lg bg-gradient-to-br border border-white/10 opacity-80", voice.gradient)} />
-                                                            <div className="flex-1 min-w-0">
-                                                                <span className={cn("font-bold uppercase text-[10px] tracking-widest block", selectedVoice === voice.id ? "text-blue-400" : "text-white")}>
-                                                                    {voice.name}
-                                                                </span>
-                                                                <span className="text-[9px] text-zinc-500 font-mono uppercase tracking-tighter truncate block mt-0.5">
-                                                                    {voice.gender} • {voice.tone}
-                                                                </span>
-                                                            </div>
-                                                            {selectedVoice === voice.id && <Check className="w-4 h-4 text-blue-400 shrink-0" />}
-                                                        </button>
-                                                    ))}
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                )}
-                                {activeTab !== 'stt' && (
-                                    <button 
-                                        onClick={() => setOutputFormat(f => f === 'mp3' ? 'wav' : 'mp3')} 
-                                        className="w-full sm:w-24 shrink-0 h-14 px-4 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl font-mono text-[11px] uppercase transition-all text-blue-400 font-bold tracking-widest active:scale-95 flex items-center justify-center gap-2"
+                        <div className="flex flex-row gap-2 md:gap-3 mt-auto pt-2">
+                            {(activeTab === 'tts' || activeTab === 'changer') && (
+                                <div className="flex-1 relative min-w-0" ref={voiceMenuRef}>
+                                    <button
+                                        onClick={() => setShowVoiceList(!showVoiceList)}
+                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl text-left transition-all h-10 md:h-12 group/voice"
                                     >
-                                        <AudioLines className="w-4 h-4" />
-                                        {outputFormat}
+                                        <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0">
+                                            <div className={cn("w-6 h-6 md:w-7 md:h-7 shrink-0 rounded-lg bg-gradient-to-br flex items-center justify-center shadow-lg border border-white/20 group-hover/voice:scale-110 transition-transform", selectedVoiceObj.gradient)}>
+                                                <span className="text-[10px] md:text-xs font-bold text-white drop-shadow-md">{selectedVoiceObj.name[0]}</span>
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-bold text-white uppercase text-[9px] md:text-[10px] tracking-wider truncate">{selectedVoiceObj.name}</span>
+                                                <span className="hidden md:block text-[8px] md:text-[9px] text-zinc-500 font-mono uppercase tracking-tighter truncate mt-0.5">
+                                                    {selectedVoiceObj.gender} • {selectedVoiceObj.tone}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <ChevronDown className={cn("w-3 h-3 md:w-4 md:h-4 shrink-0 transition-all ml-1 md:ml-2 text-zinc-600", showVoiceList && "rotate-180 text-blue-400")} />
                                     </button>
-                                )}
-                            </div>
 
-                            <button 
-                                onClick={handleProcess} 
-                                disabled={loading || isLimitReached || (activeTab === 'tts' ? !textInput.trim() : !file && !result)} 
+                                    <AnimatePresence>
+                                        {showVoiceList && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute z-50 bottom-[calc(100%+8px)] w-full md:w-[150%] glass border border-white/10 rounded-2xl shadow-2xl max-h-64 overflow-y-auto py-2 custom-scrollbar"
+                                            >
+                                                {VOICES.map((voice) => (
+                                                    <button
+                                                        key={voice.id}
+                                                        onClick={() => { setSelectedVoice(voice.id); setShowVoiceList(false); }}
+                                                        className={cn(
+                                                            "w-full px-3 md:px-4 py-2 md:py-3 flex items-center gap-3 md:gap-4 hover:bg-white/[0.03] text-left transition-colors relative",
+                                                            selectedVoice === voice.id && "bg-blue-500/5"
+                                                        )}
+                                                    >
+                                                        {selectedVoice === voice.id && <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500 rounded-full" />}
+                                                        <div className={cn("w-6 h-6 shrink-0 rounded-lg bg-gradient-to-br border border-white/10 opacity-80", voice.gradient)} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className={cn("font-bold uppercase text-[9px] md:text-[10px] tracking-widest block truncate", selectedVoice === voice.id ? "text-blue-400" : "text-white")}>
+                                                                {voice.name}
+                                                            </span>
+                                                            <span className="text-[8px] text-zinc-500 font-mono uppercase tracking-tighter truncate block mt-0.5">
+                                                                {voice.gender} • {voice.tone}
+                                                            </span>
+                                                        </div>
+                                                        {selectedVoice === voice.id && <Check className="w-3 h-3 text-blue-400 shrink-0" />}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {activeTab !== 'stt' && (
+                                <button
+                                    onClick={() => setOutputFormat(f => f === 'mp3' ? 'wav' : 'mp3')}
+                                    className="w-14 md:w-20 shrink-0 h-10 md:h-12 px-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl font-mono text-[9px] md:text-[10px] uppercase transition-all text-blue-400 font-bold tracking-widest active:scale-95 flex items-center justify-center gap-1.5 md:gap-2"
+                                >
+                                    <AudioLines className="w-3 h-3 hidden md:block" />
+                                    {outputFormat}
+                                </button>
+                            )}
+
+                            <button
+                                onClick={handleProcess}
+                                disabled={loading || isLimitReached || (activeTab === 'tts' ? !textInput.trim() : !file && !result)}
                                 className={cn(
-                                    "w-full h-14 font-bold uppercase tracking-[0.2em] rounded-xl flex items-center justify-center gap-3 transition-all relative overflow-hidden group/btn", 
+                                    "flex-[1.5] h-10 md:h-12 font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all relative overflow-hidden group/btn text-[10px] md:text-xs",
                                     isLimitReached ? "bg-red-500/10 text-red-500 border border-red-500/20 cursor-not-allowed" : "accent-gradient text-white shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale"
                                 )}
                             >
                                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
                                 {loading ? (
-                                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing Matrix</>
+                                    <><Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" /> Processing</>
                                 ) : (
-                                    <><Zap className="w-5 h-5 group-hover:scale-125 transition-transform" /> Initialize Synthesis</>
+                                    <><Zap className="w-3 h-3 md:w-4 md:h-4 group-hover:scale-125 transition-transform" /> Generate</>
                                 )}
                             </button>
                         </div>
@@ -234,16 +233,16 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             <Sparkles className="w-3.5 h-3.5 text-blue-400" /> System Output
                         </span>
                         {result && (
-                             <button onClick={handleCopy} className="text-[9px] font-mono uppercase text-zinc-500 hover:text-white flex items-center gap-1.5 transition-colors">
+                            <button onClick={handleCopy} className="text-[9px] font-mono uppercase text-zinc-500 hover:text-white flex items-center gap-1.5 transition-colors">
                                 {isCopied ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy Data</>}
-                             </button>
+                            </button>
                         )}
                     </div>
-                    
+
                     <div className="flex-1 flex flex-col items-center justify-center p-8 relative bg-black/20 overflow-y-auto custom-scrollbar">
                         <AnimatePresence mode="wait">
                             {!result && !loading && (
-                                <motion.div 
+                                <motion.div
                                     key="idle"
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     className="text-center space-y-4"
@@ -256,7 +255,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             )}
 
                             {loading && (
-                                <motion.div 
+                                <motion.div
                                     key="loading"
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     className="flex flex-col items-center gap-8"
@@ -265,12 +264,12 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         {[...Array(12)].map((_, i) => (
                                             <motion.div
                                                 key={i}
-                                                animate={{ 
+                                                animate={{
                                                     height: [10, 40, 15, 30, 10],
                                                     opacity: [0.3, 1, 0.3, 0.7, 0.3]
                                                 }}
-                                                transition={{ 
-                                                    repeat: Infinity, 
+                                                transition={{
+                                                    repeat: Infinity,
                                                     duration: 1 + Math.random(),
                                                     ease: "easeInOut"
                                                 }}
@@ -286,7 +285,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             )}
 
                             {result?.type === 'text' && (
-                                <motion.div 
+                                <motion.div
                                     key="text"
                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                     className="w-full h-full p-6 bg-black/40 rounded-xl border border-white/5 text-zinc-300 font-sans text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto relative shadow-inner group/text"
@@ -296,7 +295,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             )}
 
                             {result?.type === 'audio' && (
-                                <motion.div 
+                                <motion.div
                                     key="audio"
                                     initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                                     className="w-full max-w-md space-y-8"
@@ -304,9 +303,9 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                     <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5 shadow-2xl">
                                         <audio controls src={result.content} className="w-full h-10 accent-blue-500" />
                                     </div>
-                                    <a 
-                                        href={result.content} 
-                                        download={result.content.startsWith('http') ? `ipulse_output_${Date.now()}.${result.content.split('.').pop()}` : `ipulse_output.${outputFormat}`} 
+                                    <a
+                                        href={result.content}
+                                        download={result.content.startsWith('http') ? `ipulse_output_${Date.now()}.${result.content.split('.').pop()}` : `ipulse_output.${outputFormat}`}
                                         className="flex items-center justify-center gap-3 w-full py-4 bg-white text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-zinc-200 transition-all active:scale-95 shadow-lg"
                                     >
                                         <UploadCloud className="w-4 h-4 rotate-180" />

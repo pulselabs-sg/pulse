@@ -20,10 +20,10 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
             <div className="w-full max-w-5xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-white mb-1 flex items-center gap-3">
-                            <History className="w-6 h-6 text-blue-400" /> Transformation Log
+                        <h2 className="text-2xl font-bold tracking-tight text-white mb-1 flex items-center gap-3 uppercase">
+                            <History className="w-6 h-6 text-blue-400" /> History
                         </h2>
-                        <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-[0.2em]">Archived neural synthesis cycles</p>
+                        <p className="text-zinc-500 font-mono text-[10px] tracking-[0.2em]">Archived neural synthesis cycles</p>
                     </div>
                     {history.length > 0 && (
                         <div className="text-[10px] font-mono text-zinc-600 uppercase bg-white/5 px-3 py-1 rounded-full border border-white/5">
@@ -48,8 +48,8 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                     <div className="grid gap-4">
                         <AnimatePresence mode="popLayout">
                             {history.map((item, index) => (
-                                <motion.div 
-                                    key={item.id} 
+                                <motion.div
+                                    key={item.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
@@ -115,4 +115,4 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
             </div>
         </div>
     );
-}
+}
