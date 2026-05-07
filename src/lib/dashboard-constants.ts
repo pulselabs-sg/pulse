@@ -9,11 +9,6 @@ export const VOICES = [
   { id: 'rex', name: 'Rex', gender: 'Male', tone: 'Confident & Clear', gradient: 'from-cyan-500 via-blue-500 to-indigo-600' },
   { id: 'sal', name: 'Sal', gender: 'Neutral', tone: 'Smooth & Versatile', gradient: 'from-emerald-400 via-teal-500 to-cyan-600' },
   { id: 'leo', name: 'Leo', gender: 'Male', tone: 'Authoritative & Strong', gradient: 'from-orange-500 via-red-500 to-rose-600' },
-  { id: 'laura', name: 'Laura', gender: 'Female', tone: 'Professional & Calm', gradient: 'from-violet-500 via-purple-500 to-fuchsia-500' },
-  { id: 'michael', name: 'Michael', gender: 'Male', tone: 'Deep & Resonant', gradient: 'from-slate-600 via-gray-600 to-zinc-700' },
-  { id: 'nicole', name: 'Nicole', gender: 'Female', tone: 'Conversational & Engaging', gradient: 'from-rose-400 via-red-400 to-orange-500' },
-  { id: 'adam', name: 'Adam', gender: 'Male', tone: 'Warm & Trustworthy', gradient: 'from-blue-400 via-sky-500 to-cyan-500' },
-  { id: 'glinda', name: 'Glinda', gender: 'Female', tone: 'Expressive & Magical', gradient: 'from-pink-400 via-purple-400 to-indigo-400' },
 ];
 
 export const TIER_LIMITS = {

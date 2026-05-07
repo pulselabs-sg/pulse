@@ -4,10 +4,18 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { apiResponse } from '@/lib/security';
+import { ratelimit } from '@/lib/ratelimit';
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body = (await request.json()) as HandleUploadBody;
+
+    // Global Rate Limiting for Upload Token Generation
+    const sessionForRL = await getServerSession(authOptions);
+    if (sessionForRL?.user?.id && ratelimit) {
+      const { success } = await ratelimit.limit(`ratelimit_upload_${sessionForRL.user.id}`);
+      if (!success) return apiResponse("Too many upload requests. Please wait.", 429);
+    }
 
     const jsonResponse = await handleUpload({
       body,

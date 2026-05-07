@@ -234,6 +234,34 @@ export default function DocsPage() {
               </div>
             </div>
 
+            {/* Languages */}
+            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
+                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Multilingual Support</h3>
+              </div>
+              <div className="p-6 md:p-8">
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
+                  iPulse utilizes advanced <strong className="text-white">Automatic Language Detection</strong>. The engine will detect the primary language of your input (text or audio) and adjust the neural synthesis parameters accordingly to preserve authentic accents and prosody.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {[
+                    'English (EN)', 'Spanish (ES)', 'French (FR)', 'German (DE)',
+                    'Italian (IT)', 'Portuguese (PT)', 'Arabic (AR)', 'Chinese (ZH)',
+                    'Japanese (JA)', 'Korean (KO)', 'Hindi (HI)', 'Russian (RU)',
+                    'Turkish (TR)', 'Vietnamese (VI)', 'Indonesian (ID)', 'Bengali (BN)'
+                  ].map(lang => (
+                    <div key={lang} className="flex items-center gap-2 text-[9px] font-mono text-zinc-500 uppercase tracking-tight">
+                      <div className="w-1 h-1 bg-cyan-500/40 rounded-full" />
+                      {lang}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* STT */}
             <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">

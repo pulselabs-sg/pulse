@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
-import { cloneVoiceSchema, apiResponse } from '@/lib/security';
+import { cloneVoiceSchema, apiResponse, validateCredits, CREDIT_COSTS } from '@/lib/security';
+import { ratelimit } from '@/lib/ratelimit';
 
 export async function POST(req: Request) {
   const prisma = getPrisma();
@@ -11,16 +12,37 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, tier: true }
-    });
+    // 1. Rate Limiting (Specific for Clone Voice: 5 per hour)
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(`ratelimit_clone_${session.user.id}`);
+      if (!success) return apiResponse("Rate limit exceeded for voice cloning. Try again later.", 429);
+    }
 
-    if (!user) return new NextResponse("User not found", { status: 404 });
+    const cost = CREDIT_COSTS.CLONE_VOICE;
 
-    // Restrict free tier
+    const validationCredit = await validateCredits(session.user.id, cost);
+    if (validationCredit.error || !validationCredit.data) {
+      return apiResponse(validationCredit.error || "Credit validation failed", validationCredit.status || 400);
+    }
+
+    const { user, limit } = validationCredit.data;
+
+    // Restrict FREE tier (even if they somehow have credits)
     if (user.tier === 'FREE') {
       return apiResponse("Clone Voice feature is only available on Basic, Premium, and Pro plans.", 403);
+    }
+
+    // 3. Deduct Credits Atomically
+    const updatedUser = await prisma.user.updateMany({
+      where: {
+        id: user.id,
+        usageCount: { lte: limit - cost }
+      },
+      data: { usageCount: { increment: cost } },
+    });
+
+    if (updatedUser.count === 0) {
+      return apiResponse("Pulse quota exceeded. Please upgrade your plan.", 429);
     }
 
     const body = await req.json().catch(() => ({}));
@@ -44,6 +66,16 @@ export async function POST(req: Request) {
       }
     });
 
+    // Create history record for cloning
+    await prisma.history.create({
+      data: {
+        userId: user.id,
+        type: 'Clone Voice',
+        input: fileName,
+        output: customVoice.voiceId,
+      }
+    });
+
     return NextResponse.json({
       success: true,
       voice: customVoice,
@@ -51,6 +83,16 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("[CLONE_VOICE_ERROR]", error);
+    
+    // Refund credits on failure
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id) {
+      await prisma.user.updateMany({
+        where: { id: session.user.id, usageCount: { gte: CREDIT_COSTS.CLONE_VOICE } },
+        data: { usageCount: { decrement: CREDIT_COSTS.CLONE_VOICE } }
+      });
+    }
+
     return apiResponse("An error occurred during voice cloning.", 500);
   }
 }

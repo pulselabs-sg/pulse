@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Zap, Mic, UploadCloud, CheckCircle2, ChevronDown, Check, Loader2, AudioLines, Copy, Settings2, Sparkles, Wand2, Play, Square, Edit2, Save } from 'lucide-react';
+import { Zap, Mic, UploadCloud, CheckCircle2, ChevronDown, Check, Loader2, AudioLines, Copy, Settings2, Sparkles, Wand2, Play, Square, Edit2, Save, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { upload } from '@vercel/blob/client';
@@ -52,6 +52,19 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         }
     };
 
+    const handleDeleteVoice = async (id: string, voiceId: string) => {
+        if (!confirm("Are you sure you want to delete this cloned voice?")) return;
+        try {
+            const res = await fetch(`/api/custom-voices/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setCustomVoices(prev => prev.filter(v => v.id !== id));
+                if (selectedVoice === voiceId) setSelectedVoice(VOICES[0].id);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     // Playback state
     const [playingVoice, setPlayingVoice] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -72,7 +85,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
             }
         };
         fetchVoices();
-    }, []);
+    }, [activeTab]);
 
     const allVoices = [
         ...VOICES,
@@ -180,14 +193,16 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     return (
         <div className="flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 relative z-10 min-h-0 overflow-y-auto custom-scrollbar">
             {/* Input */}
-            <div className="flex-1 lg:max-w-2xl flex flex-col min-h-0">
-                <div className={cn("glass border border-white/10 rounded-2xl p-4 md:p-8 flex flex-col relative overflow-hidden group", activeTab === 'clone' ? "h-auto" : "h-full min-h-[300px] lg:min-h-0")}>
+            <div className={cn("flex flex-col min-h-0", activeTab === 'clone' ? "flex-none lg:flex-1" : "flex-1 lg:max-w-2xl")}>
+                <div className={cn("glass border border-white/10 rounded-2xl flex flex-col relative overflow-hidden group",
+                    activeTab === 'clone' ? "h-auto p-4 md:p-8" : "h-full min-h-[300px] lg:min-h-0 p-4 md:p-8"
+                )}>
                     <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                         <Settings2 className="w-32 h-32 text-white rotate-12" />
                     </div>
 
                     <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6 flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+                        <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
                         {activeTab === 'clone' ? 'Neural Identity Scanner' : 'Intelligence Input Matrix'}
                     </h2>
 
@@ -199,7 +214,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         <button
                                             key={tag}
                                             onClick={() => insertTag(tag.includes('<') ? `${tag} ${tag.replace('<', '</')}` : ` ${tag} `)}
-                                            className="px-2 py-1 text-[9px] font-mono border border-white/10 hover:border-cyan-500 hover:text-cyan-400 bg-white/5 rounded-md transition-colors text-zinc-400 uppercase"
+                                            className="px-2 py-1 text-[8px] md:text-[10px] font-mono border border-white/10 hover:border-cyan-500 hover:text-cyan-400 bg-white/5 rounded-md transition-colors text-zinc-400"
                                         >
                                             {tag}
                                         </button>
@@ -209,7 +224,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                     value={textInput}
                                     onChange={(e) => setTextInput(e.target.value)}
                                     placeholder="Enter your script for neural synthesis. Use tags for expressive control..."
-                                    className="flex-1 w-full min-h-[150px] bg-black/40 border border-white/5 rounded-xl p-5 text-white font-sans text-sm md:text-base leading-relaxed resize-none outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-700 custom-scrollbar shadow-inner"
+                                    className="flex-1 w-full min-h-[150px] bg-black/40 border border-white/5 rounded-xl p-5 text-white font-sans text-xs md:text-sm leading-relaxed resize-none outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-700 custom-scrollbar shadow-inner"
                                 />
                                 <div className="flex justify-between mt-2 px-1">
                                     <span className="text-[9px] font-mono uppercase text-zinc-600">Max Chars: {userState.maxChars}</span>
@@ -217,39 +232,53 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         {textInput.length} / {userState.maxChars}
                                     </span>
                                 </div>
+
+                                <div className="mt-4 px-1 flex items-start gap-2 text-zinc-500">
+                                    <p className="text-[10px] md:text-[11px] font-mono leading-relaxed tracking-tight">
+                                        The <a href="/docs/guide" target="_blank" className="text-blue-400 hover:text-blue-300 underline decoration-blue-500/30 underline-offset-2 transition-colors">language</a> of the generated voice will be automatically detected based on the original language of the text or audio you provide.
+                                    </p>
+                                </div>
                             </div>
                         )}
 
                         {(activeTab === 'stt' || activeTab === 'changer' || activeTab === 'clean' || activeTab === 'clone') && (
-                            <div {...getRootProps()} className={cn(
-                                "relative flex-1 min-h-[120px] max-h-[160px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden group/drop",
-                                isDragActive ? "border-blue-500 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.1)]" : "border-white/10 bg-black/40 hover:border-white/20 hover:bg-white/[0.02]"
-                            )}>
-                                <input {...getInputProps()} />
-                                {file ? (
-                                    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center z-10">
-                                        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
-                                            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                            <>
+                                <div {...getRootProps()} className={cn(
+                                    "relative flex-1 min-h-[120px] max-h-[160px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden group/drop",
+                                    isDragActive ? "border-blue-500 bg-blue-500/5 shadow-[0_0_30px_rgba(59,130,246,0.1)]" : "border-white/10 bg-black/40 hover:border-white/20 hover:bg-white/[0.02]"
+                                )}>
+                                    <input {...getInputProps()} />
+                                    {file ? (
+                                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center z-10">
+                                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-2 border border-emerald-500/20">
+                                                <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+                                            </div>
+                                            <p className="text-sm font-bold text-white truncate max-w-[250px]">{file.name}</p>
+                                            <p className="text-[10px] font-mono text-zinc-500 uppercase mt-1">{(file.size / (1024 * 1024)).toFixed(2)} MB • READY</p>
+                                        </motion.div>
+                                    ) : (
+                                        <div className="text-center z-10 transition-transform group-hover/drop:scale-101 duration-500">
+                                            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-2 border border-white/5 group-hover/drop:border-blue-500/30 transition-colors">
+                                                <UploadCloud className="w-7 h-7 text-zinc-500 group-hover/drop:text-blue-400 transition-colors" />
+                                            </div>
+                                            <p className="text-[10px] font-bold text-white uppercase tracking-widest">{activeTab === 'clone' ? 'Transmit Voice Sample (~1 min)' : 'Transmit Audio Signal'}</p>
+                                            <p className="text-[9px] font-mono text-zinc-500 uppercase">MP3, WAV, M4A • MAX {activeTab === 'clone' ? '120 SECONDS' : `${userState.maxFileMB}MB`}</p>
                                         </div>
-                                        <p className="text-sm font-bold text-white truncate max-w-[250px]">{file.name}</p>
-                                        <p className="text-[10px] font-mono text-zinc-500 uppercase mt-1">{(file.size / (1024 * 1024)).toFixed(2)} MB • READY</p>
-                                    </motion.div>
-                                ) : (
-                                    <div className="text-center z-10 transition-transform group-hover/drop:scale-101 duration-500">
-                                        <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-2 border border-white/5 group-hover/drop:border-blue-500/30 transition-colors">
-                                            <UploadCloud className="w-7 h-7 text-zinc-500 group-hover/drop:text-blue-400 transition-colors" />
-                                        </div>
-                                        <p className="text-[10px] font-bold text-white uppercase tracking-widest">{activeTab === 'clone' ? 'Transmit Voice Sample (~1 min)' : 'Transmit Audio Signal'}</p>
-                                        <p className="text-[9px] font-mono text-zinc-500 uppercase">MP3, WAV, M4A • MAX {activeTab === 'clone' ? '120 SECONDS' : `${userState.maxFileMB}MB`}</p>
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-blue-600/5 to-transparent opacity-0 group-hover/drop:opacity-100 transition-opacity" />
-                            </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-blue-600/5 to-transparent opacity-0 group-hover/drop:opacity-100 transition-opacity" />
+                                </div>
+
+                                <div className="mt-2 px-1 flex items-start gap-2 text-zinc-500">
+                                    <p className="text-[10px] md:text-[11px] font-mono leading-relaxed tracking-tight">
+                                        The <a href="/docs/guide" target="_blank" className="text-blue-400 hover:text-blue-300 underline decoration-blue-500/30 underline-offset-2 transition-colors">language</a> of the generated voice will be automatically detected based on the original language of the text or audio you provide.
+                                    </p>
+                                </div>
+                            </>
                         )}
 
                         <div className={cn("flex flex-row gap-2 md:gap-3 mt-auto pt-2", activeTab === 'clone' ? "mt-4" : "")}>
                             {(activeTab === 'tts' || activeTab === 'changer') && (
-                                <div className="flex-1 relative min-w-0" ref={voiceMenuRef}>
+                                <div className="flex-[2] md:flex-1 relative min-w-0" ref={voiceMenuRef}>
                                     <button
                                         onClick={() => setShowVoiceList(!showVoiceList)}
                                         className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl text-left transition-all h-10 md:h-12 group/voice"
@@ -342,11 +371,11 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
 
             {/* Output */}
             {activeTab !== 'clone' && (
-                <div className="flex-none lg:flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+                <div className="flex-none lg:flex-1 flex flex-col min-h-[200px] lg:min-h-0">
                     <div className="glass border border-white/10 rounded-2xl flex flex-col h-full overflow-hidden relative">
                         <div className="h-12 border-b border-white/5 px-6 flex items-center justify-between bg-white/[0.02]">
                             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                <Sparkles className="w-3.5 h-3.5 text-blue-400" /> System Output
+                                <Sparkles className="w-3.5 h-3.5 text-white" /> System Output
                             </span>
                             {result && (
                                 <button onClick={handleCopy} className="text-[9px] font-mono uppercase text-zinc-500 hover:text-white flex items-center gap-1.5 transition-colors">
@@ -364,7 +393,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         className="text-center space-y-4"
                                     >
                                         <div className="w-16 h-16 rounded-full border-2 border-white/5 flex items-center justify-center mx-auto opacity-20">
-                                            <Zap className="w-8 h-8 text-white" />
+                                            <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
                                         </div>
                                         <p className="text-zinc-600 font-mono text-[10px] uppercase tracking-[0.3em]">Awaiting Instruction</p>
                                     </motion.div>
@@ -404,7 +433,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                     <motion.div
                                         key="text"
                                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                                        className="w-full h-full p-6 bg-black/40 rounded-xl border border-white/5 text-zinc-300 font-sans text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto relative shadow-inner group/text"
+                                        className="w-full h-full max-h-[200px] md:max-h-[500px] p-6 bg-black/40 rounded-xl border border-white/5 text-zinc-300 font-sans text-xs md:text-dm leading-relaxed whitespace-pre-wrap overflow-y-auto relative shadow-inner group/text custom-scrollbar"
                                     >
                                         {result.content}
                                     </motion.div>
@@ -438,12 +467,8 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
             )}
 
             {activeTab === 'clone' && (
-                <div className="flex-none lg:flex-1 flex flex-col mt-4 lg:mt-0">
-                    <div className="glass border border-white/10 rounded-2xl p-6 lg:p-8 flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-6 border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.15)]">
-                            <Wand2 className="w-8 h-8 text-blue-400" />
-                        </div>
-                        <h2 className="text-white font-mono font-bold tracking-widest uppercase mb-2">Voice Cloning Active</h2>
+                <div className="flex-none lg:flex-1 flex flex-col mt-2 lg:mt-0">
+                    <div className="glass border border-white/10 rounded-2xl p-4 lg:p-8 flex flex-col items-center justify-center text-center">
                         <p className="text-zinc-500 text-[10px] font-mono leading-relaxed max-w-sm mb-6">
                             Upload a clear, 1-2 minute audio clip with minimal background noise. Our neural engine will map the identity and save it securely to your account.
                         </p>
@@ -458,7 +483,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 <h3 className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-3">Saved Identities</h3>
                                 <div className="space-y-2">
                                     {customVoices.map(voice => (
-                                        <div key={voice.id} className="flex items-center justify-between bg-black/40 p-3 rounded-xl border border-white/5 group">
+                                        <div key={voice.id} className="flex items-center justify-between bg-black/40 p-2 rounded-xl border border-white/5 group">
                                             {editingVoiceId === voice.id ? (
                                                 <input
                                                     autoFocus
@@ -468,17 +493,22 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                                     className="bg-transparent border-b border-blue-500 outline-none text-xs font-mono text-white flex-1 mr-2"
                                                 />
                                             ) : (
-                                                <span className="text-xs font-mono font-bold uppercase tracking-wider text-white truncate pr-2 flex-1">{voice.name}</span>
+                                                <span className="text-[11px] md:text-sm font-mono font-bold tracking-wider text-white truncate pr-2 flex-1">{voice.name}</span>
                                             )}
-                                            
+
                                             {editingVoiceId === voice.id ? (
                                                 <button onClick={() => handleRenameVoice(voice.id)} className="p-1.5 hover:bg-white/10 rounded-md text-emerald-400 transition-colors shrink-0">
                                                     <Save className="w-3.5 h-3.5" />
                                                 </button>
                                             ) : (
-                                                <button onClick={() => { setEditingVoiceId(voice.id); setEditingName(voice.name); }} className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-md text-zinc-400 hover:text-white transition-all shrink-0">
-                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                </button>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                                                    <button onClick={() => { setEditingVoiceId(voice.id); setEditingName(voice.name); }} className="p-1.5 hover:bg-white/10 rounded-md text-zinc-400 hover:text-white transition-all">
+                                                        <Edit2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteVoice(voice.id, voice.voiceId)} className="p-1.5 hover:bg-red-500/10 rounded-md text-zinc-400 hover:text-red-400 transition-all">
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     ))}

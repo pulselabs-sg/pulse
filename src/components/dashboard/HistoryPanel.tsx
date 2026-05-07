@@ -16,7 +16,7 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
     }, []);
 
     return (
-        <div className="flex-1 overflow-y-auto p-4 md:p-10 w-full custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-3 md:p-10 w-full custom-scrollbar">
             <div className="w-full max-w-5xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
                     <div>
@@ -53,9 +53,9 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className="glass border border-white/5 rounded-2xl p-5 flex flex-col md:flex-row gap-6 items-start md:items-center hover:border-blue-500/30 hover:bg-white/[0.02] transition-all group cursor-default"
+                                    className="glass border border-white/5 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center hover:border-blue-500/30 hover:bg-white/[0.02] transition-all group cursor-default overflow-hidden"
                                 >
-                                    <div className="shrink-0 flex items-center gap-3 w-32">
+                                    <div className="shrink-0 flex items-center gap-3 w-auto md:w-32">
                                         <div className={cn(
                                             "p-2 rounded-xl border transition-colors",
                                             item.type?.toLowerCase() === 'stt' ? "bg-purple-500/10 border-purple-500/20 text-purple-400" : "bg-blue-500/10 border-blue-500/20 text-blue-400"
@@ -72,7 +72,7 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                                             <span className="text-[9px] font-mono text-zinc-600 uppercase">Input Stream</span>
                                             <div className="h-[1px] flex-1 bg-white/5" />
                                         </div>
-                                        <p className="text-sm text-zinc-300 truncate font-medium">
+                                        <p className="text-xs md:text-sm text-zinc-300 font-medium break-words whitespace-normal line-clamp-2 md:line-clamp-1">
                                             {item.input || 'Audio File Uploaded'}
                                         </p>
                                         <div className="flex items-center gap-2 mt-3 mb-1">
@@ -80,8 +80,8 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                                             <div className="h-[1px] flex-1 bg-white/5" />
                                         </div>
                                         <p className={cn(
-                                            "text-xs text-zinc-500 leading-relaxed",
-                                            item.type?.toLowerCase() === 'stt' ? "line-clamp-2" : "italic"
+                                            "text-[11px] md:text-xs text-zinc-500 leading-relaxed break-words whitespace-normal",
+                                            item.type?.toLowerCase() === 'stt' ? "line-clamp-3 md:line-clamp-2" : "italic"
                                         )}>
                                             {
                                                 item.type?.toLowerCase() === 'stt'
@@ -102,9 +102,9 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                                         </div>
                                         <button
                                             onClick={() => onLoadRecord(item)}
-                                            className="flex items-center justify-center gap-2 w-full md:w-auto px-5 py-2.5 bg-white/5 hover:bg-white text-zinc-400 hover:text-black rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 group/btn"
+                                            className="flex items-center justify-center gap-2 w-full md:w-auto px-4 md:px-5 py-2 md:py-2.5 bg-white/5 hover:bg-white text-zinc-400 hover:text-black rounded-xl border border-white/5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 group/btn"
                                         >
-                                            <PlaySquare className="w-3.5 h-3.5 group-hover/btn:scale-125 transition-transform" /> Restore
+                                            <PlaySquare className="w-3 md:w-3.5 h-3 md:h-3.5 group-hover/btn:scale-125 transition-transform" /> Restore
                                         </button>
                                     </div>
                                 </motion.div>

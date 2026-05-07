@@ -6,14 +6,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
-import { textToSpeechSchema, apiResponse } from '@/lib/security';
+import { textToSpeechSchema, apiResponse, validateCredits, CREDIT_COSTS, TIER_LIMITS } from '@/lib/security';
+import { ratelimit } from '@/lib/ratelimit';
 
-const TIER_LIMITS = {
-  FREE: { pulse: 20000, maxTTSChars: 5000 },
-  BASIC: { pulse: 60000, maxTTSChars: 5000 },
-  PREMIUM: { pulse: 150000, maxTTSChars: 10000 },
-  PRO: { pulse: 800000, maxTTSChars: 15000 },
-} as const;
 
 export async function POST(req: Request) {
   const prisma = getPrisma();
@@ -23,11 +18,11 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, tier: true, usageCount: true }
-    });
-    if (!user) return new NextResponse("User not found", { status: 404 });
+    // 1. Rate Limiting (Specific for TTS: 20 per minute)
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(`ratelimit_tts_${session.user.id}`);
+      if (!success) return apiResponse("Too many synthesis requests. Please slow down.", 429);
+    }
 
     const body = await req.json().catch(() => ({}));
     const validation = textToSpeechSchema.safeParse(body);
@@ -36,17 +31,23 @@ export async function POST(req: Request) {
       return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
     }
 
-    const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
     const { text, voiceId, format } = validation.data;
-    const limit = TIER_LIMITS[tier].pulse;
+    pulseCost = text.length * CREDIT_COSTS.TTS_PER_CHAR;
+
+    const validationCredit = await validateCredits(session.user.id, pulseCost);
+    if (validationCredit.error || !validationCredit.data) {
+      return apiResponse(validationCredit.error || "Credit validation failed", validationCredit.status || 400);
+    }
+
+    const { user, limit } = validationCredit.data;
+    const tier = validationCredit.data.tier;
     const maxChars = TIER_LIMITS[tier].maxTTSChars;
 
     if (text.length > maxChars) {
       return apiResponse(`Text too long. Maximum ${maxChars} characters allowed.`, 413);
     }
 
-    pulseCost = text.length;
-
+    // 3. Deduct Credits Atomically
     const updatedUser = await prisma.user.updateMany({
       where: {
         id: user.id,
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     });
 
     if (updatedUser.count === 0) {
-      return new NextResponse("Pulse quota exceeded. Please upgrade your plan.", { status: 429 });
+      return apiResponse("Pulse quota exceeded. Please upgrade your plan.", 429);
     }
 
     const isFishVoice = voiceId.startsWith('fish_');
@@ -74,6 +75,8 @@ export async function POST(req: Request) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+            'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
           },
           body: JSON.stringify({
             text,

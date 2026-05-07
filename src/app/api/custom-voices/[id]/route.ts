@@ -49,3 +49,35 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return apiResponse("An error occurred updating custom voice.", 500);
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const prisma = getPrisma();
+
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
+
+    const resolvedParams = await params;
+    const voice = await prisma.customVoice.findUnique({
+      where: { id: resolvedParams.id }
+    });
+
+    if (!voice) {
+      return apiResponse("Voice not found.", 404);
+    }
+
+    if (voice.userId !== session.user.id) {
+      return apiResponse("Forbidden.", 403);
+    }
+
+    await prisma.customVoice.delete({
+      where: { id: resolvedParams.id }
+    });
+
+    return NextResponse.json({ success: true });
+
+  } catch (error: any) {
+    console.error("[CUSTOM_VOICES_DELETE_ERROR]", error);
+    return apiResponse("An error occurred deleting custom voice.", 500);
+  }
+}

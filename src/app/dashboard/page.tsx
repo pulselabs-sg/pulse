@@ -62,6 +62,13 @@ function DashboardContent() {
 
   const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
 
+  const handleTabChange = (tab: Tab) => {
+    setTextInput('');
+    setFile(null);
+    setResult(null);
+    setActiveTab(tab);
+  };
+
   useEffect(() => {
     if (window.innerWidth < 768) setIsSidebarOpen(false);
 
@@ -81,7 +88,7 @@ function DashboardContent() {
         limit: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].pulse,
         maxFileMB: tier === 'FREE' ? 50 : tier === 'BASIC' ? 300 : 500,
         maxChars: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxTTSChars,
-        cancelAtPeriodEnd: (session.user as any).cancelAtPeriodEnd || false // <-- Đọc từ session
+        cancelAtPeriodEnd: (session.user as any).cancelAtPeriodEnd || false
       });
     }
   }, [session]);
@@ -184,13 +191,20 @@ function DashboardContent() {
   const handleLoadRecord = (record: any) => {
     let recordType = record.type.toLowerCase();
     if (recordType === 'voice changer') recordType = 'changer';
+    if (recordType === 'clone voice') recordType = 'clone';
 
     setActiveTab(recordType as Tab);
-    setResult({
-      type: recordType === 'stt' ? 'text' : 'audio',
-      content: record.output
-    });
-    if (recordType === 'tts' && record.input) setTextInput(record.input);
+
+    if (recordType === 'clone') {
+      setResult(null);
+      setTextInput('');
+    } else {
+      setResult({
+        type: recordType === 'stt' ? 'text' : 'audio',
+        content: record.output
+      });
+      if (recordType === 'tts' && record.input) setTextInput(record.input);
+    }
   };
 
   useEffect(() => {
@@ -221,7 +235,7 @@ function DashboardContent() {
 
       <Sidebar
         isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}
-        activeTab={activeTab} setActiveTab={setActiveTab}
+        activeTab={activeTab} setActiveTab={handleTabChange}
         userState={userState} session={session} setShowPlanModal={setShowPlanModal}
       />
 
@@ -237,8 +251,8 @@ function DashboardContent() {
             Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white">{TABS.find(t => t.id === activeTab)?.label}</span>
           </div>
           <div className="flex items-center">
-            <span className="text-[10px] font-bold text-white tracking-widest bg-white/5 px-3 py-1.5 rounded-sm border border-white/10">
-              <span className="text-cyan-400 mr-2">PULSE:</span> 
+            <span className="text-[8px] md:text-[10px] font-bold text-white tracking-widest bg-white/5 px-3 py-1.5 rounded-sm border border-white/10">
+              <span className="text-cyan-400 mr-2">PULSE:</span>
               {Math.max(0, userState.limit - userState.usage).toLocaleString()} <span className="text-zinc-500 font-normal ml-1">REMAINING</span>
             </span>
           </div>
@@ -335,22 +349,22 @@ function DashboardContent() {
         ) : activeTab === 'clone' && userState.tier === 'FREE' ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8">
             <div className="bg-[#050505] border border-white/10 rounded-2xl p-10 max-w-lg w-full text-center shadow-2xl relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-                 <Crown className="w-48 h-48 text-white rotate-12" />
-               </div>
-               <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10">
-                 <Lock className="w-10 h-10 text-blue-400" />
-               </div>
-               <h2 className="text-2xl font-mono font-bold tracking-widest uppercase text-white mb-4 relative z-10">Voice Cloning Locked</h2>
-               <p className="text-sm font-mono text-zinc-400 uppercase leading-relaxed mb-8 relative z-10">
-                 Custom voice creation is a high-compute feature reserved for Basic, Premium, and Pro tiers. Upgrade your access level to unlock this module.
-               </p>
-               <button 
-                 onClick={() => setShowPlanModal(true)}
-                 className="px-8 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.2em] rounded-sm hover:bg-emerald-400 transition-colors shadow-lg relative z-10"
-               >
-                 Upgrade Access Level
-               </button>
+              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                <Crown className="w-48 h-48 text-white rotate-12" />
+              </div>
+              <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10">
+                <Lock className="w-10 h-10 text-blue-400" />
+              </div>
+              <h2 className="text-2xl font-mono font-bold tracking-widest uppercase text-white mb-4 relative z-10">Voice Cloning Locked</h2>
+              <p className="text-sm font-mono text-zinc-400 uppercase leading-relaxed mb-8 relative z-10">
+                Custom voice creation is a high-compute feature reserved for Basic, Premium, and Pro tiers. Upgrade your access level to unlock this module.
+              </p>
+              <button
+                onClick={() => setShowPlanModal(true)}
+                className="px-8 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.2em] rounded-sm hover:bg-emerald-400 transition-colors shadow-lg relative z-10"
+              >
+                Upgrade Access Level
+              </button>
             </div>
           </div>
         ) : (
@@ -525,7 +539,6 @@ function DashboardContent() {
                       <ShieldCheck className="w-4 h-4" />
                       <span className="text-[10px] font-mono uppercase tracking-widest">Connection Secure</span>
                     </div>
-                    {/* Class bắt buộc để Paddle nhận diện DOM */}
                     <div className="paddle-inline-container w-full min-h-[450px]"></div>
                   </>
                 )}

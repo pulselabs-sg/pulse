@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { SECURITY_HEADERS } from './lib/security';
 import { ratelimit } from './lib/ratelimit';
 
-export async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Global Rate Limiting for API routes

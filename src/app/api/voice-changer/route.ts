@@ -6,15 +6,10 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { del, put } from '@vercel/blob';
-import { voiceChangerSchema, apiResponse } from '@/lib/security';
+import { voiceChangerSchema, apiResponse, validateCredits, CREDIT_COSTS, TIER_LIMITS } from '@/lib/security';
 import { parseBuffer } from 'music-metadata';
+import { ratelimit } from '@/lib/ratelimit';
 
-const TIER_LIMITS = {
-  FREE: { pulse: 20000, maxAudioMins: 5 },
-  BASIC: { pulse: 60000, maxAudioMins: 5 },
-  PREMIUM: { pulse: 150000, maxAudioMins: 10 },
-  PRO: { pulse: 800000, maxAudioMins: 15 },
-} as const;
 
 export async function POST(req: Request) {
   const prisma = getPrisma();
@@ -25,14 +20,11 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, tier: true, usageCount: true }
-    });
-    if (!user) return new NextResponse("User not found", { status: 404 });
-
-    const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
-    const limit = TIER_LIMITS[tier].pulse;
+    // 1. Rate Limiting (Specific for Voice Changer: 10 per minute)
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(`ratelimit_vc_${session.user.id}`);
+      if (!success) return apiResponse("Too many voice change requests. Please slow down.", 429);
+    }
 
     const body = await req.json().catch(() => ({}));
     const validation = voiceChangerSchema.safeParse(body);
@@ -56,13 +48,22 @@ export async function POST(req: Request) {
       console.warn("Could not parse audio duration, defaulting to 1 second", e);
     }
 
+    pulseCost = Math.ceil((durationSeconds / 60) * CREDIT_COSTS.VOICE_CHANGER_PER_MIN);
+
+    const validationCredit = await validateCredits(session.user.id, pulseCost);
+    if (validationCredit.error || !validationCredit.data) {
+      return apiResponse(validationCredit.error || "Credit validation failed", validationCredit.status || 400);
+    }
+
+    const { user, limit } = validationCredit.data;
+    const tier = validationCredit.data.tier;
     const maxAudioMins = TIER_LIMITS[tier].maxAudioMins;
+
     if (durationSeconds > maxAudioMins * 60) {
       return apiResponse(`Audio too long. Maximum ${maxAudioMins} minutes allowed.`, 413);
     }
 
-    pulseCost = Math.ceil((durationSeconds / 60) * 1000);
-
+    // 3. Deduct Credits Atomically
     const updatedUser = await prisma.user.updateMany({
       where: {
         id: user.id,
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
     });
 
     if (updatedUser.count === 0) {
-      return new NextResponse("Pulse quota exceeded. Please upgrade your plan.", { status: 429 });
+      return apiResponse("Pulse quota exceeded. Please upgrade your plan.", 429);
     }
 
     const fileBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
@@ -123,7 +124,9 @@ export async function POST(req: Request) {
         ttsResponse = await fetch(modalApiUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+            'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
           },
           body: JSON.stringify({
             text: transcribedText,
