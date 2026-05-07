@@ -21,6 +21,7 @@ model User {
   accounts             Account[]
   sessions             Session[]
   histories            History[]
+  customVoices         CustomVoice[]
 }
 
 model Account {
@@ -74,9 +75,21 @@ enum Tier {
 model History {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // 'tts', 'stt', 'changer'
-  input     String?  @db.Text // Text đã nhập hoặc Tên file gốc
-  output    String?  @db.Text // Text kết quả (STT) hoặc ghi chú Audio
+  type      String   
+  input     String?  @db.Text 
+  output    String?  @db.Text 
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CustomVoice {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  voiceId   String   @unique
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

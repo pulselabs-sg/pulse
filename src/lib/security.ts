@@ -1,20 +1,38 @@
+// src/lib/security.ts
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-/**
- * Shared Zod Schemas for API Validation
- */
+// ==========================================
+// 1. Zod Schemas
+// ==========================================
+
+const safeUrlSchema = z.string()
+  .url("Invalid URL format")
+  .refine((url) => url.startsWith('https://'), {
+    message: "Only HTTPS URLs are allowed for security reasons.",
+  })
+  .refine((url) => {
+    const allowedDomains = ['.vercel-storage.com', '.amazonaws.com', '.storage.googleapis.com'];
+    try {
+      const { hostname } = new URL(url);
+      return allowedDomains.some(domain => hostname.endsWith(domain));
+    } catch {
+      return false;
+    }
+  }, {
+    message: "URL domain is not whitelisted.",
+  });
 
 // Text to Speech
 export const textToSpeechSchema = z.object({
-  text: z.string().min(1).max(20000), // Sane max limit
+  text: z.string().min(1).max(5000, "Text exceeds maximum allowed length of 5000 characters."),
   voiceId: z.string().optional().default('eve'),
-  format: z.enum(['mp3', 'wav', 'ogg']).optional().default('mp3'),
+  format: z.enum(['mp3', 'wav', 'ogg', 'pcm', 'ulaw']).optional().default('mp3'),
 });
 
 // Voice Changer
 export const voiceChangerSchema = z.object({
-  fileUrl: z.string().url(),
+  fileUrl: safeUrlSchema,
   fileName: z.string().min(1).max(255).optional().default('Uploaded Audio'),
   targetVoice: z.string().optional().default('eve'),
   format: z.enum(['mp3', 'wav', 'ogg']).optional().default('mp3'),
@@ -22,18 +40,22 @@ export const voiceChangerSchema = z.object({
 
 // Speech to Text
 export const speechToTextSchema = z.object({
-  fileUrl: z.string().url(),
+  fileUrl: safeUrlSchema,
   fileName: z.string().min(1).max(255).optional().default('Uploaded Audio'),
 });
 
-// Clean Audio (Handles multipart/form-data logic separately but we can validate metadata if any)
-export const cleanAudioSchema = z.object({
-  // Multipart validation is usually handled by checking file size/type directly
+export const cleanAudioSchema = z.object({});
+
+// Clone Voice
+export const cloneVoiceSchema = z.object({
+  fileUrl: safeUrlSchema,
+  fileName: z.string().min(1).max(255).optional().default('Uploaded Audio'),
 });
 
-/**
- * Security Helper: Consistent API Responses
- */
+// ==========================================
+// 2. API Responses & Request Validation
+// ==========================================
+
 export function apiResponse(
   message: string | object,
   status: number = 200,
@@ -42,7 +64,6 @@ export function apiResponse(
   const isObject = typeof message === 'object';
   const body = isObject ? message : { message };
 
-  // Strip stack traces and sensitive info for production errors
   if (status >= 500 && process.env.NODE_ENV === 'production') {
     return NextResponse.json(
       { error: 'An internal server error occurred.' },
@@ -53,9 +74,6 @@ export function apiResponse(
   return NextResponse.json(body, { status, headers });
 }
 
-/**
- * Security Helper: Request Validation
- */
 export async function validateRequest<T>(
   req: Request,
   schema: z.Schema<T>
@@ -83,22 +101,18 @@ export async function validateRequest<T>(
     };
   }
 }
-
-/**
- * Security Headers Utility (for Middleware)
- */
 export const SECURITY_HEADERS = {
   'Content-Security-Policy':
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.paddle.com https://www.google.com https://www.gstatic.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.paddle.com https://checkout.paddle.com https://www.google.com https://www.gstatic.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.paddle.com; " +
     "img-src 'self' blob: data: https://*.vercel-storage.com https://lh3.googleusercontent.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
-    "frame-src 'self' https://*.paddle.com; " +
-    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.paddle.com;",
+    "frame-src 'self' https://sandbox-checkout.paddle.com https://checkout.paddle.com; " +
+    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.paddle.com https://vercel.com; " +
+    "media-src 'self' blob: https://*.vercel-storage.com;",
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',

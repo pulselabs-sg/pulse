@@ -1,4 +1,4 @@
-export const maxDuration = 120; 
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
@@ -7,17 +7,19 @@ import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { del, put } from '@vercel/blob';
 import { voiceChangerSchema, apiResponse } from '@/lib/security';
+import { parseBuffer } from 'music-metadata';
 
 const TIER_LIMITS = {
-  FREE: { generations: 5, maxFileMB: 50 },
-  BASIC: { generations: 20, maxFileMB: 300 },
-  PREMIUM: { generations: 100, maxFileMB: 500 },
-  PRO: { generations: 300, maxFileMB: 500 },
+  FREE: { pulse: 20000, maxAudioMins: 5 },
+  BASIC: { pulse: 60000, maxAudioMins: 5 },
+  PREMIUM: { pulse: 150000, maxAudioMins: 10 },
+  PRO: { pulse: 800000, maxAudioMins: 15 },
 } as const;
 
 export async function POST(req: Request) {
   const prisma = getPrisma();
   let uploadedFileUrl = '';
+  let pulseCost = 0;
 
   try {
     const session = await getServerSession(authOptions);
@@ -30,11 +32,11 @@ export async function POST(req: Request) {
     if (!user) return new NextResponse("User not found", { status: 404 });
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
-    const limit = tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier].generations;
+    const limit = TIER_LIMITS[tier].pulse;
 
     const body = await req.json().catch(() => ({}));
     const validation = voiceChangerSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
     }
@@ -42,33 +44,43 @@ export async function POST(req: Request) {
     const { fileUrl, fileName, targetVoice, format } = validation.data;
     uploadedFileUrl = fileUrl;
 
-    if (limit !== Infinity) {
-      const updatedUser = await prisma.user.updateMany({
-        where: {
-          id: user.id,
-          usageCount: { lt: limit }
-        },
-        data: { usageCount: { increment: 1 } },
-      });
-
-      if (updatedUser.count === 0) {
-        return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
-      }
-    } else {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { usageCount: { increment: 1 } },
-      });
-    }
-
     const fileRes = await fetch(fileUrl);
     if (!fileRes.ok) throw new Error("Failed to fetch file from storage");
-    const fileBlob = await fileRes.blob();
+    const arrayBuffer = await fileRes.arrayBuffer();
+
+    let durationSeconds = 1;
+    try {
+      const metadata = await parseBuffer(new Uint8Array(arrayBuffer), { mimeType: fileRes.headers.get('content-type') || 'audio/mpeg' });
+      if (metadata.format.duration) durationSeconds = metadata.format.duration;
+    } catch (e) {
+      console.warn("Could not parse audio duration, defaulting to 1 second", e);
+    }
+
+    const maxAudioMins = TIER_LIMITS[tier].maxAudioMins;
+    if (durationSeconds > maxAudioMins * 60) {
+      return apiResponse(`Audio too long. Maximum ${maxAudioMins} minutes allowed.`, 413);
+    }
+
+    pulseCost = Math.ceil((durationSeconds / 60) * 1000);
+
+    const updatedUser = await prisma.user.updateMany({
+      where: {
+        id: user.id,
+        usageCount: { lte: limit - pulseCost }
+      },
+      data: { usageCount: { increment: pulseCost } },
+    });
+
+    if (updatedUser.count === 0) {
+      return new NextResponse("Pulse quota exceeded. Please upgrade your plan.", { status: 429 });
+    }
+
+    const fileBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
 
     let transcribedText = '';
 
     const controllerSTT = new AbortController();
-    const timeoutSTT = setTimeout(() => controllerSTT.abort(), 120000); 
+    const timeoutSTT = setTimeout(() => controllerSTT.abort(), 120000);
 
     try {
       const sttFormData = new FormData();
@@ -97,29 +109,56 @@ export async function POST(req: Request) {
       clearTimeout(timeoutSTT);
     }
 
+    const isFishVoice = targetVoice.startsWith('fish_');
     const controllerTTS = new AbortController();
-    const timeoutTTS = setTimeout(() => controllerTTS.abort(), 120000); 
+    const timeoutTTS = setTimeout(() => controllerTTS.abort(), isFishVoice ? 120000 : 120000);
 
     try {
-      const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.XAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          text: transcribedText,
-          voice_id: targetVoice,
-          language: 'auto',
-          response_format: format
-        }),
-        signal: controllerTTS.signal,
-      });
+      let ttsResponse: Response;
 
-      if (!ttsResponse.ok) {
-        const errorText = await ttsResponse.text();
-        console.error(`[X.AI VC-TTS ERROR] Status: ${ttsResponse.status}`, errorText);
-        throw new Error("TTS Phase failed");
+      if (isFishVoice) {
+        const referenceAudioUrl = targetVoice.replace('fish_', '');
+        const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
+
+        ttsResponse = await fetch(modalApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: transcribedText,
+            reference_audio_url: referenceAudioUrl,
+            format
+          }),
+          signal: controllerTTS.signal,
+        });
+
+        if (!ttsResponse.ok) {
+          const errorText = await ttsResponse.text();
+          console.error(`[FISH SPEECH VC-TTS ERROR] Status: ${ttsResponse.status}`, errorText);
+          throw new Error("Modal TTS Phase failed");
+        }
+      } else {
+        ttsResponse = await fetch('https://api.x.ai/v1/tts', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: transcribedText,
+            voice_id: targetVoice.startsWith('custom_voice_') ? 'eve' : targetVoice,
+            language: 'auto',
+            response_format: format
+          }),
+          signal: controllerTTS.signal,
+        });
+
+        if (!ttsResponse.ok) {
+          const errorText = await ttsResponse.text();
+          console.error(`[X.AI VC-TTS ERROR] Status: ${ttsResponse.status}`, errorText);
+          throw new Error("TTS Phase failed");
+        }
       }
 
       const audioBuffer = await ttsResponse.arrayBuffer();
@@ -139,35 +178,35 @@ export async function POST(req: Request) {
         }
       });
 
-    return new NextResponse(audioBuffer, {
-      headers: {
-        'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
-        'Content-Disposition': `attachment; filename="voice_changed_${targetVoice}.${format}"`,
-        'X-User-Usage': (user.usageCount + 1).toString(),
-      },
-    });
+      return new NextResponse(audioBuffer, {
+        headers: {
+          'Content-Type': format === 'wav' ? 'audio/wav' : 'audio/mpeg',
+          'Content-Disposition': `attachment; filename="voice_changed_${targetVoice}.${format}"`,
+          'X-User-Usage': (user.usageCount + pulseCost).toString(),
+        },
+      });
+    } finally {
+      clearTimeout(timeoutTTS);
+    }
+
+  } catch (error: any) {
+    const isTimeout = error.name === 'AbortError';
+    console.error("[VOICE_CHANGER_CRITICAL_ERROR]", error);
+
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id && pulseCost > 0) {
+      await prisma.user.updateMany({
+        where: { id: session.user.id, usageCount: { gte: pulseCost } },
+        data: { usageCount: { decrement: pulseCost } }
+      });
+    }
+
+    const clientMessage = isTimeout
+      ? "AI Engine is taking too long to respond. Please try again."
+      : "An internal error occurred during processing.";
+
+    return apiResponse(clientMessage, isTimeout ? 504 : 500);
   } finally {
-    clearTimeout(timeoutTTS);
-  }
-
-} catch (error: any) {
-  const isTimeout = error.name === 'AbortError';
-  console.error("[VOICE_CHANGER_CRITICAL_ERROR]", error);
-
-  const session = await getServerSession(authOptions);
-  if (session?.user?.id) {
-     await prisma.user.updateMany({
-       where: { id: session.user.id, usageCount: { gt: 0 } },
-       data: { usageCount: { decrement: 1 } }
-     });
-  }
-
-  const clientMessage = isTimeout
-    ? "AI Engine is taking too long to respond. Please try again."
-    : "An internal error occurred during processing.";
-
-  return apiResponse(clientMessage, isTimeout ? 504 : 500);
-} finally {
     if (uploadedFileUrl) {
       try {
         await del(uploadedFileUrl);

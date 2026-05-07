@@ -6,17 +6,19 @@ import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
 import { del } from '@vercel/blob';
 import { speechToTextSchema, apiResponse } from '@/lib/security';
+import { parseBuffer } from 'music-metadata';
 
 const TIER_LIMITS = {
-  FREE: { generations: 5, maxFileMB: 50 },
-  BASIC: { generations: 20, maxFileMB: 300 },
-  PREMIUM: { generations: 100, maxFileMB: 500 },
-  PRO: { generations: 300, maxFileMB: 500 },
+  FREE: { pulse: 20000, maxAudioMins: 5 },
+  BASIC: { pulse: 60000, maxAudioMins: 5 },
+  PREMIUM: { pulse: 150000, maxAudioMins: 10 },
+  PRO: { pulse: 800000, maxAudioMins: 15 },
 } as const;
 
 export async function POST(req: Request) {
   const prisma = getPrisma();
   let uploadedFileUrl = '';
+  let pulseCost = 0;
 
   try {
     const session = await getServerSession(authOptions);
@@ -29,7 +31,9 @@ export async function POST(req: Request) {
     if (!user) return new NextResponse("User not found", { status: 404 });
 
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
-    const limit = tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier].generations;
+    const limit = TIER_LIMITS[tier].pulse;
+    const maxAudioMins = TIER_LIMITS[tier].maxAudioMins;
+    
     const body = await req.json().catch(() => ({}));
     const validation = speechToTextSchema.safeParse(body);
     
@@ -40,31 +44,38 @@ export async function POST(req: Request) {
     const { fileUrl, fileName } = validation.data;
     uploadedFileUrl = fileUrl;
 
-    if (limit !== Infinity) {
-      const updatedUser = await prisma.user.updateMany({
-        where: {
-          id: user.id,
-          usageCount: { lt: limit }
-        },
-        data: { usageCount: { increment: 1 } },
-      });
-
-      if (updatedUser.count === 0) {
-        return new NextResponse("Quota exceeded. Please upgrade your plan.", { status: 429 });
-      }
-    } else {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { usageCount: { increment: 1 } },
-      });
-    }
-
     const fileRes = await fetch(fileUrl);
     if (!fileRes.ok) throw new Error("Failed to fetch file from storage");
-    const fileBlob = await fileRes.blob();
+    const arrayBuffer = await fileRes.arrayBuffer();
+
+    let durationSeconds = 1;
+    try {
+      const metadata = await parseBuffer(new Uint8Array(arrayBuffer), { mimeType: fileRes.headers.get('content-type') || 'audio/mpeg' });
+      if (metadata.format.duration) durationSeconds = metadata.format.duration;
+    } catch (e) {
+      console.warn("Could not parse audio duration, defaulting to 1 second", e);
+    }
+
+    if (durationSeconds > maxAudioMins * 60) {
+      return apiResponse(`Audio too long. Maximum ${maxAudioMins} minutes allowed.`, 413);
+    }
+
+    pulseCost = Math.ceil((durationSeconds / 60) * 1000);
+
+    const updatedUser = await prisma.user.updateMany({
+      where: {
+        id: user.id,
+        usageCount: { lte: limit - pulseCost }
+      },
+      data: { usageCount: { increment: pulseCost } },
+    });
+
+    if (updatedUser.count === 0) {
+      return new NextResponse("Pulse quota exceeded. Please upgrade your plan.", { status: 429 });
+    }
 
     const xaiFormData = new FormData();
-    xaiFormData.append('file', fileBlob, 'audio.mp3');
+    xaiFormData.append('file', new Blob([arrayBuffer], { type: 'audio/mp3' }), 'audio.mp3');
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -143,10 +154,10 @@ export async function POST(req: Request) {
     console.error("[STT_CRITICAL_ERROR]", error);
 
     const session = await getServerSession(authOptions);
-    if (session?.user?.id) {
+    if (session?.user?.id && pulseCost > 0) {
       await prisma.user.updateMany({
-        where: { id: session.user.id, usageCount: { gt: 0 } },
-        data: { usageCount: { decrement: 1 } }
+        where: { id: session.user.id, usageCount: { gte: pulseCost } },
+        data: { usageCount: { decrement: pulseCost } }
       });
     }
 

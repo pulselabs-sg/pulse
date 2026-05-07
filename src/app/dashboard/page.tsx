@@ -78,9 +78,9 @@ function DashboardContent() {
       setUserState({
         tier,
         usage: (session.user as any).usageCount || 0,
-        limit: tier === 'PREMIUM' || tier === 'PRO' ? Infinity : TIER_LIMITS[tier as keyof typeof TIER_LIMITS].generations,
-        maxFileMB: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxFileMB,
-        maxChars: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxChars,
+        limit: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].pulse,
+        maxFileMB: tier === 'FREE' ? 50 : tier === 'BASIC' ? 300 : 500,
+        maxChars: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxTTSChars,
         cancelAtPeriodEnd: (session.user as any).cancelAtPeriodEnd || false // <-- Đọc từ session
       });
     }
@@ -226,14 +226,22 @@ function DashboardContent() {
       />
 
       <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0 h-full">
-        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-600 z-10 relative">
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="md:hidden mr-3 p-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors"
-          >
-            <Menu className="w-4 h-4" />
-          </button>
-          Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white">{TABS.find(t => t.id === activeTab)?.label}</span>
+        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-600 z-10 relative">
+          <div className="flex items-center">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden mr-3 p-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white">{TABS.find(t => t.id === activeTab)?.label}</span>
+          </div>
+          <div className="flex items-center">
+            <span className="text-[10px] font-bold text-white tracking-widest bg-white/5 px-3 py-1.5 rounded-sm border border-white/10">
+              <span className="text-cyan-400 mr-2">PULSE:</span> 
+              {Math.max(0, userState.limit - userState.usage).toLocaleString()} <span className="text-zinc-500 font-normal ml-1">REMAINING</span>
+            </span>
+          </div>
         </header>
 
         {activeTab === 'history' ? (
@@ -311,9 +319,9 @@ function DashboardContent() {
                     <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Usage this month</p>
                     <div className="flex justify-between items-end mb-3">
                       <span className="text-2xl font-mono text-white tracking-tighter">
-                        {userState.usage} <span className="text-[10px] text-zinc-600 uppercase tracking-widest">uses</span>
+                        {userState.usage.toLocaleString()} <span className="text-[10px] text-zinc-600 uppercase tracking-widest">pulse</span>
                       </span>
-                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Limit: {userState.limit === Infinity ? 'Unlimited' : userState.limit}</span>
+                      <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Limit: {userState.limit.toLocaleString()}</span>
                     </div>
                     <div className="w-full h-1 bg-zinc-900 rounded-none mb-4 overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((userState.usage / (userState.limit === Infinity ? 100 : userState.limit)) * 100, 100)}%` }} transition={{ duration: 1, ease: "easeOut" }} className={cn("h-full", isLimitReached ? "bg-red-500" : "bg-emerald-400")} />
@@ -323,6 +331,27 @@ function DashboardContent() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        ) : activeTab === 'clone' && userState.tier === 'FREE' ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-8">
+            <div className="bg-[#050505] border border-white/10 rounded-2xl p-10 max-w-lg w-full text-center shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                 <Crown className="w-48 h-48 text-white rotate-12" />
+               </div>
+               <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10">
+                 <Lock className="w-10 h-10 text-blue-400" />
+               </div>
+               <h2 className="text-2xl font-mono font-bold tracking-widest uppercase text-white mb-4 relative z-10">Voice Cloning Locked</h2>
+               <p className="text-sm font-mono text-zinc-400 uppercase leading-relaxed mb-8 relative z-10">
+                 Custom voice creation is a high-compute feature reserved for Basic, Premium, and Pro tiers. Upgrade your access level to unlock this module.
+               </p>
+               <button 
+                 onClick={() => setShowPlanModal(true)}
+                 className="px-8 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.2em] rounded-sm hover:bg-emerald-400 transition-colors shadow-lg relative z-10"
+               >
+                 Upgrade Access Level
+               </button>
+            </div>
           </div>
         ) : (
           <WorkspacePanel

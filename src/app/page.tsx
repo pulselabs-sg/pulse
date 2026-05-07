@@ -119,6 +119,7 @@ export default function Home() {
             <Link href="#features" className="hover:text-white transition-colors">Modules</Link>
             <Link href="#fluid" className="hover:text-white transition-colors">Integration</Link>
             <Link href="#pricing" className="hover:text-white transition-colors">Allocation</Link>
+            <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -260,7 +261,7 @@ export default function Home() {
             </div>
             <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-6 md:mb-8 h-auto md:h-8">Test the engine.</p>
             <ul className="space-y-3 md:space-y-4 mb-6 md:mb-8 flex-1">
-              {['5 generations/month', '50 MB files', '5,000 characters TTS'].map((feature, i) => (
+              {['20,000 Pulse/month', '5,000 characters TTS limit', '5 minutes STT/Audio limit', 'No Voice Cloning'].map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 md:gap-3 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-400"><Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}</li>
               ))}
             </ul>
@@ -277,7 +278,7 @@ export default function Home() {
             </div>
             <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-6 md:mb-8 h-auto md:h-8">For regular creators.</p>
             <ul className="space-y-3 md:space-y-4 mb-6 md:mb-8 flex-1">
-              {['20 generations/month', '300 MB files', '10,000 characters TTS', 'Commercial license'].map((feature, i) => (
+              {['60,000 Pulse/month', '5,000 characters TTS limit', '5 minutes STT/Audio limit', 'Voice Cloning Access (Max 2)'].map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 md:gap-3 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-white"><Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}</li>
               ))}
             </ul>
@@ -293,7 +294,7 @@ export default function Home() {
             </div>
             <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-6 md:mb-8 h-auto md:h-8">For serious creators.</p>
             <ul className="space-y-3 md:space-y-4 mb-6 md:mb-8 flex-1">
-              {['100 generations/month', '500 MB files', '15,000 characters TTS', 'Priority support'].map((feature, i) => (
+              {['150,000 Pulse/month', '10,000 characters TTS limit', '10 minutes STT/Audio limit', 'Voice Cloning Access (Max 5)'].map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 md:gap-3 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-400"><Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}</li>
               ))}
             </ul>
@@ -309,7 +310,7 @@ export default function Home() {
             </div>
             <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-6 md:mb-8 h-auto md:h-8">High-volume production.</p>
             <ul className="space-y-3 md:space-y-4 mb-6 md:mb-8 flex-1">
-              {['300 generations/month', '50 MB files', '5,000 characters TTS', 'Enterprise ready'].map((feature, i) => (
+              {['800,000 Pulse/month', '15,000 characters TTS limit', '15 minutes STT/Audio limit', 'Voice Cloning Access (Max 10)'].map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 md:gap-3 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-400"><Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> {feature}</li>
               ))}
             </ul>
@@ -334,6 +335,9 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+              <Link href="/docs" className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
+                Docs
+              </Link>
               <Link href="/terms-of-use" target='_blank' className="text-[10px] font-mono text-zinc-500 hover:text-cyan-400 uppercase tracking-widest transition-colors">
                 Terms of Service
               </Link>

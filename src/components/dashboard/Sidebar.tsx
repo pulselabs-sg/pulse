@@ -1,4 +1,5 @@
-import { Menu, X, Crown, CreditCard, User } from 'lucide-react';
+import { Menu, X, Crown, CreditCard, User, BookOpen } from 'lucide-react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Tab, TABS, Tier } from '@/lib/dashboard-constants';
@@ -90,6 +91,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
               {isSidebarOpen && <span className={cn("font-bold tracking-wider text-[11px]", activeTab === tab.id ? "text-white" : "text-zinc-400")}>{tab.label}</span>}
             </button>
           ))}
+          <Link href="/docs" target="_blank" className="group relative flex items-center gap-3 p-3 rounded-xl text-sm transition-all duration-300 text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300 mt-1">
+             <BookOpen className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
+             {isSidebarOpen && <span className="font-bold tracking-wider text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors">Documentation</span>}
+          </Link>
         </div>
 
         {isSidebarOpen ? (
@@ -100,7 +105,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
                 <span className="text-[9px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 text-zinc-400">
                   <Crown className={cn("w-3.5 h-3.5", userState.tier === 'FREE' ? "text-zinc-700" : "text-blue-400")} /> {userState.tier}
                 </span>
-                <span className="text-[10px] font-bold text-white tracking-tighter">{userState.usage}<span className="text-zinc-600 font-normal">/{userState.limit === Infinity ? '∞' : userState.limit}</span></span>
+                <span className="text-[10px] font-bold text-white tracking-tighter">{userState.usage.toLocaleString()}<span className="text-zinc-600 font-normal">/{userState.limit.toLocaleString()}</span></span>
               </div>
               <div className="w-full h-1.5 bg-white/5 rounded-full mb-4 overflow-hidden border border-white/5">
                 <motion.div

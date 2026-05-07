@@ -6,7 +6,6 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// ✅ Lazy initialization - chỉ tạo khi thực sự dùng (fix lỗi build Turbopack)
 export const getPrisma = () => {
   if (!globalForPrisma.prisma) {
     if (!process.env.DATABASE_URL) {
@@ -26,5 +25,4 @@ export const getPrisma = () => {
   return globalForPrisma.prisma;
 };
 
-// Export default để giữ tương thích code cũ (nếu bạn import { prisma })
 export const prisma = getPrisma();
