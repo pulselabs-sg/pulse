@@ -23,10 +23,10 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
                         <h2 className="text-2xl font-bold tracking-tight text-white mb-1 flex items-center gap-3 uppercase">
                             <History className="w-6 h-6 text-blue-400" /> History
                         </h2>
-                        <p className="text-zinc-500 font-mono text-[10px] tracking-[0.2em]">Archived neural synthesis cycles</p>
+                        <p className="text-zinc-400 font-mono text-[10px] tracking-[0.2em]">Archived neural synthesis cycles</p>
                     </div>
                     {history.length > 0 && (
-                        <div className="text-[10px] font-mono text-zinc-600 uppercase bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                        <div className="text-[10px] font-mono text-zinc-400 uppercase bg-white/5 px-3 py-1 rounded-full border border-white/5">
                             Total Records: <span className="text-white">{history.length}</span>
                         </div>
                     )}
@@ -69,14 +69,14 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
 
                                     <div className="flex-1 min-w-0 space-y-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-[9px] font-mono text-zinc-600 uppercase">Input Stream</span>
+                                            <span className="text-[9px] font-mono text-zinc-500 uppercase">Input Stream</span>
                                             <div className="h-[1px] flex-1 bg-white/5" />
                                         </div>
                                         <p className="text-xs md:text-sm text-zinc-300 font-medium break-words whitespace-normal line-clamp-2 md:line-clamp-1">
                                             {item.input || 'Audio File Uploaded'}
                                         </p>
                                         <div className="flex items-center gap-2 mt-3 mb-1">
-                                            <span className="text-[9px] font-mono text-zinc-600 uppercase">Neural Result</span>
+                                            <span className="text-[9px] font-mono text-zinc-500 uppercase">Neural Result</span>
                                             <div className="h-[1px] flex-1 bg-white/5" />
                                         </div>
                                         <p className={cn(
@@ -93,10 +93,10 @@ export default function HistoryPanel({ onLoadRecord }: { onLoadRecord: (item: an
 
                                     <div className="shrink-0 flex flex-col items-end gap-4 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
                                         <div className="text-right">
-                                            <p className="text-[10px] font-mono text-zinc-500 font-bold">
+                                            <p className="text-[10px] font-mono text-zinc-400 font-bold">
                                                 {new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                             </p>
-                                            <p className="text-[9px] font-mono text-zinc-600 uppercase">
+                                            <p className="text-[9px] font-mono text-zinc-500 uppercase">
                                                 {new Date(item.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                                             </p>
                                         </div>

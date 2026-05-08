@@ -1,7 +1,18 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Refund Policy | iPulse AI',
+  description: 'Read the iPulse AI Refund Policy. Learn about our billing terms, subscription cancellations, and refund eligibility.',
+  alternates: {
+    canonical: 'https://ipulselabs.net/refund-policy',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function RefundPolicy() {
   return (

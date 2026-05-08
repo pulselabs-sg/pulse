@@ -1,7 +1,9 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://ipulselabs.net/';
+  // No trailing slash — prevents double-slash URLs like //login that cause
+  // "Page with redirects" errors in Google Search Console.
+  const baseUrl = 'https://ipulselabs.net';
 
   return [
     {
@@ -10,29 +12,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 1,
     },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
+    // NOTE: /login is intentionally excluded — it redirects authenticated
+    // users to /dashboard, causing Google to flag it as "Page with redirects".
     {
       url: `${baseUrl}/privacy-policy`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.3,
+      priority: 0.4,
     },
     {
       url: `${baseUrl}/terms-of-use`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.3,
+      priority: 0.4,
     },
     {
       url: `${baseUrl}/refund-policy`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.3,
+      priority: 0.4,
     },
   ];
 }

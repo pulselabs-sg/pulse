@@ -26,8 +26,11 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const successParam = searchParams.get('success');
 
-  // Core States
-  const [activeTab, setActiveTab] = useState<Tab>('tts');
+  // Core States — tab defaults to URL ?tab= param, falling back to 'tts'
+  const tabParam = searchParams.get('tab') as Tab | null;
+  const validTabs: Tab[] = ['tts', 'stt', 'changer', 'clone', 'history', 'profile'];
+  const initialTab: Tab = tabParam && validTabs.includes(tabParam) ? tabParam : 'tts';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Workspace States
@@ -67,6 +70,9 @@ function DashboardContent() {
     setFile(null);
     setResult(null);
     setActiveTab(tab);
+    // Keep ?tab= in the URL for shareable links (e.g. /dashboard?tab=tts)
+    // Use replace so tab switches don't stack in browser history.
+    router.replace(`/dashboard?tab=${tab}`);
   };
 
   useEffect(() => {
@@ -240,7 +246,7 @@ function DashboardContent() {
       />
 
       <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0 h-full">
-        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-600 z-10 relative">
+        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-500 z-10 relative">
           <div className="flex items-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -269,7 +275,7 @@ function DashboardContent() {
 
               {/* Profile Card */}
               <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
-                <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-sm object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
+                <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-xl object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
                   <div>
                     <h3 className="text-xl font-mono tracking-widest text-white">{session?.user?.name}</h3>
@@ -298,7 +304,7 @@ function DashboardContent() {
                   {/* Plan Card */}
                   <div className="bg-[#050505] border border-white/5 rounded-sm p-5 flex flex-col justify-between">
                     <div>
-                      <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-1">Current Plan</p>
+                      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Current Plan</p>
                       <div className="flex items-center gap-3 mb-6">
                         <span className={cn("text-xl font-mono font-bold uppercase tracking-widest", userState.tier !== 'FREE' ? 'text-emerald-400' : 'text-zinc-500')}>
                           {userState.tier}
@@ -330,17 +336,17 @@ function DashboardContent() {
 
                   {/* Usage Card */}
                   <div className="bg-[#050505] border border-white/5 rounded-sm p-5">
-                    <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Usage this month</p>
+                    <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-4">Usage this month</p>
                     <div className="flex justify-between items-end mb-3">
                       <span className="text-2xl font-mono text-white tracking-tighter">
-                        {userState.usage.toLocaleString()} <span className="text-[10px] text-zinc-600 uppercase tracking-widest">pulse</span>
+                        {userState.usage.toLocaleString()} <span className="text-[10px] text-zinc-500 uppercase tracking-widest">pulse</span>
                       </span>
                       <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Limit: {userState.limit.toLocaleString()}</span>
                     </div>
                     <div className="w-full h-1 bg-zinc-900 rounded-none mb-4 overflow-hidden">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((userState.usage / (userState.limit === Infinity ? 100 : userState.limit)) * 100, 100)}%` }} transition={{ duration: 1, ease: "easeOut" }} className={cn("h-full", isLimitReached ? "bg-red-500" : "bg-emerald-400")} />
                     </div>
-                    <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Resets at the start of next billing cycle.</p>
+                    <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Resets at the start of next billing cycle.</p>
                   </div>
                 </div>
               </div>

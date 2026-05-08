@@ -1,7 +1,18 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | iPulse AI',
+  description: 'Read the iPulse AI Privacy Policy. Learn how we collect, use, and protect your personal and biometric data.',
+  alternates: {
+    canonical: 'https://ipulselabs.net/privacy-policy',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function PrivacyPolicy() {
   return (

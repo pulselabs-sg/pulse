@@ -31,7 +31,7 @@ export const TABS = [
   { id: 'changer', label: 'Voice Changer', icon: AudioLines, desc: 'Transform voice style' },
   { id: 'clone', label: 'Clone Voice', icon: Zap, desc: 'Create a custom voice identity' },
   { id: 'clean', label: 'Audio Cleaner', icon: Mic, desc: 'Remove noise & enhance' },
-  { id: 'history', label: 'History Log', icon: History, desc: 'Your generation records' },
+  { id: 'history', label: 'History', icon: History, desc: 'Your generation records' },
   { id: 'profile', label: 'Profile', icon: User, desc: 'Account & Billing' },
 ] as const;
 

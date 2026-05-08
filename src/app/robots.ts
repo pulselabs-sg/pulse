@@ -5,7 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/dashboard/', '/api/'],
+      // /login redirects to /dashboard — keep it private to prevent
+      // "Page with redirects" indexing issues in Google Search Console.
+      // /dashboard/ and /api/ are authenticated/private routes.
+      disallow: ['/login', '/dashboard/', '/api/'],
     },
     sitemap: 'https://ipulselabs.net/sitemap.xml',
   };

@@ -163,7 +163,6 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                 setCustomVoices(prev => [data.voice, ...prev]);
                 setSelectedVoice(data.voice.voiceId);
                 alert("Voice cloned successfully! You can now use it in TTS and Voice Changer.");
-                // Reset file
                 setFile(null);
             } else {
                 setUserState((prev: any) => ({ ...prev, usage: parseInt(res.headers.get('X-User-Usage') || String(prev.usage + 1)) }));
@@ -192,16 +191,17 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
 
     return (
         <div className="flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 relative z-10 min-h-0 overflow-y-auto custom-scrollbar">
-            {/* Input */}
-            <div className={cn("flex flex-col min-h-0", activeTab === 'clone' ? "flex-none lg:flex-1" : "flex-1 lg:max-w-2xl")}>
-                <div className={cn("glass border border-white/10 rounded-2xl flex flex-col relative overflow-hidden group",
-                    activeTab === 'clone' ? "h-auto p-4 md:p-8" : "h-full min-h-[300px] lg:min-h-0 p-4 md:p-8"
+            <div className={cn("flex flex-col min-h-0 relative z-20", (activeTab === 'clone' || activeTab === 'tts') ? "flex-none lg:flex-1" : "flex-1 lg:max-w-2xl")}>
+                <div className={cn("glass border border-white/10 rounded-2xl flex flex-col relative group",
+                    (activeTab === 'clone' || activeTab === 'tts') ? "h-auto lg:h-full p-4 md:p-8" : "h-full min-h-[300px] lg:min-h-0 p-4 md:p-8"
                 )}>
-                    <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
-                        <Settings2 className="w-32 h-32 text-white rotate-12" />
+                    <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none z-0">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <Settings2 className="w-32 h-32 text-white rotate-12" />
+                        </div>
                     </div>
 
-                    <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6 flex items-center gap-3">
+                    <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6 flex items-center gap-3 relative z-10">
                         <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
                         {activeTab === 'clone' ? 'Neural Identity Scanner' : 'Intelligence Input Matrix'}
                     </h2>
@@ -234,7 +234,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 </div>
 
                                 <div className="mt-4 px-1 flex items-start gap-2 text-zinc-500">
-                                    <p className="text-[10px] md:text-[11px] font-mono leading-relaxed tracking-tight">
+                                    <p className="text-[10px] md:text-[12px] font-mono leading-relaxed tracking-tight">
                                         The <a href="/docs/guide" target="_blank" className="text-blue-400 hover:text-blue-300 underline decoration-blue-500/30 underline-offset-2 transition-colors">language</a> of the generated voice will be automatically detected based on the original language of the text or audio you provide.
                                     </p>
                                 </div>
@@ -281,7 +281,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 <div className="flex-[2] md:flex-1 relative min-w-0" ref={voiceMenuRef}>
                                     <button
                                         onClick={() => setShowVoiceList(!showVoiceList)}
-                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl text-left transition-all h-10 md:h-12 group/voice"
+                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl text-left transition-all h-10 md:h-12 group/voice relative z-20"
                                     >
                                         <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0">
                                             <div
@@ -304,7 +304,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         {showVoiceList && (
                                             <motion.div
                                                 initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute z-50 bottom-[calc(100%+8px)] w-full md:w-[150%] glass border border-white/10 rounded-2xl shadow-2xl max-h-64 overflow-y-auto py-2 custom-scrollbar"
+                                                className="absolute z-[100] bottom-[calc(100%+8px)] w-full md:w-[150%] glass border border-white/10 rounded-2xl shadow-2xl max-h-64 overflow-y-auto py-2 custom-scrollbar"
                                             >
                                                 {allVoices.map((voice) => (
                                                     <button
@@ -342,7 +342,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             {activeTab !== 'stt' && activeTab !== 'clone' && (
                                 <button
                                     onClick={cycleFormat}
-                                    className="w-14 md:w-20 shrink-0 h-10 md:h-12 px-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl font-mono text-[9px] md:text-[10px] uppercase transition-all text-blue-400 font-bold tracking-widest active:scale-95 flex items-center justify-center gap-1.5 md:gap-2"
+                                    className="w-14 md:w-20 shrink-0 h-10 md:h-12 px-2 bg-black/40 border border-white/5 hover:border-white/20 rounded-xl font-mono text-[9px] md:text-[10px] uppercase transition-all text-blue-400 font-bold tracking-widest active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 relative z-20"
                                 >
                                     <AudioLines className="w-3 h-3 hidden md:block" />
                                     {outputFormat}
@@ -353,7 +353,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 onClick={handleProcess}
                                 disabled={loading || (activeTab !== 'clone' && isLimitReached) || (activeTab === 'tts' ? !textInput.trim() : !file && !result)}
                                 className={cn(
-                                    "flex-[1.5] h-10 md:h-12 font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all relative overflow-hidden group/btn text-[10px] md:text-xs",
+                                    "flex-[1.5] h-10 md:h-12 font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all relative overflow-hidden group/btn text-[10px] md:text-xs z-20",
                                     activeTab !== 'clone' && isLimitReached ? "bg-red-500/10 text-red-500 border border-red-500/20 cursor-not-allowed" : "accent-gradient text-white shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale"
                                 )}
                             >
@@ -369,9 +369,8 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                 </div>
             </div>
 
-            {/* Output */}
             {activeTab !== 'clone' && (
-                <div className="flex-none lg:flex-1 flex flex-col min-h-[200px] lg:min-h-0">
+                <div className="flex-none lg:flex-1 flex flex-col min-h-[200px] lg:min-h-0 relative z-10">
                     <div className="glass border border-white/10 rounded-2xl flex flex-col h-full overflow-hidden relative">
                         <div className="h-12 border-b border-white/5 px-6 flex items-center justify-between bg-white/[0.02]">
                             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest flex items-center gap-2">
@@ -392,10 +391,10 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                         className="text-center space-y-4"
                                     >
-                                        <div className="w-16 h-16 rounded-full border-2 border-white/5 flex items-center justify-center mx-auto opacity-20">
+                                        <div className="w-16 h-16 rounded-full border-2 border-white/5 flex items-center justify-center mx-auto opacity-40">
                                             <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
                                         </div>
-                                        <p className="text-zinc-600 font-mono text-[10px] uppercase tracking-[0.3em]">Awaiting Instruction</p>
+                                        <p className="text-zinc-400 font-mono text-[8px] md:text-[10px] uppercase tracking-[0.3em]">Awaiting Instruction</p>
                                     </motion.div>
                                 )}
 
@@ -467,7 +466,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
             )}
 
             {activeTab === 'clone' && (
-                <div className="flex-none lg:flex-1 flex flex-col mt-2 lg:mt-0">
+                <div className="flex-none lg:flex-1 flex flex-col mt-2 lg:mt-0 relative z-10">
                     <div className="glass border border-white/10 rounded-2xl p-4 lg:p-8 flex flex-col items-center justify-center text-center">
                         <p className="text-zinc-500 text-[10px] font-mono leading-relaxed max-w-sm mb-6">
                             Upload a clear, 1-2 minute audio clip with minimal background noise. Our neural engine will map the identity and save it securely to your account.

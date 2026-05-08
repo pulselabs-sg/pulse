@@ -1,7 +1,18 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Terms of Use | iPulse AI',
+  description: 'Read the iPulse AI Terms of Use. Understand your rights, our acceptable use policies, and billing terms.',
+  alternates: {
+    canonical: 'https://ipulselabs.net/terms-of-use',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function TermsOfUse() {
   return (

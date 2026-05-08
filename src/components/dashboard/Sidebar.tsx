@@ -49,7 +49,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
 
       <div className="flex-1 py-6 flex flex-col overflow-y-auto custom-scrollbar">
         <div className="flex flex-col gap-1.5 px-3">
-          {isSidebarOpen && <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.2em] mb-3 px-3">Intelligence Matrix</p>}
+          {isSidebarOpen && <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em] mb-3 px-3">Intelligence Matrix</p>}
           {mainTabs.map((tab) => (
             <button
               key={tab.id}
@@ -68,8 +68,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
               <tab.icon className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-blue-400" : "text-zinc-600")} />
               {isSidebarOpen && (
                 <div className="flex flex-col min-w-0 text-left">
-                  <span className={cn("font-bold tracking-wider text-[11px] transition-colors", activeTab === tab.id ? "text-white" : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
-                  <span className="text-[9px] truncate font-mono text-zinc-600 uppercase tracking-tighter">{tab.desc}</span>
+                  <span className={cn("font-bold tracking-wider text-[11px] transition-colors uppercase", activeTab === tab.id ? "text-white" : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
+                  <span className="text-[10px] truncate font-mono text-zinc-600 tracking-tighter">{tab.desc}</span>
                 </div>
               )}
             </button>
@@ -92,8 +92,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
             </button>
           ))}
           <Link href="/docs" target="_blank" className="group relative flex items-center gap-3 p-3 rounded-xl text-sm transition-all duration-300 text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300 mt-1">
-             <BookOpen className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
-             {isSidebarOpen && <span className="font-bold tracking-wider text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors">Documentation</span>}
+            <BookOpen className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
+            {isSidebarOpen && <span className="font-bold tracking-wider text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors">Documentation</span>}
           </Link>
         </div>
 

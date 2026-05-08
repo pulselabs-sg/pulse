@@ -24,7 +24,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="min-h-screen bg-black text-zinc-300 font-sans relative selection:bg-white/20">
       <div className="fixed inset-0 bg-[url('/noise.png')] bg-repeat opacity-40 mix-blend-overlay z-0 pointer-events-none"></div>
-      
+
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
@@ -35,8 +35,8 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             <span className="font-mono text-xs md:text-sm text-white tracking-widest">iPulse</span>
           </Link>
           <div className="flex items-center gap-4 md:gap-8 text-[10px] font-mono uppercase tracking-widest">
-            <Link href="/" className="text-zinc-500 hover:text-white transition-colors flex items-center gap-2">
-              <ArrowLeft className="w-3 h-3" /> <span className="hidden md:inline">Return to Hub</span>
+            <Link href="/" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+              <ArrowLeft className="w-3 h-3" /> <span className="hidden md:inline">Home Page</span>
             </Link>
             <Link href="/dashboard" className="px-3 py-1.5 bg-white text-black font-bold rounded-sm hover:bg-cyan-300 transition-colors">
               Dashboard
@@ -46,15 +46,15 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
       </nav>
 
       <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto pt-14 min-h-screen relative z-10">
-        
+
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-white/5 bg-black/40 backdrop-blur-md sticky top-14 self-start max-h-[calc(100vh-3.5rem)] overflow-y-auto">
           <div className="p-6">
-            <h2 className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mb-4 px-3">Documentation Index</h2>
+            <h2 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4 px-3">Documentation</h2>
             <nav className="space-y-1">
               {TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
-                
+
                 if (tab.disabled) {
                   return (
                     <div

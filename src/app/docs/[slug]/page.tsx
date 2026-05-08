@@ -37,14 +37,14 @@ export default function DocsPage() {
               <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full"></span>
               <span className="text-zinc-400">SYSTEM ONLINE</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
               Introduction to iPulse
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
               Welcome to the official documentation for iPulse AI. We provide state-of-the-art neural voice engines, capable of real-time text-to-speech, speech-to-text, voice cloning, and audio cleaning. Our models are designed for developers, creators, and enterprises looking for the ultimate voice synthesis toolkit.
             </p>
           </div>
-          
+
           <div className="space-y-6">
             <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-cyan-400" /> Capabilities Matrix
@@ -94,7 +94,7 @@ export default function DocsPage() {
       return (
         <PageTransition>
           <div className="border-b border-white/5 pb-8">
-            <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
               Resource Allocation Plans
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
@@ -106,16 +106,16 @@ export default function DocsPage() {
             {PLANS.map((plan) => (
               <div key={plan.id} className={cn("bg-[#080808] border p-6 flex flex-col relative transition-all duration-300 hover:-translate-y-1", plan.popular ? "border-cyan-400 shadow-[0_0_40px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-white/30")}>
                 {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-cyan-400 font-bold inline-block px-3 py-1 mb-4 self-start absolute top-0 -translate-y-1/2 left-6 shadow-[0_0_15px_rgba(34,211,238,0.5)]">RECOMMENDED</div>}
-                
+
                 <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2">{plan.name}</div>
-                
+
                 <div className="flex items-baseline gap-1 mb-6">
                   <span className="text-4xl font-mono font-bold text-white">${plan.price}</span>
                   <span className="text-[10px] font-mono uppercase text-zinc-500">{plan.period}</span>
                 </div>
-                
+
                 <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-8 h-8 leading-relaxed">{plan.desc}</p>
-                
+
                 <ul className="space-y-4 mb-8 flex-1">
                   {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-300">
@@ -126,7 +126,7 @@ export default function DocsPage() {
                     </li>
                   ))}
                 </ul>
-                
+
                 <Link href="/dashboard" className={cn(
                   "w-full py-3 text-center text-[10px] font-mono uppercase tracking-widest font-bold transition-all rounded-sm flex items-center justify-center gap-2",
                   plan.popular ? "bg-cyan-400 text-black hover:bg-white" : "bg-white/5 hover:bg-white text-zinc-400 hover:text-black border border-white/10 hover:border-transparent"
@@ -196,7 +196,7 @@ export default function DocsPage() {
           </div>
 
           <div className="pt-6 border-t border-white/5 flex items-center gap-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-            <ShieldCheck className="w-5 h-5 text-cyan-400" /> 
+            <ShieldCheck className="w-5 h-5 text-cyan-400" />
             <span>Secure Payments processed by <span className="text-white">Paddle.com</span></span>
           </div>
         </PageTransition>
@@ -206,14 +206,14 @@ export default function DocsPage() {
       return (
         <PageTransition>
           <div className="border-b border-white/5 pb-8">
-            <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
               Usage Guides
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
               Comprehensive step-by-step instructions for utilizing the iPulse dashboard modules to their fullest potential.
             </p>
           </div>
-          
+
           <div className="space-y-8">
             {/* TTS */}
             <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
@@ -345,7 +345,7 @@ export default function DocsPage() {
       return (
         <PageTransition>
           <div className="border-b border-white/5 pb-8">
-            <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
               Frequently Asked Questions
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
@@ -385,36 +385,36 @@ export default function DocsPage() {
       return (
         <PageTransition>
           <div className="border-b border-white/5 pb-8">
-            <h1 className="text-4xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
               Terms & Policy
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
               Please review our comprehensive legal documentation to understand your rights, data privacy, and obligations when utilizing the iPulse platform infrastructure.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-             <Link href="/terms-of-use" target="_blank" className="bg-[#080808] hover:bg-white/[0.02] border border-white/5 hover:border-white/20 p-8 rounded-sm flex flex-col items-start gap-6 transition-all group">
-                <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
-                  <FileText className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-2">Terms of Use</h3>
-                  <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Read our core operational guidelines and user agreements.</p>
-                  <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full document →</span>
-                </div>
-             </Link>
-             
-             <Link href="/privacy-policy" target="_blank" className="bg-[#080808] hover:bg-white/[0.02] border border-white/5 hover:border-white/20 p-8 rounded-sm flex flex-col items-start gap-6 transition-all group">
-                <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
-                  <ShieldCheck className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-2">Privacy Policy</h3>
-                  <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Understand how we process, store, and protect your data.</p>
-                  <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full policy →</span>
-                </div>
-             </Link>
+            <Link href="/terms-of-use" target="_blank" className="bg-[#080808] hover:bg-white/[0.02] border border-white/5 hover:border-white/20 p-8 rounded-sm flex flex-col items-start gap-6 transition-all group">
+              <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
+                <FileText className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
+              </div>
+              <div>
+                <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-2">Terms of Use</h3>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Read our core operational guidelines and user agreements.</p>
+                <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full document →</span>
+              </div>
+            </Link>
+
+            <Link href="/privacy-policy" target="_blank" className="bg-[#080808] hover:bg-white/[0.02] border border-white/5 hover:border-white/20 p-8 rounded-sm flex flex-col items-start gap-6 transition-all group">
+              <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-all">
+                <ShieldCheck className="w-5 h-5 text-zinc-400 group-hover:text-cyan-400 transition-colors" />
+              </div>
+              <div>
+                <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-2">Privacy Policy</h3>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Understand how we process, store, and protect your data.</p>
+                <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full policy →</span>
+              </div>
+            </Link>
           </div>
         </PageTransition>
       );
