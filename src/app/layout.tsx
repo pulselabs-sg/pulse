@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://ipulselabs.net/'),
   title: {
-    default: 'iPulse | Best AI Voice Generator & Text to Speech Online',
+    default: 'iPulse | AI Voice Generator & Text to Speech',
     template: '%s | iPulse AI',
   },
   description: 'iPulse is the leading AI voice platform for creators. Generate realistic text to speech, clone voices, transcribe audio with 99% accuracy, and clean audio instantly.',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.png', type: 'image/png', sizes: '192x192' },
-      { url: '/logo.webp', type: 'image/webp' }
+      { url: '/logo.png', type: 'image/png' }
     ],
     apple: [
       { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
@@ -117,7 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     '@type': 'Organization',
     name: 'iPulse AI',
     url: 'https://ipulselabs.net/',
-    logo: 'https://ipulselabs.net/logo.webp',
+    logo: 'https://ipulselabs.net/logo.png',
     sameAs: [
     ]
   };
