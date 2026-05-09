@@ -144,11 +144,11 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         setLoading(true); setResult(null);
         let requestBody: any = activeTab === 'clean' ? {} : { format: outputFormat };
         const endpoint =
-            activeTab === 'tts'     ? 'text-to-speech'  :
-            activeTab === 'stt'     ? 'speech-to-text'  :
-            activeTab === 'clone'   ? 'clone-voice'      :
-            activeTab === 'clean'   ? 'clean-audio'      :
-                                      'voice-changer';
+            activeTab === 'tts' ? 'text-to-speech' :
+                activeTab === 'stt' ? 'speech-to-text' :
+                    activeTab === 'clone' ? 'clone-voice' :
+                        activeTab === 'clean' ? 'clean-audio' :
+                            'voice-changer';
 
         try {
             if (activeTab === 'tts') { requestBody.text = cleanText; requestBody.voiceId = selectedVoice; }
@@ -207,7 +207,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                         </div>
                     </div>
 
-                    <h2 className="text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6 flex items-center gap-3 relative z-10">
+                    <h2 className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6 flex items-center gap-3 relative z-10">
                         <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
                         {activeTab === 'clone' ? 'Neural Identity Scanner' : 'Intelligence Input Matrix'}
                     </h2>
@@ -397,7 +397,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                         className="text-center space-y-4"
                                     >
-                                        <div className="w-16 h-16 rounded-full border-2 border-white/5 flex items-center justify-center mx-auto opacity-40">
+                                        <div className="w-16 h-16 flex items-center justify-center mx-auto opacity-40">
                                             <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
                                         </div>
                                         <p className="text-zinc-400 font-mono text-[8px] md:text-[10px] uppercase tracking-[0.3em]">Awaiting Instruction</p>

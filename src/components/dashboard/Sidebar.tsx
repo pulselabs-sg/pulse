@@ -48,14 +48,14 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
       </div>
 
       <div className="flex-1 py-6 flex flex-col overflow-y-auto custom-scrollbar">
-        <div className="flex flex-col gap-1.5 px-3">
-          {isSidebarOpen && <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em] mb-3 px-3">Intelligence Matrix</p>}
+        <div className="flex flex-col gap-1 px-3">
+          {isSidebarOpen && <p className="text-[9px] md:text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em] mb-3 px-3">Intelligence Matrix</p>}
           {mainTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id as Tab)}
               className={cn(
-                "group relative flex items-center gap-3 p-3 rounded-xl text-sm transition-all duration-300",
+                "group relative flex items-center gap-2 p-2 rounded-xl text-sm transition-all duration-300",
                 activeTab === tab.id ? "bg-white/5 text-white shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]" : "text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300"
               )}
             >
@@ -68,21 +68,21 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
               <tab.icon className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-blue-400" : "text-zinc-600")} />
               {isSidebarOpen && (
                 <div className="flex flex-col min-w-0 text-left">
-                  <span className={cn("font-bold tracking-wider text-[11px] transition-colors uppercase", activeTab === tab.id ? "text-white" : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
-                  <span className="text-[10px] truncate font-mono text-zinc-600 tracking-tighter">{tab.desc}</span>
+                  <span className={cn("font-bold tracking-wider text-[10px] md:text-[11px] transition-colors uppercase", activeTab === tab.id ? "text-white" : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
+                  <span className="text-[9px] md:text-[10px] truncate font-mono text-zinc-600 tracking-tighter">{tab.desc}</span>
                 </div>
               )}
             </button>
           ))}
         </div>
 
-        <div className="mt-auto border-t border-white/5 pt-4 flex flex-col gap-1.5 px-3 mb-6">
+        <div className="mt-auto border-t border-white/5 pt-4 flex flex-col gap-2 px-3 mb-6">
           {bottomTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id as Tab)}
               className={cn(
-                "group relative flex items-center gap-3 p-3 rounded-xl text-sm transition-all duration-300",
+                "group relative flex items-center gap-2 p-2 rounded-xl text-sm transition-all duration-300",
                 activeTab === tab.id ? "bg-white/5 text-white" : "text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300"
               )}
             >
@@ -91,10 +91,10 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
               {isSidebarOpen && <span className={cn("font-bold tracking-wider text-[11px]", activeTab === tab.id ? "text-white" : "text-zinc-400")}>{tab.label}</span>}
             </button>
           ))}
-          <Link href="/docs" target="_blank" className="group relative flex items-center gap-3 p-3 rounded-xl text-sm transition-all duration-300 text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300 mt-1">
+          {/* <Link href="/docs" target="_blank" className="group relative flex items-center gap-2 p-2 rounded-xl text-sm transition-all duration-300 text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300 mt-1">
             <BookOpen className="w-4 h-4 shrink-0 text-zinc-600 group-hover:text-cyan-400 transition-colors" />
             {isSidebarOpen && <span className="font-bold tracking-wider text-[11px] text-zinc-400 group-hover:text-zinc-200 transition-colors">Documentation</span>}
-          </Link>
+          </Link> */}
         </div>
 
         {isSidebarOpen ? (
