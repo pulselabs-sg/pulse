@@ -33,8 +33,8 @@ export default async function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
-  // 3. Prevent Cross-Origin Embedder Policy (COEP) if needed for Paddle
-  // Paddle might need 'unsafe-none' or 'credentialless'
+  // 3. Prevent Cross-Origin Embedder Policy (COEP) if needed for Lemon Squeezy
+  // Lemon Squeezy might need 'unsafe-none' or 'credentialless'
   // response.headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
 
   return response;

@@ -14,8 +14,8 @@ model User {
   image                String?
   tier                 Tier      @default(FREE)
   usageCount           Int       @default(0)
-  paddleCustomerId     String?   @unique 
-  paddleSubscriptionId String?   @unique
+  lemonSqueezyCustomerId     String?   @unique 
+  lemonSqueezySubscriptionId String?   @unique
   cancelAtPeriodEnd    Boolean   @default(false)
 
   accounts             Account[]

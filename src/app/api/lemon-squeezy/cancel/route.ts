@@ -1,14 +1,13 @@
-// src/app/api/paddle/cancel/route.ts
+// src/app/api/lemon-squeezy/cancel/route.ts
 import { NextResponse } from 'next/server';
-import { Environment, Paddle } from '@paddle/paddle-node-sdk';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
+import { cancelSubscription, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js";
 
-const paddle = new Paddle(process.env.PADDLE_SECRET_KEY!, {
-  environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production'
-    ? Environment.production
-    : Environment.sandbox,
+// Initialize LS
+lemonSqueezySetup({
+  apiKey: process.env.LEMON_SQUEEZY_API_KEY,
 });
 
 export async function POST(req: Request) {
@@ -21,16 +20,20 @@ export async function POST(req: Request) {
     const prisma = getPrisma();
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { paddleSubscriptionId: true }
+      select: { lemonSqueezySubscriptionId: true }
     });
 
-    if (!user?.paddleSubscriptionId) {
+    if (!user?.lemonSqueezySubscriptionId) {
       return NextResponse.json({ error: 'No active subscription found' }, { status: 404 });
     }
 
-    await paddle.subscriptions.cancel(user.paddleSubscriptionId, {
-      effectiveFrom: 'next_billing_period'
-    });
+    // Lemon Squeezy cancellation
+    const { error } = await cancelSubscription(user.lemonSqueezySubscriptionId);
+    
+    if (error) {
+        console.error('LS Cancel Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
     await prisma.user.update({
       where: { id: session.user.id },
@@ -39,22 +42,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, message: 'Subscription scheduled for cancellation.' });
   } catch (error: any) {
-    if (error?.code === 'subscription_locked_pending_changes') {
-      const prisma = getPrisma();
-      const session = await getServerSession(authOptions);
-      if (session?.user?.id) {
-        await prisma.user.update({
-          where: { id: session.user.id },
-          data: { cancelAtPeriodEnd: true }
-        });
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Subscription is already scheduled for cancellation.'
-      });
-    }
-
     console.error('Cancel Subscription Error:', error);
     return NextResponse.json({ error: error.message || 'Failed to cancel' }, { status: 500 });
   }

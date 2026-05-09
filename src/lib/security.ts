@@ -147,12 +147,12 @@ export async function validateCredits(userId: string, cost: number) {
 export const SECURITY_HEADERS = {
   'Content-Security-Policy':
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.paddle.com https://checkout.paddle.com https://www.google.com https://www.gstatic.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.paddle.com; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.lemonsqueezy.com https://app.lemonsqueezy.com https://www.google.com https://www.gstatic.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.lemonsqueezy.com; " +
     "img-src 'self' blob: data: https://*.vercel-storage.com https://lh3.googleusercontent.com https://www.gravatar.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
-    "frame-src 'self' https://sandbox-checkout.paddle.com https://checkout.paddle.com; " +
-    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.paddle.com https://vercel.com; " +
+    "frame-src 'self' https://*.lemonsqueezy.com; " +
+    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.lemonsqueezy.com https://vercel.com; " +
     "media-src 'self' blob: https://*.vercel-storage.com;",
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
   'X-Content-Type-Options': 'nosniff',

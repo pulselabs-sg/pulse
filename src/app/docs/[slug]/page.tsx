@@ -98,7 +98,7 @@ export default function DocsPage() {
               Resource Allocation Plans
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Choose the perfect capability tier for your production scale. All payments are processed securely via our merchant of record, Paddle.
+              Choose the perfect capability tier for your production scale. All payments are processed securely via our merchant of record, Lemon Squeezy.
             </p>
           </div>
 
@@ -197,7 +197,7 @@ export default function DocsPage() {
 
           <div className="pt-6 border-t border-white/5 flex items-center gap-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
             <ShieldCheck className="w-5 h-5 text-cyan-400" />
-            <span>Secure Payments processed by <span className="text-white">Paddle.com</span></span>
+            <span>Secure Payments processed by <span className="text-white">LemonSqueezy.com</span></span>
           </div>
         </PageTransition>
       );

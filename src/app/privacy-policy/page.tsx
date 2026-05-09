@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
                 <strong>User Content:</strong> Text prompts, generated audio files, project settings, voice model names, and any customer support communications.
               </li>
               <li>
-                <strong>Commercial Information:</strong> Subscription tier, transaction history, and service usage metrics. (Note: Full payment card details are processed directly by Paddle, our Merchant of Record; we only retain billing status and limited transaction identifiers.)
+                <strong>Commercial Information:</strong> Subscription tier, transaction history, and service usage metrics. (Note: Full payment card details are processed directly by Lemon Squeezy, our Merchant of Record; we only retain billing status and limited transaction identifiers.)
               </li>
               <li>
                 <strong>Internet &amp; Network Activity:</strong> IP addresses, browser types, device identifiers, operating systems, log data, session duration, and interaction metrics with our platform.
@@ -92,7 +92,7 @@ export default function PrivacyPolicy() {
             <p>We process your information for the following legitimate business purposes:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>To provide, operate, and maintain the Service, including processing TTS requests and managing voice clone models.</li>
-              <li>To process payments and manage your subscription via Paddle.</li>
+              <li>To process payments and manage your subscription via Lemon Squeezy.</li>
               <li>To detect, investigate, and prevent fraud, abuse, policy violations, and unauthorized voice cloning activity (e.g., detecting deepfakes generated in violation of §2 of our Terms of Use).</li>
               <li>To enforce our Terms of Use, including investigating reports of unauthorized voice cloning or misuse of Generated Content.</li>
               <li>To communicate with you regarding service updates, security alerts, billing notices, and support.</li>
@@ -131,7 +131,7 @@ export default function PrivacyPolicy() {
                     <td className="py-2 text-zinc-400">Text-to-speech synthesis engine</td>
                   </tr>
                   <tr>
-                    <td className="py-2 pr-4">Paddle.com</td>
+                    <td className="py-2 pr-4">LemonSqueezy.com</td>
                     <td className="py-2 pr-4 text-zinc-400">Payments</td>
                     <td className="py-2 text-zinc-400">Merchant of Record; processes all transactions</td>
                   </tr>

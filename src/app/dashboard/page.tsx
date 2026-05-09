@@ -10,7 +10,6 @@ import {
   FileText, Scale, Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { initializePaddle, Paddle } from '@paddle/paddle-js';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -50,8 +49,7 @@ function DashboardContent() {
   });
   const [isCanceling, setIsCanceling] = useState(false);
 
-  // Paddle States
-  const [paddle, setPaddle] = useState<Paddle>();
+  // Lemon Squeezy States
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -99,90 +97,46 @@ function DashboardContent() {
     }
   }, [session]);
 
-  // Initialize Paddle
+  // Check for success from Lemon Squeezy
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) return;
+    if (successParam === 'true') {
+      setShowSuccessModal(true);
+      update().catch(console.error);
+    }
+  }, [successParam, update]);
 
-    initializePaddle({
-      environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production' ? 'production' : 'sandbox',
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-      eventCallback: (event) => {
-        if (event.name === 'checkout.completed') {
-          setShowPlanModal(false);
-          setShowCheckoutModal(false);
-          setShowSuccessModal(true);
-          update().catch(console.error);
-        }
-      },
-    }).then((paddleInstance) => {
-      if (paddleInstance) setPaddle(paddleInstance);
-    });
-  }, [update]);
-
-  // Handle Checkout logic
+  // Handle Checkout logic (Lemon Squeezy Redirect)
   useEffect(() => {
-    if (showCheckoutModal && checkoutPlanContext && paddle && session?.user && checkoutTermsConfirmed) {
-      const priceMap: Record<Tier, string> = {
-        BASIC: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_BASIC || '',
-        PREMIUM: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PREMIUM || '',
-        PRO: process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_PRO || '',
+    if (showCheckoutModal && checkoutPlanContext && session?.user && checkoutTermsConfirmed) {
+      const variantMap: Record<Tier, string> = {
+        BASIC: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID_BASIC || '',
+        PREMIUM: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID_PREMIUM || '',
+        PRO: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID_PRO || '',
         FREE: '',
       };
-      const priceId = priceMap[checkoutPlanContext];
-      if (!priceId) return;
 
-      let attempts = 0;
-      let timeoutId: NodeJS.Timeout;
+      const variantId = variantMap[checkoutPlanContext];
+      if (!variantId) return;
 
-      // Safe DOM check function
-      const initPaddleCheckout = () => {
-        // Note: Search by Class (.) instead of ID
-        const container = document.querySelector('.paddle-inline-container');
+      const storeId = process.env.NEXT_PUBLIC_LEMON_SQUEEZY_STORE_ID;
+      const userId = (session.user as any).id;
 
-        if (container) {
-          // If DOM is ready, proceed to open checkout
-          try {
-            paddle.Checkout.open({
-              items: [{ priceId, quantity: 1 }],
-              customData: { userId: String((session.user as any).id), plan: checkoutPlanContext },
-              settings: {
-                displayMode: 'inline',
-                frameTarget: 'paddle-inline-container', // This configuration of Paddle requires Class Name
-                frameInitialHeight: 500,
-                frameStyle: 'width: 100%; background-color: transparent; border: none;',
-                theme: 'dark',
-                successUrl: `${window.location.origin}/dashboard?success=true`,
-              },
-            });
-          } catch (err) {
-            console.error("Paddle Checkout Error:", err);
-          }
-        } else if (attempts < 20) {
-          // Try again every 50ms, up to 20 times (1 second)
-          attempts++;
-          timeoutId = setTimeout(initPaddleCheckout, 50);
-        } else {
-          console.error("Paddle Error: Cannot find .paddle-inline-container element");
-        }
-      };
+      // Construct Checkout URL
+      // Use hosted checkout for maximum reliability and smooth experience
+      const checkoutUrl = `https://ipulse.lemonsqueezy.com/buy/${variantId}?checkout[custom][userId]=${userId}&checkout[custom][plan]=${checkoutPlanContext}&embed=1&media=0`;
 
-      initPaddleCheckout();
-
-      // Cleanup function
-      return () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        try {
-          paddle.Checkout.close();
-        } catch (e) { }
-      };
+      // We'll use a small timeout to let the user see the "Connecting" state if we had one, 
+      // but here we just redirect or open in new window if preferred. 
+      // For a "smooth" feel, we'll redirect the current window.
+      window.location.href = checkoutUrl;
     }
-  }, [showCheckoutModal, checkoutPlanContext, paddle, session, checkoutTermsConfirmed]);
+  }, [showCheckoutModal, checkoutPlanContext, session, checkoutTermsConfirmed]);
 
   const handleCancelSubscription = async () => {
     if (!confirm("Are you sure you want to cancel? You will keep access until the end of the billing cycle.")) return;
     setIsCanceling(true);
     try {
-      const res = await fetch('/api/paddle/cancel', { method: 'POST' });
+      const res = await fetch('/api/lemon-squeezy/cancel', { method: 'POST' });
       if (!res.ok) throw new Error("Cancellation failed");
 
       setUserState(prev => ({ ...prev, cancelAtPeriodEnd: true }));
@@ -385,7 +339,7 @@ function DashboardContent() {
         )}
       </main>
 
-      {/* --- PADDLE MODALS --- */}
+      {/* --- LEMON SQUEEZY MODALS --- */}
       <AnimatePresence>
         {showPlanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center md:p-4" onClick={() => setShowPlanModal(false)}>
@@ -488,13 +442,13 @@ function DashboardContent() {
 
                     <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-2 text-zinc-600">
                       <ShieldCheck className="w-4 h-4" />
-                      <span className="text-[9px] font-mono uppercase tracking-widest">Secure checkout via Paddle</span>
+                      <span className="text-[9px] font-mono uppercase tracking-widest">Secure checkout via Lemon Squeezy</span>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* --- RIGHT: Paddle payment form --- */}
+              {/* --- RIGHT: Checkout form --- */}
               <div className="w-full md:w-2/3 bg-[#050505] relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">
                 {!checkoutTermsConfirmed ? (
                   <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
@@ -540,13 +494,17 @@ function DashboardContent() {
                     </button>
                   </div>
                 ) : (
-                  <>
-                    <div className="w-full flex items-center justify-center mb-4 text-emerald-400 gap-2">
-                      <ShieldCheck className="w-4 h-4" />
-                      <span className="text-[10px] font-mono uppercase tracking-widest">Connection Secure</span>
+                  <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
+                    <div className="p-4 bg-emerald-500/10 rounded-full border border-emerald-500/20 animate-pulse">
+                      <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
                     </div>
-                    <div className="paddle-inline-container w-full min-h-[450px]"></div>
-                  </>
+                    <div>
+                      <h3 className="text-white text-lg font-mono uppercase tracking-widest mb-2">Redirecting to Checkout</h3>
+                      <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest leading-relaxed">
+                        Preparing your secure payment session via Lemon Squeezy. Please do not close this window.
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
 

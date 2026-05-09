@@ -357,7 +357,7 @@ export default function Home() {
           </div>
 
           <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-2 text-[9px] font-mono text-zinc-700 uppercase tracking-widest">
-            <ShieldCheck className="w-3 h-3 text-cyan-400/50" /> Secure Payments processed by Paddle.com
+            <ShieldCheck className="w-3 h-3 text-cyan-400/50" /> Secure Payments processed by LemonSqueezy.com
           </div>
         </div>
       </footer>
