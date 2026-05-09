@@ -45,6 +45,7 @@ function DashboardContent() {
     limit: 5,
     maxFileMB: 50,
     maxChars: 5000,
+    maxAudioMins: 5,
     cancelAtPeriodEnd: false
   });
   const [isCanceling, setIsCanceling] = useState(false);
@@ -92,6 +93,7 @@ function DashboardContent() {
         limit: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].pulse,
         maxFileMB: tier === 'FREE' ? 50 : tier === 'BASIC' ? 300 : 500,
         maxChars: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxTTSChars,
+        maxAudioMins: TIER_LIMITS[tier as keyof typeof TIER_LIMITS].maxAudioMins,
         cancelAtPeriodEnd: (session.user as any).cancelAtPeriodEnd || false
       });
     }
@@ -335,6 +337,7 @@ function DashboardContent() {
             file={file} setFile={setFile}
             selectedVoice={selectedVoice} setSelectedVoice={setSelectedVoice}
             result={result} setResult={setResult}
+            onShowPlanModal={() => setShowPlanModal(true)}
           />
         )}
       </main>

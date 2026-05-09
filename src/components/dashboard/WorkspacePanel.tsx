@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Zap, Mic, UploadCloud, CheckCircle2, ChevronDown, Check, Loader2, AudioLines, Copy, Settings2, Sparkles, Wand2, Play, Square, Edit2, Save, Trash2 } from 'lucide-react';
+import { Zap, Mic, UploadCloud, CheckCircle2, ChevronDown, Check, Loader2, AudioLines, Copy, Settings2, Sparkles, Wand2, Play, Square, Edit2, Save, Trash2, AlertTriangle, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { upload } from '@vercel/blob/client';
@@ -19,9 +19,10 @@ interface WorkspaceProps {
     setFile: (v: File | null) => void;
     selectedVoice: string;
     setSelectedVoice: (v: string) => void;
+    onShowPlanModal?: () => void;
 }
 
-export default function WorkspacePanel({ activeTab, session, userState, setUserState, result, setResult, textInput, setTextInput, file, setFile, selectedVoice, setSelectedVoice }: WorkspaceProps) {
+export default function WorkspacePanel({ activeTab, session, userState, setUserState, result, setResult, textInput, setTextInput, file, setFile, selectedVoice, setSelectedVoice, onShowPlanModal }: WorkspaceProps) {
     const [loading, setLoading] = useState(false);
     const [outputFormat, setOutputFormat] = useState<'mp3' | 'wav' | 'pcm' | 'ulaw'>('mp3');
     const [showVoiceList, setShowVoiceList] = useState(false);
@@ -29,6 +30,10 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     const [customVoices, setCustomVoices] = useState<any[]>([]);
     const [editingVoiceId, setEditingVoiceId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
+
+    // ── Validation State ──────────────────────────────────────────────────────
+    const [fileError, setFileError] = useState<string | null>(null);
+    const [durationError, setDurationError] = useState<string | null>(null);
 
     const handleRenameVoice = async (id: string) => {
         if (!editingName.trim()) {
@@ -72,6 +77,19 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
 
     const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
 
+    // Derived limit flags
+    const isTextOverLimit = activeTab === 'tts' && textInput.length > userState.maxChars;
+    const isFileInvalid = !!(fileError || durationError);
+    const maxFileSizeBytes = userState.maxFileMB * 1024 * 1024;
+    // Clone tab has a fixed 120s duration limit regardless of tier
+    const maxAudioSeconds = activeTab === 'clone' ? 120 : userState.maxAudioMins * 60;
+
+    // Clear file errors when tab changes or file is cleared
+    useEffect(() => {
+        setFileError(null);
+        setDurationError(null);
+    }, [activeTab, file]);
+
     useEffect(() => {
         const fetchVoices = async () => {
             try {
@@ -86,6 +104,28 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         };
         fetchVoices();
     }, [activeTab]);
+
+    // Check audio duration after a file is accepted
+    useEffect(() => {
+        if (!file || !file.type.startsWith('audio/')) return;
+        const url = URL.createObjectURL(file);
+        const audio = new Audio();
+        audio.onloadedmetadata = () => {
+            if (audio.duration > maxAudioSeconds) {
+                const maxLabel = activeTab === 'clone'
+                    ? '120 seconds'
+                    : `${userState.maxAudioMins} minute${userState.maxAudioMins !== 1 ? 's' : ''}`;
+                setDurationError(
+                    `Audio duration (${Math.round(audio.duration)}s) exceeds the ${maxLabel} limit for your plan.`
+                );
+            } else {
+                setDurationError(null);
+            }
+            URL.revokeObjectURL(url);
+        };
+        audio.onerror = () => URL.revokeObjectURL(url);
+        audio.src = url;
+    }, [file, maxAudioSeconds, activeTab, userState.maxAudioMins]);
 
     const allVoices = [
         ...VOICES,
@@ -131,15 +171,33 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     };
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop: (files) => { if (files[0] && files[0].type.startsWith('audio/')) setFile(files[0]); },
+        onDrop: (accepted) => {
+            if (accepted[0] && accepted[0].type.startsWith('audio/')) {
+                setFileError(null);
+                setFile(accepted[0]);
+            }
+        },
+        onDropRejected: (rejectedFiles) => {
+            const err = rejectedFiles[0]?.errors[0];
+            if (err?.code === 'file-too-large') {
+                setFileError(`File size exceeds the ${userState.maxFileMB} MB limit for your plan.`);
+            } else if (err?.message) {
+                setFileError(err.message);
+            } else {
+                setFileError('File rejected. Please upload a valid audio file within the size limit.');
+            }
+            setFile(null);
+        },
         accept: { 'audio/*': ['.mp3', '.wav', '.m4a', '.ogg'] },
-        maxFiles: 1, maxSize: userState.maxFileMB * 1024 * 1024,
+        maxFiles: 1,
+        maxSize: maxFileSizeBytes,
     });
 
     const handleProcess = async () => {
-        if (!session?.user || isLimitReached) return;
+        // All hard guards are now enforced via the disabled button, but keep
+        // a safety net here in case someone bypasses the UI.
+        if (!session?.user || isLimitReached || isTextOverLimit || isFileInvalid) return;
         const cleanText = textInput.trim();
-        if (activeTab === 'tts' && cleanText.length > userState.maxChars) { alert("Text too long!"); return; }
 
         setLoading(true); setResult(null);
         let requestBody: any = activeTab === 'clean' ? {} : { format: outputFormat };
@@ -233,11 +291,26 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                     className="flex-1 w-full min-h-[150px] bg-black/40 border border-white/5 rounded-xl p-5 text-white font-sans text-xs md:text-sm leading-relaxed resize-none outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-700 custom-scrollbar shadow-inner"
                                 />
                                 <div className="flex justify-between mt-2 px-1">
-                                    <span className="text-[9px] font-mono uppercase text-zinc-600">Max Chars: {userState.maxChars}</span>
-                                    <span className={cn("text-[9px] font-mono uppercase", textInput.length > userState.maxChars ? "text-red-500" : "text-zinc-600")}>
-                                        {textInput.length} / {userState.maxChars}
+                                    <span className="text-[9px] font-mono uppercase text-zinc-600">Max Chars: {userState.maxChars.toLocaleString()}</span>
+                                    <span className={cn("text-[9px] font-mono uppercase font-bold", isTextOverLimit ? "text-red-500" : "text-zinc-600")}>
+                                        {textInput.length.toLocaleString()} / {userState.maxChars.toLocaleString()}
                                     </span>
                                 </div>
+                                <AnimatePresence>
+                                    {isTextOverLimit && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mt-2 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2"
+                                        >
+                                            <AlertTriangle className="w-3 h-3 text-red-400 shrink-0" />
+                                            <span className="text-[9px] font-mono text-red-400">
+                                                Text exceeds the {userState.maxChars.toLocaleString()}-character limit for your plan ({textInput.length - userState.maxChars} over). Shorten your text or upgrade your plan.
+                                            </span>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
 
                                 <div className="mt-4 px-1 flex items-start gap-2 text-zinc-500">
                                     <p className="text-[10px] md:text-[12px] font-mono leading-relaxed tracking-tight">
@@ -279,6 +352,23 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         The <a href="/docs/guide" target="_blank" className="text-blue-400 hover:text-blue-300 underline decoration-blue-500/30 underline-offset-2 transition-colors">language</a> of the generated voice will be automatically detected based on the original language of the text or audio you provide.
                                     </p>
                                 </div>
+
+                                {/* File / Duration error banners */}
+                                <AnimatePresence>
+                                    {(fileError || durationError) && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mt-2 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2"
+                                        >
+                                            <AlertTriangle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+                                            <span className="text-[9px] font-mono text-red-400 leading-relaxed">
+                                                {fileError || durationError}
+                                            </span>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </>
                         )}
 
@@ -355,21 +445,40 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 </button>
                             )}
 
-                            <button
-                                onClick={handleProcess}
-                                disabled={loading || (activeTab !== 'clone' && isLimitReached) || (activeTab === 'tts' ? !textInput.trim() : !file && !result)}
-                                className={cn(
-                                    "flex-[1.5] h-10 md:h-12 font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all relative overflow-hidden group/btn text-[10px] md:text-xs z-20",
-                                    activeTab !== 'clone' && isLimitReached ? "bg-red-500/10 text-red-500 border border-red-500/20 cursor-not-allowed" : "accent-gradient text-white shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale"
-                                )}
-                            >
-                                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
-                                {loading ? (
-                                    <><Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" /> Processing</>
-                                ) : (
-                                    <><Zap className="w-3 h-3 md:w-4 md:h-4 group-hover:scale-125 transition-transform" /> {activeTab === 'clone' ? 'Clone Voice' : 'Generate'}</>
-                                )}
-                            </button>
+                            {/* ── Generate / Upgrade Button ────────────────────────────── */}
+                            {isLimitReached && activeTab !== 'clone' ? (
+                                <button
+                                    onClick={() => onShowPlanModal?.()}
+                                    className="flex-[1.5] h-10 md:h-12 font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all relative overflow-hidden group/btn text-[10px] md:text-xs z-20 bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-400/50 hover:scale-[1.01] active:scale-95"
+                                >
+                                    <Crown className="w-3 h-3 md:w-4 md:h-4" /> Pulse Limit Reached
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleProcess}
+                                    disabled={
+                                        loading ||
+                                        isTextOverLimit ||
+                                        isFileInvalid ||
+                                        (activeTab === 'tts' ? !textInput.trim() : !file && !result)
+                                    }
+                                    className={cn(
+                                        "flex-[1.5] h-10 md:h-12 font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all relative overflow-hidden group/btn text-[10px] md:text-xs z-20",
+                                        (isTextOverLimit || isFileInvalid)
+                                            ? "bg-red-500/10 text-red-400 border border-red-500/30 cursor-not-allowed"
+                                            : "accent-gradient text-white shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:grayscale"
+                                    )}
+                                >
+                                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                                    {loading ? (
+                                        <><Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" /> Processing</>
+                                    ) : (isTextOverLimit || isFileInvalid) ? (
+                                        <><AlertTriangle className="w-3 h-3 md:w-4 md:h-4" /> {activeTab === 'clone' ? 'Clone Voice' : 'Generate'}</>
+                                    ) : (
+                                        <><Zap className="w-3 h-3 md:w-4 md:h-4 group-hover:scale-125 transition-transform" /> {activeTab === 'clone' ? 'Clone Voice' : 'Generate'}</>
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
