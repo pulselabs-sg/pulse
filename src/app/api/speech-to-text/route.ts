@@ -7,6 +7,7 @@ import { getPrisma } from '@/lib/prisma';
 import { del } from '@vercel/blob';
 import { speechToTextSchema, apiResponse } from '@/lib/security';
 import { parseBuffer } from 'music-metadata';
+import { ratelimit } from '@/lib/ratelimit';
 
 const TIER_LIMITS = {
   FREE: { pulse: 20000, maxAudioMins: 5 },
@@ -23,6 +24,12 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
+
+    // Rate Limiting (consistent with TTS and Voice Changer)
+    if (ratelimit) {
+      const { success } = await ratelimit.limit(`ratelimit_stt_${session.user.id}`);
+      if (!success) return apiResponse("Too many transcription requests. Please slow down.", 429);
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

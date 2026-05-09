@@ -142,8 +142,13 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         if (activeTab === 'tts' && cleanText.length > userState.maxChars) { alert("Text too long!"); return; }
 
         setLoading(true); setResult(null);
-        let requestBody: any = { format: outputFormat };
-        let endpoint = activeTab === 'tts' ? 'text-to-speech' : activeTab === 'stt' ? 'speech-to-text' : activeTab === 'clone' ? 'clone-voice' : 'voice-changer';
+        let requestBody: any = activeTab === 'clean' ? {} : { format: outputFormat };
+        const endpoint =
+            activeTab === 'tts'     ? 'text-to-speech'  :
+            activeTab === 'stt'     ? 'speech-to-text'  :
+            activeTab === 'clone'   ? 'clone-voice'      :
+            activeTab === 'clean'   ? 'clean-audio'      :
+                                      'voice-changer';
 
         try {
             if (activeTab === 'tts') { requestBody.text = cleanText; requestBody.voiceId = selectedVoice; }
@@ -156,6 +161,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
             }
 
             const res = await fetch(`/api/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+
             if (!res.ok) throw new Error(await res.text());
 
             if (activeTab === 'clone') {

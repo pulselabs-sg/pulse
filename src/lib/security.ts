@@ -67,7 +67,13 @@ export const speechToTextSchema = z.object({
   fileName: safeFileNameSchema.optional().default('Uploaded Audio'),
 });
 
-export const cleanAudioSchema = z.object({});
+export const cleanAudioSchema = z.object({
+  fileUrl: z.string().url("Invalid file URL").refine(
+    (url) => url.startsWith('https://'),
+    { message: "Only HTTPS URLs are allowed." }
+  ),
+  fileName: z.string().min(1).max(200).optional().default('audio.wav'),
+});
 
 // Clone Voice
 export const cloneVoiceSchema = z.object({
@@ -152,7 +158,7 @@ export const SECURITY_HEADERS = {
     "img-src 'self' blob: data: https://*.vercel-storage.com https://lh3.googleusercontent.com https://www.gravatar.com; " +
     "font-src 'self' https://fonts.gstatic.com; " +
     "frame-src 'self' https://*.lemonsqueezy.com; " +
-    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.lemonsqueezy.com https://vercel.com; " +
+    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.lemonsqueezy.com https://vercel.com https://*.modal.run; " +
     "media-src 'self' blob: https://*.vercel-storage.com;",
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
   'X-Content-Type-Options': 'nosniff',

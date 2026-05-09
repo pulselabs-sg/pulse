@@ -18,6 +18,19 @@ export async function POST(req: Request) {
       if (!success) return apiResponse("Rate limit exceeded for voice cloning. Try again later.", 429);
     }
 
+    // 2. Validate request body FIRST — before touching any credits.
+    //    Previously credits were deducted before validation, causing unnecessary
+    //    charge + rollback cycles on malformed requests.
+    const body = await req.json().catch(() => ({}));
+    const validation = cloneVoiceSchema.safeParse(body);
+
+    if (!validation.success) {
+      return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
+    }
+
+    const { fileUrl, fileName } = validation.data;
+
+    // 3. Credit check (reads user tier + usageCount)
     const cost = CREDIT_COSTS.CLONE_VOICE;
 
     const validationCredit = await validateCredits(session.user.id, cost);
@@ -27,12 +40,12 @@ export async function POST(req: Request) {
 
     const { user, limit } = validationCredit.data;
 
-    // Restrict FREE tier (even if they somehow have credits)
+    // 4. Restrict FREE tier (even if they somehow have credits)
     if (user.tier === 'FREE') {
       return apiResponse("Clone Voice feature is only available on Basic, Premium, and Pro plans.", 403);
     }
 
-    // 3. Deduct Credits Atomically
+    // 5. Deduct Credits Atomically
     const updatedUser = await prisma.user.updateMany({
       where: {
         id: user.id,
@@ -45,28 +58,17 @@ export async function POST(req: Request) {
       return apiResponse("Pulse quota exceeded. Please upgrade your plan.", 429);
     }
 
-    const body = await req.json().catch(() => ({}));
-    const validation = cloneVoiceSchema.safeParse(body);
-
-    if (!validation.success) {
-      return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
-    }
-
-    const { fileUrl, fileName } = validation.data;
-
-    // Bypass x.ai and save the Vercel Blob file URL directly for Fish Speech inference
+    // 6. Save the Vercel Blob URL as a Fish Speech reference voice
     const clonedVoiceId = `fish_${fileUrl}`;
 
-    // Save custom voice to database
     const customVoice = await prisma.customVoice.create({
       data: {
         userId: user.id,
-        name: fileName.replace(/\.[^/.]+$/, "").substring(0, 30), // Max 30 chars
+        name: fileName.replace(/\.[^/.]+$/, "").substring(0, 30),
         voiceId: clonedVoiceId,
       }
     });
 
-    // Create history record for cloning
     await prisma.history.create({
       data: {
         userId: user.id,
@@ -83,14 +85,14 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("[CLONE_VOICE_ERROR]", error);
-    
-    // Refund credits on failure
+
+    // Refund credits only if deduction already occurred (after step 5)
     const session = await getServerSession(authOptions);
     if (session?.user?.id) {
       await prisma.user.updateMany({
         where: { id: session.user.id, usageCount: { gte: CREDIT_COSTS.CLONE_VOICE } },
         data: { usageCount: { decrement: CREDIT_COSTS.CLONE_VOICE } }
-      });
+      }).catch((e) => console.error("[CLONE_VOICE_ROLLBACK_ERROR]", e));
     }
 
     return apiResponse("An error occurred during voice cloning.", 500);

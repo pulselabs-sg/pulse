@@ -72,7 +72,42 @@ image = (
     )
 )
 
-web_app = FastAPI()
+web_app = FastAPI(
+    # Disable auto-generated docs — reduces attack surface on a private API.
+    docs_url=None,
+    redoc_url=None,
+)
+
+# ---------------------------------------------------------------------------
+# Auth middleware — validates Modal-Key / Modal-Secret headers sent by
+# the Next.js backend (text-to-speech and voice-changer routes).
+# ---------------------------------------------------------------------------
+
+@web_app.middleware("http")
+async def require_modal_auth(request: Request, call_next):
+    """Reject requests that don't carry valid Modal-Key/Modal-Secret credentials."""
+    # Allow Modal internal health-check probes through without auth.
+    if request.url.path in ("/", "/health"):
+        return await call_next(request)
+
+    expected_key    = os.environ.get("MODAL_TOKEN_ID", "")
+    expected_secret = os.environ.get("MODAL_TOKEN_SECRET", "")
+
+    key    = request.headers.get("Modal-Key", "")
+    secret = request.headers.get("Modal-Secret", "")
+
+    if key != expected_key or secret != expected_secret:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+
+    return await call_next(request)
+
+
+@web_app.get("/health")
+async def health():
+    """Modal health-check probe."""
+    return {"status": "ok", "model": "fish-speech-1.5"}
+
 
 def is_api_running(url):
     """Check if the internal API server is responding"""
@@ -178,9 +213,17 @@ async def tts_endpoint(request: Request):
 
 @app.function(
     image=image,
-    gpu="A10G", 
-    timeout=600,
-    scaledown_window=120
+    # L4 has the same 24 GB VRAM as A10G but costs ~27% less ($0.000222/s vs $0.000306/s).
+    # Fish Speech 1.5 fits comfortably within 12 GB, so L4 is sufficient.
+    gpu="L4",
+    # 5-minute hard cap; prevents runaway billing if a request hangs.
+    timeout=300,
+    # 30s idle window before scale-down (was 120s).
+    # This is the single biggest cost saving: each request no longer burns
+    # 2 minutes of GPU time after it finishes.
+    scaledown_window=30,
+    # Inject auth credentials so the middleware can validate incoming requests.
+    secrets=[modal.Secret.from_name("voicelab-modal-auth")],
 )
 @modal.asgi_app()
 def fastapi_app():
