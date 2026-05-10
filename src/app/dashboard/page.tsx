@@ -214,7 +214,7 @@ function DashboardContent() {
             Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white text-glow-cyan">{TABS.find(t => t.id === activeTab)?.label}</span>
           </div>
           <div className="flex items-center">
-            <span className="text-[8px] md:text-[10px] font-bold text-white tracking-widest glass-mid px-3 py-1.5 rounded-sm border border-white/10 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
+            <span className="text-[8px] md:text-[10px] font-bold text-white tracking-widest px-3 py-1.5 rounded-sm border border-white/10">
               <span className="text-cyan-400 mr-2 text-glow-cyan">PULSE:</span>
               {Math.max(0, userState.limit - userState.usage).toLocaleString()} <span className="text-zinc-500 font-normal ml-1">REMAINING</span>
             </span>
@@ -363,7 +363,7 @@ function DashboardContent() {
                 {PLANS.map((plan) => {
                   const isCurrent = userState.tier === plan.id;
                   return (
-                    <div key={plan.id} className={cn("rounded-xl border p-4 md:p-5 transition-all glass-dark flex flex-col relative group", isCurrent ? "border-cyan-500/40 shadow-[0_0_20px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-cyan-500/30")}>
+                    <div key={plan.id} className={cn("rounded-xl border p-4 md:p-5 transition-all flex flex-col relative group", isCurrent ? "border-cyan-500/40 shadow-[0_0_20px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-cyan-500/30")}>
                       {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-cyan-400 inline-block px-2 py-0.5 mb-2 md:mb-3 self-start shadow-[0_0_10px_rgba(34,211,238,0.5)]">RECOMMENDED</div>}
                       <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
                       <div className="flex items-baseline gap-1 mb-3 md:mb-4">
