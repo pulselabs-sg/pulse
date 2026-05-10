@@ -114,7 +114,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
                   className={cn("h-full rounded-full", isLimitReached ? "bg-red-500" : "accent-gradient")}
                 />
               </div>
-              <button onClick={() => setShowPlanModal(true)} className="w-full py-2 glass-mid hover:bg-white text-zinc-400 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+              <button onClick={() => setShowPlanModal(true)} className="w-full py-2 hover:bg-white text-zinc-400 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                 <CreditCard className="w-3.5 h-3.5" /> Manage
               </button>
             </div>
