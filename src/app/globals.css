@@ -1,12 +1,33 @@
 @import "tailwindcss";
 
+/* ── Design Tokens ─────────────────────────────────────── */
 :root {
-  --background: #080808;
+  --background: #000000;
+  --surface: #05050a;
   --foreground: #f8fafc;
-  --accent: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.5);
+  --muted: #71717a;
+
+  /* Brand palette */
+  --cyan: #22d3ee;
+  --cyan-dim: rgba(34, 211, 238, 0.12);
+  --indigo: #818cf8;
+  --indigo-dim: rgba(129, 140, 248, 0.12);
+  --white-dim: rgba(255, 255, 255, 0.06);
+
+  /* Glow shadows */
+  --glow-cyan: 0 0 40px rgba(34, 211, 238, 0.25);
+  --glow-indigo: 0 0 40px rgba(129, 140, 248, 0.25);
+  --glow-white: 0 0 30px rgba(255, 255, 255, 0.10);
+
+  /* Glass */
   --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-mid: rgba(255, 255, 255, 0.055);
   --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(34, 211, 238, 0.45);
+
+  /* Accent (kept for legacy compat) */
+  --accent: var(--cyan);
+  --accent-glow: rgba(34, 211, 238, 0.4);
 }
 
 @theme inline {
@@ -17,57 +38,374 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+/* ── Base ───────────────────────────────────────────────── */
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
     @apply antialiased;
   }
+
+  ::selection {
+    background: rgba(34, 211, 238, 0.25);
+    color: #fff;
+  }
 }
 
+/* ── Utilities ──────────────────────────────────────────── */
 @layer utilities {
+
+  /* Glass variants */
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-mid {
+    background: var(--glass-bg-mid);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
   }
 
   .glass-dark {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Glow text */
+  .text-glow-cyan {
+    text-shadow: 0 0 20px rgba(34, 211, 238, 0.6);
+  }
+
+  .text-glow-indigo {
+    text-shadow: 0 0 20px rgba(129, 140, 248, 0.6);
   }
 
   .text-glow {
     text-shadow: 0 0 15px var(--accent-glow);
   }
 
+  /* Gradient fills */
   .accent-gradient {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--indigo) 100%);
   }
-  
+
+  .hero-gradient {
+    background: linear-gradient(135deg, #fff 0%, var(--cyan) 45%, var(--indigo) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .shimmer-gradient {
+    background: linear-gradient(90deg,
+        #fff 0%,
+        var(--cyan) 30%,
+        var(--indigo) 55%,
+        #fff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+  }
+
+  /* Border glows */
+  .border-glow-cyan {
+    box-shadow: var(--glow-cyan);
+  }
+
+  .border-glow-indigo {
+    box-shadow: var(--glow-indigo);
+  }
+
+  /* Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
   }
+
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.10);
     border-radius: 10px;
   }
+
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.20);
+  }
+
+  /* Hide scrollbar (marquee) */
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ── Keyframes ──────────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: 0% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float-up-down {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-reverse {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(-360deg);
   }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.80;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    top: -8px;
+  }
+
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(4%, 3%) rotate(4deg);
+  }
+
+  66% {
+    transform: translate(-3%, 5%) rotate(-3deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+/* Enhanced aurora blob — slow 3-axis drift + scale breathe */
+@keyframes aurora-blob-drift {
+  0% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 0.85;
+  }
+
+  20% {
+    transform: translate(3%, 2%) scale(1.05);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translate(-2%, 4%) scale(0.97);
+    opacity: 0.9;
+  }
+
+  60% {
+    transform: translate(2%, -2%) scale(1.08);
+    opacity: 1;
+  }
+
+  80% {
+    transform: translate(-4%, 1%) scale(0.95);
+    opacity: 0.88;
+  }
+
+  100% {
+    transform: translate(0%, 0%) scale(1);
+    opacity: 0.85;
+  }
+}
+
+/* Aurora light curtain — horizontal sweep left/right */
+@keyframes aurora-curtain {
+  0% {
+    transform: translateX(-60%) skewY(-1deg);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateX(20%) skewY(1deg);
+    opacity: 0.85;
+  }
+
+  85% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateX(80%) skewY(-0.5deg);
+    opacity: 0;
+  }
+}
+
+/* Shooting beam — diagonal light streak */
+@keyframes shooting-beam {
+  0% {
+    transform: translate(-100vw, -50vh) rotate(35deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(100vw, 100vh) rotate(35deg);
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes badge-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 211, 238, 0);
+  }
+}
+
+/* ── Named animations ───────────────────────────────────── */
+.animate-float {
+  animation: float-up-down 5s ease-in-out infinite;
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 3s infinite ease-in-out;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 4s linear infinite;
+}
+
+.animate-aurora {
+  animation: aurora-drift 18s ease-in-out infinite;
+}
+
+.animate-badge-pulse {
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+.animate-scan {
+  animation: scan-line 3s linear infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.7s ease-out forwards;
+}
+
+/* Aurora visual-effect helpers */
+.aurora-blob {
+  position: absolute;
+  animation: aurora-blob-drift var(--dur, 24s) ease-in-out infinite;
+}
+
+.aurora-curtain {
+  position: absolute;
+  animation: aurora-curtain var(--dur, 12s) ease-in-out infinite;
+}
+
+.shooting-beam {
+  position: absolute;
+  left: -35vw;
+  animation: shooting-beam var(--dur, 7s) ease-in-out infinite;
 }

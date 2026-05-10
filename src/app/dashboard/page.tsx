@@ -180,7 +180,8 @@ function DashboardContent() {
   if (!session) return null;
 
   return (
-    <div className="flex h-[100dvh] bg-black text-zinc-300 font-sans overflow-hidden">
+    <div className="flex h-[100dvh] bg-black text-zinc-300 font-sans overflow-hidden relative">
+      <div className="fixed inset-0 bg-[url('/noise.png')] bg-repeat opacity-20 mix-blend-overlay z-0 pointer-events-none" />
 
       {/* Mobile Backdrop Overlay */}
       <AnimatePresence>
@@ -202,19 +203,19 @@ function DashboardContent() {
       />
 
       <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0 h-full">
-        <header className="h-14 border-b border-white/5 bg-black/80 flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-500 z-10 relative">
+        <header className="h-14 border-b border-glass-border glass backdrop-blur-md flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-500 z-30 relative">
           <div className="flex items-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden mr-3 p-1.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors"
+              className="md:hidden mr-3 p-1.5 glass-mid hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors shadow-[0_0_15px_rgba(34,211,238,0.1)]"
             >
               <Menu className="w-4 h-4" />
             </button>
-            Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white">{TABS.find(t => t.id === activeTab)?.label}</span>
+            Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white text-glow-cyan">{TABS.find(t => t.id === activeTab)?.label}</span>
           </div>
           <div className="flex items-center">
-            <span className="text-[8px] md:text-[10px] font-bold text-white tracking-widest bg-white/5 px-3 py-1.5 rounded-sm border border-white/10">
-              <span className="text-cyan-400 mr-2">PULSE:</span>
+            <span className="text-[8px] md:text-[10px] font-bold text-white tracking-widest glass-mid px-3 py-1.5 rounded-sm border border-white/10 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
+              <span className="text-cyan-400 mr-2 text-glow-cyan">PULSE:</span>
               {Math.max(0, userState.limit - userState.usage).toLocaleString()} <span className="text-zinc-500 font-normal ml-1">REMAINING</span>
             </span>
           </div>
@@ -225,13 +226,14 @@ function DashboardContent() {
         ) : activeTab === 'profile' ? (
           <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full">
             <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-4xl mx-auto space-y-6 pb-10">
-              <h2 className="text-lg font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2">
-                <Settings2 className="w-5 h-5 text-zinc-500" /> Account Settings
+              <h2 className="text-lg font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2 text-glow-cyan">
+                <Settings2 className="w-5 h-5 text-cyan-400" /> Account Settings
               </h2>
 
               {/* Profile Card */}
-              <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
-                <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-xl object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
+              <div className="glass-dark border border-white/10 rounded-xl p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-3xl object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
                   <div>
                     <h3 className="text-xl font-mono tracking-widest text-white">{session?.user?.name}</h3>
@@ -246,30 +248,30 @@ function DashboardContent() {
                     </div>
                   </div>
                 </div>
-                <button onClick={() => signOut({ callbackUrl: '/dashboard' })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 transition-colors flex items-center gap-2 z-10">
+                <button onClick={() => signOut({ callbackUrl: '/dashboard' })} className="px-4 py-2 glass-mid hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 transition-all flex items-center gap-2 z-10 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                   <LogOut className="w-3 h-3" /> Sign Out
                 </button>
               </div>
 
               {/* Billing & Usage Section */}
-              <div className="bg-black/50 backdrop-blur-sm border border-white/10 rounded-sm p-6">
-                <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-zinc-500" /> Subscription & Billing
+              <div className="glass-dark border border-white/10 rounded-xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2 text-glow-cyan">
+                  <CreditCard className="w-4 h-4 text-cyan-400" /> Subscription & Billing
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Plan Card */}
-                  <div className="bg-[#050505] border border-white/5 rounded-sm p-5 flex flex-col justify-between">
+                  <div className="bg-black/60 border border-white/5 rounded-xl p-5 flex flex-col justify-between group/plan transition-all hover:border-cyan-500/30">
                     <div>
                       <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Current Plan</p>
                       <div className="flex items-center gap-3 mb-6">
-                        <span className={cn("text-xl font-mono font-bold uppercase tracking-widest", userState.tier !== 'FREE' ? 'text-emerald-400' : 'text-zinc-500')}>
+                        <span className={cn("text-xl font-mono font-bold uppercase tracking-widest", userState.tier !== 'FREE' ? 'text-cyan-400 text-glow-cyan' : 'text-zinc-500')}>
                           {userState.tier}
                         </span>
-                        {userState.tier !== 'FREE' && <span className="bg-emerald-400 text-black text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-none">ACTIVE</span>}
+                        {userState.tier !== 'FREE' && <span className="bg-cyan-400 text-black text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-none shadow-[0_0_10px_rgba(34,211,238,0.5)]">ACTIVE</span>}
                       </div>
                     </div>
                     {userState.tier === 'FREE' ? (
-                      <button onClick={() => setShowPlanModal(true)} className="w-full py-2 bg-white text-black hover:bg-zinc-200 text-xs font-mono uppercase tracking-widest rounded-sm transition-colors">
+                      <button onClick={() => setShowPlanModal(true)} className="w-full py-2 bg-white text-black hover:bg-cyan-300 text-xs font-mono uppercase tracking-widest rounded-sm transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]">
                         Upgrade Plan
                       </button>
                     ) : (
@@ -280,7 +282,7 @@ function DashboardContent() {
                           </div>
                         ) : (
                           <>
-                            <button onClick={() => setShowPlanModal(true)} className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-mono tracking-widest rounded-sm transition-colors border border-white/10">Change Plan</button>
+                            <button onClick={() => setShowPlanModal(true)} className="w-full py-2 glass-mid hover:bg-white/20 text-white text-xs font-mono tracking-widest rounded-sm transition-colors border border-white/10">Change Plan</button>
                             <button onClick={handleCancelSubscription} disabled={isCanceling} className="w-full py-2 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-widest rounded-sm transition-colors border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2">
                               {isCanceling ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertTriangle className="w-3 h-3" />} Cancel Subscription
                             </button>
@@ -291,16 +293,16 @@ function DashboardContent() {
                   </div>
 
                   {/* Usage Card */}
-                  <div className="bg-[#050505] border border-white/5 rounded-sm p-5">
+                  <div className="bg-black/60 border border-white/5 rounded-xl p-5 hover:border-cyan-500/20 transition-all">
                     <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-4">Usage this month</p>
                     <div className="flex justify-between items-end mb-3">
-                      <span className="text-2xl font-mono text-white tracking-tighter">
+                      <span className="text-2xl font-mono text-white tracking-tighter text-glow-cyan">
                         {userState.usage.toLocaleString()} <span className="text-[10px] text-zinc-500 uppercase tracking-widest">pulse</span>
                       </span>
                       <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Limit: {userState.limit.toLocaleString()}</span>
                     </div>
-                    <div className="w-full h-1 bg-zinc-900 rounded-none mb-4 overflow-hidden">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((userState.usage / (userState.limit === Infinity ? 100 : userState.limit)) * 100, 100)}%` }} transition={{ duration: 1, ease: "easeOut" }} className={cn("h-full", isLimitReached ? "bg-red-500" : "bg-emerald-400")} />
+                    <div className="w-full h-1.5 bg-zinc-900 rounded-full mb-4 overflow-hidden border border-white/5">
+                      <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min((userState.usage / (userState.limit === Infinity ? 100 : userState.limit)) * 100, 100)}%` }} transition={{ duration: 1, ease: "easeOut" }} className={cn("h-full rounded-full shadow-[0_0_10px_rgba(34,211,238,0.4)]", isLimitReached ? "bg-red-500" : "bg-cyan-400")} />
                     </div>
                     <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Resets at the start of next billing cycle.</p>
                   </div>
@@ -309,21 +311,22 @@ function DashboardContent() {
             </motion.div>
           </div>
         ) : activeTab === 'clone' && userState.tier === 'FREE' ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <div className="bg-[#050505] border border-white/10 rounded-2xl p-10 max-w-lg w-full text-center shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+          <div className="flex-1 flex flex-col items-center justify-center p-8 relative z-10">
+            <div className="glass-dark border border-white/10 rounded-2xl p-10 max-w-lg w-full text-center shadow-2xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-50 group-hover:opacity-80 transition-opacity" />
+              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
                 <Crown className="w-48 h-48 text-white rotate-12" />
               </div>
-              <div className="w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.15)] relative z-10">
-                <Lock className="w-10 h-10 text-blue-400" />
+              <div className="w-20 h-20 glass border border-blue-500/30 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(59,130,246,0.2)] relative z-10 group-hover:scale-110 transition-transform">
+                <Lock className="w-10 h-10 text-blue-400 text-glow-cyan" />
               </div>
-              <h2 className="text-2xl font-mono font-bold tracking-widest uppercase text-white mb-4 relative z-10">Voice Cloning Locked</h2>
+              <h2 className="text-2xl font-mono font-bold tracking-widest uppercase text-white mb-4 relative z-10 text-glow-cyan">Voice Cloning Locked</h2>
               <p className="text-sm font-mono text-zinc-400 uppercase leading-relaxed mb-8 relative z-10">
                 Custom voice creation is a high-compute feature reserved for Basic, Premium, and Pro tiers. Upgrade your access level to unlock this module.
               </p>
               <button
                 onClick={() => setShowPlanModal(true)}
-                className="px-8 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.2em] rounded-sm hover:bg-emerald-400 transition-colors shadow-lg relative z-10"
+                className="px-8 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.2em] rounded-sm hover:bg-cyan-400 transition-all shadow-lg relative z-10 active:scale-95 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]"
               >
                 Upgrade Access Level
               </button>
@@ -346,22 +349,22 @@ function DashboardContent() {
       <AnimatePresence>
         {showPlanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center md:p-4" onClick={() => setShowPlanModal(false)}>
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-[#050505] border-y md:border border-white/10 md:rounded-sm max-w-5xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-auto shadow-2xl custom-scrollbar">
-              <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 bg-black sticky top-0 z-10">
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="glass border-y md:border border-white/10 md:rounded-xl max-w-5xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-auto shadow-[0_0_50px_rgba(0,0,0,1)] custom-scrollbar relative">
+              <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 glass backdrop-blur-xl sticky top-0 z-20">
                 <div>
-                  <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white">System Upgrade</h2>
+                  <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white text-glow-cyan">System Upgrade</h2>
                   <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-1">Select new capability matrix</p>
                 </div>
-                <button onClick={() => setShowPlanModal(false)} className="p-2 hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm transition-colors">
+                <button onClick={() => setShowPlanModal(false)} className="p-2 glass-mid hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm transition-all">
                   <X className="w-4 md:w-5 h-4 md:h-5" />
                 </button>
               </div>
-              <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-20 md:pb-6">
+              <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-20 md:pb-10 relative z-10">
                 {PLANS.map((plan) => {
                   const isCurrent = userState.tier === plan.id;
                   return (
-                    <div key={plan.id} className={cn("rounded-sm border p-4 md:p-5 transition-all bg-black flex flex-col", isCurrent ? "border-white bg-white/5" : "border-white/10 hover:border-white/30")}>
-                      {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-white inline-block px-2 py-0.5 mb-2 md:mb-3 self-start">RECOMMENDED</div>}
+                    <div key={plan.id} className={cn("rounded-xl border p-4 md:p-5 transition-all glass-dark flex flex-col relative group", isCurrent ? "border-cyan-500/40 shadow-[0_0_20px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-cyan-500/30")}>
+                      {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-cyan-400 inline-block px-2 py-0.5 mb-2 md:mb-3 self-start shadow-[0_0_10px_rgba(34,211,238,0.5)]">RECOMMENDED</div>}
                       <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
                       <div className="flex items-baseline gap-1 mb-3 md:mb-4">
                         <span className="text-xl md:text-3xl font-mono font-bold text-white">${plan.price}</span>
@@ -370,12 +373,12 @@ function DashboardContent() {
                       <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4 md:mb-6">{plan.desc}</p>
                       <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-1">
                         {plan.features.map((f, i) => (
-                          <li key={i} className="flex items-start gap-2 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-300">
-                            <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> <span>{f}</span>
+                          <li key={i} className="flex items-start gap-2 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                            <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" /> <span className="group-hover:text-zinc-200 transition-colors">{f}</span>
                           </li>
                         ))}
                       </ul>
-                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); setCheckoutTermsAgreed(false); setCheckoutTermsConfirmed(false); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-sm border", isCurrent ? "bg-white/10 text-zinc-400 cursor-not-allowed" : "bg-white text-black")}>
+                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); setCheckoutTermsAgreed(false); setCheckoutTermsConfirmed(false); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-lg transition-all", isCurrent ? "glass text-zinc-600 cursor-not-allowed border-white/5" : "bg-white text-black hover:bg-cyan-300 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]")}>
                         {isCurrent ? '[ ACTIVE ]' : 'INITIALIZE'}
                       </button>
                     </div>
@@ -397,7 +400,7 @@ function DashboardContent() {
             className="fixed inset-0 bg-black/95 backdrop-blur-md z-[150] flex items-center justify-center p-4 md:p-6"
           >
             {/* Box Container */}
-            <div className="bg-[#050505] border border-white/10 w-full max-w-5xl rounded-sm relative flex flex-col md:flex-row overflow-hidden shadow-2xl">
+            <div className="glass-dark border border-white/10 w-full max-w-5xl rounded-xl relative flex flex-col md:flex-row overflow-hidden shadow-[0_0_50px_rgba(0,0,0,1)]">
 
               {/* Close button */}
               <button
@@ -408,7 +411,8 @@ function DashboardContent() {
               </button>
 
               {/* --- LEFT: Plan Information --- */}
-              <div className="w-full md:w-1/3 bg-black/40 border-b md:border-b-0 md:border-r border-white/10 p-6 md:p-8 flex flex-col">
+              <div className="w-full md:w-1/3 glass p-6 md:p-8 flex flex-col border-b md:border-b-0 md:border-r border-white/10 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-50" />
                 {PLANS.filter(p => p.id === checkoutPlanContext).map(selectedPlan => (
                   <div key={selectedPlan.id} className="h-full flex flex-col">
                     <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">
@@ -431,12 +435,12 @@ function DashboardContent() {
                       {selectedPlan.desc}
                     </p>
 
-                    <div className="flex-1">
+                    <div className="flex-1 relative z-10">
                       <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Included capabilities:</p>
                       <ul className="space-y-4">
                         {selectedPlan.features.map((feature, idx) => (
                           <li key={idx} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-300">
-                            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <Check className="w-4 h-4 text-cyan-400 shrink-0 text-glow-cyan" />
                             <span className="mt-0.5">{feature}</span>
                           </li>
                         ))}
@@ -452,10 +456,10 @@ function DashboardContent() {
               </div>
 
               {/* --- RIGHT: Checkout form --- */}
-              <div className="w-full md:w-2/3 bg-[#050505] relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">
+              <div className="w-full md:w-2/3 bg-black/40 relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">
                 {!checkoutTermsConfirmed ? (
                   <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
-                    <div className="p-4 bg-zinc-900/50 rounded-full border border-white/5">
+                    <div className="p-4 glass rounded-full border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
                       <Lock className="w-8 h-8 text-zinc-500" />
                     </div>
                     <div>
@@ -487,10 +491,10 @@ function DashboardContent() {
                       disabled={!checkoutTermsAgreed}
                       onClick={() => setCheckoutTermsConfirmed(true)}
                       className={cn(
-                        "w-full py-3 md:py-4 font-mono text-[10px] md:text-xs uppercase font-bold tracking-widest rounded-sm transition-all duration-300 mt-2",
+                        "w-full py-3 md:py-4 font-mono text-[10px] md:text-xs uppercase font-bold tracking-widest rounded-lg transition-all duration-300 mt-2",
                         checkoutTermsAgreed
-                          ? "bg-white text-black hover:bg-emerald-400 border border-transparent shadow-[0_0_20px_rgba(52,211,153,0.2)]"
-                          : "bg-white/5 text-zinc-500 border border-white/10 cursor-not-allowed"
+                          ? "bg-white text-black hover:bg-cyan-400 border border-transparent shadow-[0_0_30px_rgba(34,211,238,0.2)]"
+                          : "glass text-zinc-500 border border-white/10 cursor-not-allowed"
                       )}
                     >
                       Agree & Continue
@@ -498,11 +502,11 @@ function DashboardContent() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
-                    <div className="p-4 bg-emerald-500/10 rounded-full border border-emerald-500/20 animate-pulse">
-                      <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                    <div className="p-4 glass-mid rounded-full border border-cyan-500/20 shadow-[0_0_40px_rgba(34,211,238,0.2)]">
+                      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
                     </div>
                     <div>
-                      <h3 className="text-white text-lg font-mono uppercase tracking-widest mb-2">Redirecting to Checkout</h3>
+                      <h3 className="text-white text-lg font-mono uppercase tracking-widest mb-2 text-glow-cyan">Redirecting to Checkout</h3>
                       <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest leading-relaxed">
                         Preparing your secure payment session via Lemon Squeezy. Please do not close this window.
                       </p>
@@ -541,14 +545,14 @@ function DashboardContent() {
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              className="bg-[#050505] border border-white/10 w-full max-w-lg rounded-sm relative shadow-2xl overflow-hidden"
+              className="glass border border-white/10 w-full max-w-lg rounded-xl relative shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden"
             >
               <div className="p-8 md:p-10 flex flex-col items-center text-center">
                 <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mb-6">
                   <Scale className="w-8 h-8 text-white" />
                 </div>
 
-                <h2 className="text-2xl font-mono uppercase tracking-widest text-white mb-4">
+                <h2 className="text-2xl font-mono uppercase tracking-widest text-white mb-4 text-glow-cyan">
                   Terms & Privacy
                 </h2>
 
@@ -596,10 +600,10 @@ function DashboardContent() {
                     setShowGlobalTermsModal(false);
                   }}
                   className={cn(
-                    "w-full py-4 font-mono text-xs uppercase font-bold tracking-widest rounded-sm transition-all duration-300",
+                    "w-full py-4 font-mono text-xs uppercase font-bold tracking-widest rounded-lg transition-all duration-300",
                     hasAgreedGlobalTerms
-                      ? "bg-white text-black hover:bg-emerald-400 border border-transparent shadow-[0_0_20px_rgba(52,211,153,0.2)]"
-                      : "bg-white/5 text-zinc-500 border border-white/10 cursor-not-allowed"
+                      ? "bg-white text-black hover:bg-cyan-400 border border-transparent shadow-[0_0_30px_rgba(34,211,238,0.2)]"
+                      : "glass text-zinc-500 border border-white/10 cursor-not-allowed"
                   )}
                 >
                   Confirm & Proceed

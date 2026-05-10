@@ -29,7 +29,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
       initial={false}
       animate={{ width: isSidebarOpen ? 280 : 80 }}
       className={cn(
-        "bg-[#0a0a0a] border-r border-white/5 flex flex-col shrink-0 transition-all duration-500 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0 shadow-2xl shadow-black",
+        "glass-dark border-r border-white/10 flex flex-col shrink-0 transition-all duration-500 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0 shadow-[0_0_50px_rgba(0,0,0,1)]",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}
     >
@@ -61,14 +61,14 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
             >
               {activeTab === tab.id && (
                 <>
-                  <motion.div layoutId="active-pill" className="absolute left-0 top-3 bottom-3 w-[3px] bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)]" />
-                  <div className="absolute inset-0 bg-blue-500/5 blur-xl rounded-full opacity-50" />
+                  <motion.div layoutId="active-pill" className="absolute left-0 top-3 bottom-3 w-[3px] bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+                  <div className="absolute inset-0 bg-cyan-500/5 blur-xl rounded-full opacity-50" />
                 </>
               )}
-              <tab.icon className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-blue-400" : "text-zinc-600")} />
+              <tab.icon className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-cyan-400 text-glow-cyan" : "text-zinc-600")} />
               {isSidebarOpen && (
                 <div className="flex flex-col min-w-0 text-left">
-                  <span className={cn("font-bold tracking-wider text-[10px] md:text-[11px] transition-colors uppercase", activeTab === tab.id ? "text-white" : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
+                  <span className={cn("font-bold tracking-wider text-[10px] md:text-[11px] transition-colors uppercase", activeTab === tab.id ? "text-white text-glow-cyan" : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
                   <span className="text-[9px] md:text-[10px] truncate font-mono text-zinc-600 tracking-tighter">{tab.desc}</span>
                 </div>
               )}
@@ -86,9 +86,9 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
                 activeTab === tab.id ? "bg-white/5 text-white" : "text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300"
               )}
             >
-              {activeTab === tab.id && <motion.div layoutId="active-pill-bottom" className="absolute left-0 top-3 bottom-3 w-[3px] bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" />}
-              <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-blue-400" : "text-zinc-600")} />
-              {isSidebarOpen && <span className={cn("font-bold tracking-wider text-[11px]", activeTab === tab.id ? "text-white" : "text-zinc-400")}>{tab.label}</span>}
+              {activeTab === tab.id && <motion.div layoutId="active-pill-bottom" className="absolute left-0 top-3 bottom-3 w-[3px] bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.5)]" />}
+              <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-cyan-400 text-glow-cyan" : "text-zinc-600")} />
+              {isSidebarOpen && <span className={cn("font-bold tracking-wider text-[11px]", activeTab === tab.id ? "text-white text-glow-cyan" : "text-zinc-400")}>{tab.label}</span>}
             </button>
           ))}
           {/* <Link href="/docs" target="_blank" className="group relative flex items-center gap-2 p-2 rounded-xl text-sm transition-all duration-300 text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300 mt-1">
@@ -99,13 +99,13 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
 
         {isSidebarOpen ? (
           <div className="mx-4 mb-6 p-5 rounded-2xl glass border border-white/5 hover:border-white/10 transition-all group/usage relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover/usage:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/5 to-transparent opacity-0 group-hover/usage:opacity-100 transition-opacity duration-500" />
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[9px] font-mono uppercase tracking-[0.2em] flex items-center gap-2 text-zinc-400">
-                  <Crown className={cn("w-3.5 h-3.5", userState.tier === 'FREE' ? "text-zinc-700" : "text-blue-400")} /> {userState.tier}
+                  <Crown className={cn("w-3.5 h-3.5", userState.tier === 'FREE' ? "text-zinc-700" : "text-cyan-400 text-glow-cyan")} /> {userState.tier}
                 </span>
-                <span className="text-[10px] font-bold text-white tracking-tighter">{userState.usage.toLocaleString()}<span className="text-zinc-600 font-normal">/{userState.limit.toLocaleString()}</span></span>
+                <span className="text-[10px] font-bold text-white tracking-tighter text-glow-cyan">{userState.usage.toLocaleString()}<span className="text-zinc-600 font-normal">/{userState.limit.toLocaleString()}</span></span>
               </div>
               <div className="w-full h-1.5 bg-white/5 rounded-full mb-4 overflow-hidden border border-white/5">
                 <motion.div
@@ -114,15 +114,15 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
                   className={cn("h-full rounded-full", isLimitReached ? "bg-red-500" : "accent-gradient")}
                 />
               </div>
-              <button onClick={() => setShowPlanModal(true)} className="w-full py-2 bg-white/5 hover:bg-white text-zinc-400 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95">
+              <button onClick={() => setShowPlanModal(true)} className="w-full py-2 glass-mid hover:bg-white text-zinc-400 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                 <CreditCard className="w-3.5 h-3.5" /> Manage
               </button>
             </div>
           </div>
         ) : (
           <div className="p-4 flex justify-center border-t border-white/5 mt-auto">
-            <button onClick={() => handleTabClick('profile')} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 hover:border-blue-500/50 transition-all active:scale-90 overflow-hidden">
-              {session?.user?.image ? <img src={session.user.image} alt="" className="w-full h-full object-cover opacity-80" /> : <User className="w-5 h-5 text-zinc-500" />}
+            <button onClick={() => handleTabClick('profile')} className="w-10 h-10 rounded-xl glass flex items-center justify-center border border-white/10 hover:border-cyan-500/50 transition-all active:scale-90 overflow-hidden shadow-[0_0_20px_rgba(34,211,238,0.1)] group">
+              {session?.user?.image ? <img src={session.user.image} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" /> : <User className="w-5 h-5 text-zinc-500" />}
             </button>
           </div>
         )}
