@@ -207,7 +207,7 @@ function DashboardContent() {
           <div className="flex items-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden mr-3 p-1.5 glass-mid hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+              className="md:hidden mr-3 p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors shadow-[0_0_15px_rgba(34,211,238,0.1)]"
             >
               <Menu className="w-4 h-4" />
             </button>
@@ -350,7 +350,7 @@ function DashboardContent() {
         {showPlanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center md:p-4" onClick={() => setShowPlanModal(false)}>
             <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="glass border-y md:border border-white/10 md:rounded-xl max-w-5xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-auto shadow-[0_0_50px_rgba(0,0,0,1)] custom-scrollbar relative">
-              <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 glass backdrop-blur-xl sticky top-0 z-20">
+              <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 backdrop-blur-xl sticky top-0 z-20">
                 <div>
                   <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white text-glow-cyan">System Upgrade</h2>
                   <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-1">Select new capability matrix</p>
