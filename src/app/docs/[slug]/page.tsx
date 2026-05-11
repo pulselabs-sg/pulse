@@ -11,7 +11,7 @@ export default function DocsPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const validSlugs = ['introduce', 'pricing', 'guide', 'faqs', 'terms'];
+  const validSlugs = ['introduce', 'pricing', 'guide', 'faqs', 'terms', 'custom-voices'];
   if (!slug || !validSlugs.includes(slug)) {
     notFound();
   }
@@ -415,6 +415,79 @@ export default function DocsPage() {
                 <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full policy →</span>
               </div>
             </Link>
+          </div>
+        </PageTransition>
+      );
+
+    case 'custom-voices':
+      return (
+        <PageTransition>
+          <div className="border-b border-white/5 pb-8">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              Custom Voice Capabilities
+            </h1>
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
+              Understanding the capabilities and limitations of our Custom Voice engine (powered by Fish Speech v1.5).
+            </p>
+          </div>
+
+          <div className="space-y-8 mt-8">
+            <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
+                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Supported Languages</h3>
+              </div>
+              <div className="p-6 md:p-8">
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
+                  While our default <strong className="text-white">x.ai</strong> voices support a vast array of global languages, our advanced <strong className="text-white">Custom Voice Cloning</strong> engine natively supports exactly 13 languages. Generating audio with a cloned voice in an unsupported language may result in severe acoustic degradation, gibberish, or infinite repetition.
+                </p>
+                
+                <h4 className="text-xs font-mono font-bold text-white uppercase tracking-widest mb-4">Fully Supported Languages:</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                  {[
+                    'English (EN)', 'Chinese (ZH)', 'Japanese (JA)', 
+                    'German (DE)', 'French (FR)', 'Spanish (ES)', 
+                    'Korean (KO)', 'Arabic (AR)', 'Russian (RU)', 
+                    'Dutch (NL)', 'Italian (IT)', 'Polish (PL)', 'Portuguese (PT)'
+                  ].map(lang => (
+                    <div key={lang} className="flex items-center gap-2 text-[10px] font-mono text-zinc-300 uppercase tracking-tight">
+                      <div className="w-1.5 h-1.5 bg-emerald-400/80 rounded-full" />
+                      {lang}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-sm">
+                  <h4 className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Zap className="w-3 h-3" /> Important Warning
+                  </h4>
+                  <p className="text-[10px] font-mono text-amber-500/80 leading-relaxed">
+                    Attempting to synthesize speech in unsupported languages (e.g., Vietnamese, Hindi, Turkish) using a Custom Voice will likely fail. Please use our default voice matrix for those languages.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
+                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Legal & Ethical Usage</h3>
+              </div>
+              <div className="p-6 md:p-8">
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-4">
+                  Voice Cloning technology is powerful and must be used responsibly. By utilizing Custom Voices, you agree to the following constraints:
+                </p>
+                <ul className="list-disc list-inside space-y-3 text-[10px] font-mono text-zinc-500 leading-relaxed marker:text-cyan-400">
+                  <li>You must have explicit, documented permission from the original speaker to clone their voice.</li>
+                  <li>Generating deepfakes, misinformation, hate speech, or defamatory content is strictly prohibited.</li>
+                  <li>We actively monitor usage and reserve the right to permanently terminate access and notify authorities if illegal cloning activities are detected.</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </PageTransition>
       );

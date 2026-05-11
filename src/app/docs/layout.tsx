@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, BookOpen, CreditCard, HelpCircle, FileText, Code, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, CreditCard, HelpCircle, FileText, Code, Zap, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Tab = 'introduce' | 'pricing' | 'guide' | 'faqs' | 'terms' | 'api';
+type Tab = 'introduce' | 'pricing' | 'guide' | 'faqs' | 'terms' | 'api' | 'custom-voices';
 
 const TABS: { id: Tab; label: string; icon: any; disabled?: boolean; badge?: string }[] = [
   { id: 'introduce', label: 'Introduce', icon: BookOpen },
+  { id: 'custom-voices', label: 'Custom Voices', icon: Sparkles },
   { id: 'pricing', label: 'Pricing', icon: CreditCard },
   { id: 'guide', label: 'Guide', icon: Zap },
   { id: 'faqs', label: 'FAQs', icon: HelpCircle },

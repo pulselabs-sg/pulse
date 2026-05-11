@@ -27,7 +27,7 @@ function DashboardContent() {
 
   // Core States — tab defaults to URL ?tab= param, falling back to 'tts'
   const tabParam = searchParams.get('tab') as Tab | null;
-  const validTabs: Tab[] = ['tts', 'stt', 'changer', 'clone', 'history', 'profile'];
+  const validTabs: Tab[] = ['tts', 'stt', 'changer', 'clone', 'translate', 'history', 'profile'];
   const initialTab: Tab = tabParam && validTabs.includes(tabParam) ? tabParam : 'tts';
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);

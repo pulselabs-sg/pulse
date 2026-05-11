@@ -81,6 +81,14 @@ export const cloneVoiceSchema = z.object({
   fileName: safeFileNameSchema.optional().default('Uploaded Audio'),
 });
 
+// Translation
+export const translationSchema = z.object({
+  fileUrl: safeUrlSchema,
+  fileName: safeFileNameSchema.optional().default('Uploaded Audio'),
+  targetLanguage: z.string().min(1).max(50).default('English'),
+  targetVoice: z.string().min(1).max(100).optional().default('eve'),
+});
+
 // ==========================================
 // 2. API Responses & Request Validation
 // ==========================================

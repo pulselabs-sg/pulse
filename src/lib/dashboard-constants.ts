@@ -1,6 +1,6 @@
-import { Zap, Mic, Wand2, Type, AudioLines, History, User } from 'lucide-react';
+import { Zap, Mic, Wand2, Type, AudioLines, History, User, Globe } from 'lucide-react';
 
-export type Tab = 'tts' | 'stt' | 'clean' | 'changer' | 'clone' | 'profile' | 'history';
+export type Tab = 'tts' | 'stt' | 'clean' | 'changer' | 'clone' | 'translate' | 'profile' | 'history';
 export type Tier = 'FREE' | 'BASIC' | 'PREMIUM' | 'PRO';
 
 export const VOICES = [
@@ -28,12 +28,29 @@ export const PLANS = [
 export const TABS = [
   { id: 'tts', label: 'Text to Speech', icon: Wand2, desc: 'Convert text to natural voice' },
   { id: 'stt', label: 'Speech to Text', icon: Type, desc: 'Transcribe file/live conversations' },
+  { id: 'translate', label: 'Translation', icon: Globe, desc: 'Translate audio to another language' },
   { id: 'changer', label: 'Voice Changer', icon: AudioLines, desc: 'Transform voice style' },
   { id: 'clone', label: 'Clone Voice', icon: Zap, desc: 'Create a custom voice identity' },
   { id: 'clean', label: 'Audio Cleaner', icon: Mic, desc: 'Remove noise & enhance' },
   { id: 'history', label: 'History', icon: History, desc: 'Your generation records' },
   { id: 'profile', label: 'Profile', icon: User, desc: 'Account & Billing' },
 ] as const;
+
+export const TRANSLATION_LANGUAGES = [
+  { id: 'English', name: 'English', flag: '🇺🇸' },
+  { id: 'Spanish', name: 'Spanish', flag: '🇪🇸' },
+  { id: 'French', name: 'French', flag: '🇫🇷' },
+  { id: 'German', name: 'German', flag: '🇩🇪' },
+  { id: 'Italian', name: 'Italian', flag: '🇮🇹' },
+  { id: 'Portuguese', name: 'Portuguese', flag: '🇵🇹' },
+  { id: 'Japanese', name: 'Japanese', flag: '🇯🇵' },
+  { id: 'Korean', name: 'Korean', flag: '🇰🇷' },
+  { id: 'Chinese (Simplified)', name: 'Chinese (Simp)', flag: '🇨🇳' },
+  { id: 'Russian', name: 'Russian', flag: '🇷🇺' },
+  { id: 'Arabic', name: 'Arabic', flag: '🇸🇦' },
+  { id: 'Hindi', name: 'Hindi', flag: '🇮🇳' },
+  { id: 'Vietnamese', name: 'Vietnamese', flag: '🇻🇳' },
+];
 
 export const formatSTTText = (text: string) => {
   if (!text) return '';

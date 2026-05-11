@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Zap, Mic, UploadCloud, CheckCircle2, ChevronDown, Check, Loader2, AudioLines, Copy, Settings2, Sparkles, Wand2, Play, Square, Edit2, Save, Trash2, AlertTriangle, Crown } from 'lucide-react';
+import { Zap, Mic, UploadCloud, CheckCircle2, ChevronDown, Check, Loader2, AudioLines, Copy, Settings2, Sparkles, Wand2, Play, Square, Edit2, Save, Trash2, AlertTriangle, Crown, Globe, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { upload } from '@vercel/blob/client';
-import { Tab, VOICES, formatSTTText } from '@/lib/dashboard-constants';
+import { Tab, VOICES, formatSTTText, TRANSLATION_LANGUAGES } from '@/lib/dashboard-constants';
 
 interface WorkspaceProps {
     activeTab: Tab;
@@ -30,6 +30,23 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     const [customVoices, setCustomVoices] = useState<any[]>([]);
     const [editingVoiceId, setEditingVoiceId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
+    const [selectedLanguage, setSelectedLanguage] = useState(TRANSLATION_LANGUAGES[0].id);
+    const [showLanguageList, setShowLanguageList] = useState(false);
+    const languageMenuRef = useRef<HTMLDivElement>(null);
+
+    const [showCustomVoiceModal, setShowCustomVoiceModal] = useState(false);
+    const [pendingVoice, setPendingVoice] = useState<string | null>(null);
+
+    const handleVoiceSelect = (voiceId: string) => {
+        if (voiceId.startsWith('fish_')) {
+            setPendingVoice(voiceId);
+            setShowCustomVoiceModal(true);
+            setShowVoiceList(false);
+        } else {
+            setSelectedVoice(voiceId);
+            setShowVoiceList(false);
+        }
+    };
 
     // ── Validation State ──────────────────────────────────────────────────────
     const [fileError, setFileError] = useState<string | null>(null);
@@ -143,6 +160,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (voiceMenuRef.current && !voiceMenuRef.current.contains(e.target as Node)) setShowVoiceList(false);
+            if (languageMenuRef.current && !languageMenuRef.current.contains(e.target as Node)) setShowLanguageList(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
@@ -204,9 +222,10 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         const endpoint =
             activeTab === 'tts' ? 'text-to-speech' :
                 activeTab === 'stt' ? 'speech-to-text' :
-                    activeTab === 'clone' ? 'clone-voice' :
-                        activeTab === 'clean' ? 'clean-audio' :
-                            'voice-changer';
+                    activeTab === 'translate' ? 'translate' :
+                        activeTab === 'clone' ? 'clone-voice' :
+                            activeTab === 'clean' ? 'clean-audio' :
+                                'voice-changer';
 
         try {
             if (activeTab === 'tts') { requestBody.text = cleanText; requestBody.voiceId = selectedVoice; }
@@ -216,6 +235,10 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                 const blob = await upload(safeName, file, { access: 'public', handleUploadUrl: '/api/upload' });
                 requestBody.fileUrl = blob.url; requestBody.fileName = file.name;
                 if (activeTab === 'changer') requestBody.targetVoice = selectedVoice;
+                if (activeTab === 'translate') {
+                    requestBody.targetLanguage = selectedLanguage;
+                    requestBody.targetVoice = selectedVoice;
+                }
             }
 
             const res = await fetch(`/api/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
@@ -321,7 +344,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             </div>
                         )}
 
-                        {(activeTab === 'stt' || activeTab === 'changer' || activeTab === 'clean' || activeTab === 'clone') && (
+                        {(activeTab === 'stt' || activeTab === 'changer' || activeTab === 'clean' || activeTab === 'clone' || activeTab === 'translate') && (
                             <>
                                 <div {...getRootProps()} className={cn(
                                     "relative flex-1 min-h-[120px] max-h-[160px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden group/drop",
@@ -373,8 +396,10 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             </>
                         )}
 
+
+
                         <div className={cn("flex flex-row gap-2 md:gap-3 mt-auto pt-2", activeTab === 'clone' ? "mt-4" : "")}>
-                            {(activeTab === 'tts' || activeTab === 'changer') && (
+                            {(activeTab === 'tts' || activeTab === 'changer' || activeTab === 'translate') && (
                                 <div className="flex-[2] md:flex-1 relative min-w-0" ref={voiceMenuRef}>
                                     <button
                                         onClick={() => setShowVoiceList(!showVoiceList)}
@@ -406,7 +431,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                                 {allVoices.map((voice) => (
                                                     <button
                                                         key={voice.id}
-                                                        onClick={() => { setSelectedVoice(voice.id); setShowVoiceList(false); }}
+                                                        onClick={() => handleVoiceSelect(voice.id)}
                                                         className={cn(
                                                             "w-full px-3 md:px-4 py-2 md:py-3 flex items-center gap-3 md:gap-4 hover:bg-white/[0.03] text-left transition-colors relative group/item",
                                                             selectedVoice === voice.id && "bg-cyan-500/5"
@@ -436,7 +461,65 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 </div>
                             )}
 
-                            {activeTab !== 'stt' && activeTab !== 'clone' && (
+                            {activeTab === 'translate' && (
+                                <div className="flex-[2] md:flex-1 relative min-w-0" ref={languageMenuRef}>
+                                    <button
+                                        onClick={() => setShowLanguageList(!showLanguageList)}
+                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-cyan-500/30 rounded-xl text-left transition-all h-10 md:h-12 group/lang relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                    >
+                                        <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0">
+                                            <div className="w-6 h-6 md:w-7 md:h-7 shrink-0 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover/lang:border-cyan-500/50 transition-colors">
+                                                <Globe className="w-3 h-3 md:w-4 md:h-4 text-cyan-400" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-bold text-white uppercase text-[9px] md:text-[10px] tracking-wider truncate">
+                                                    {(() => {
+                                                        const availableLangs = selectedVoice.startsWith('fish_')
+                                                            ? TRANSLATION_LANGUAGES.filter(lang => !['Hindi', 'Vietnamese'].includes(lang.id))
+                                                            : TRANSLATION_LANGUAGES;
+                                                        return availableLangs.find(l => l.id === selectedLanguage)?.name || 'Language';
+                                                    })()}
+                                                </span>
+                                                <span className="hidden md:block text-[8px] md:text-[9px] text-zinc-500 font-mono uppercase tracking-tighter truncate mt-0.5">
+                                                    Target Output
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <ChevronDown className={cn("w-3 h-3 md:w-4 md:h-4 shrink-0 transition-all ml-1 md:ml-2 text-zinc-600", showLanguageList && "rotate-180 text-cyan-400")} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {showLanguageList && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute z-[100] bottom-[calc(100%+12px)] w-full md:w-[100%] glass-mid border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-64 overflow-y-auto py-2 custom-scrollbar"
+                                            >
+                                                {(selectedVoice.startsWith('fish_') ? TRANSLATION_LANGUAGES.filter(lang => !['Hindi', 'Vietnamese'].includes(lang.id)) : TRANSLATION_LANGUAGES).map((lang) => (
+                                                    <button
+                                                        key={lang.id}
+                                                        onClick={() => { setSelectedLanguage(lang.id); setShowLanguageList(false); }}
+                                                        className={cn(
+                                                            "w-full px-2 md:px-2 py-2 md:py-2 flex items-center gap-3 md:gap-4 hover:bg-white/[0.03] text-left transition-colors relative group/item",
+                                                            selectedLanguage === lang.id && "bg-cyan-500/5"
+                                                        )}
+                                                    >
+                                                        {selectedLanguage === lang.id && <div className="absolute left-0 top-2 bottom-2 w-1 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)]" />}
+                                                        <div className="text-sm md:text-base shrink-0 font-bold">{lang.flag}</div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className={cn("text-[9px] md:text-[10px] tracking-widest block truncate", selectedLanguage === lang.id ? "text-cyan-400 text-glow-cyan" : "text-white")}>
+                                                                {lang.name}
+                                                            </span>
+                                                        </div>
+                                                        {selectedLanguage === lang.id && <Check className="w-3 h-3 text-cyan-400 shrink-0" />}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {activeTab !== 'stt' && activeTab !== 'clone' && activeTab !== 'translate' && (
                                 <button
                                     onClick={cycleFormat}
                                     className="w-14 md:w-20 shrink-0 h-10 md:h-12 px-2 bg-black/40 border border-white/5 hover:border-cyan-500/30 rounded-xl font-mono text-[9px] md:text-[10px] uppercase transition-all text-cyan-400 font-bold tracking-widest active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
@@ -633,6 +716,83 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                     </div>
                 </div>
             )}
+
+            {/* Custom Voice Terms Modal */}
+            <AnimatePresence>
+                {showCustomVoiceModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-md"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+                            className="w-full max-w-lg glass-panel border border-white/10 rounded-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                                <ShieldCheck className="w-48 h-48 text-cyan-400 rotate-12" />
+                            </div>
+
+                            <div className="relative z-10">
+                                <h2 className="text-xl md:text-2xl font-mono font-bold uppercase text-white mb-2 flex items-center gap-3 tracking-tighter">
+                                    Custom Voice Notice
+                                </h2>
+                                <p className="text-xs font-mono text-zinc-400 mb-6 leading-relaxed">
+                                    Please review the capabilities and legal requirements before utilizing cloned neural identities.
+                                </p>
+
+                                <div className="space-y-4 mb-8">
+                                    <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4">
+                                        <h3 className="text-[10px] font-mono font-bold text-white uppercase tracking-widest mb-2">Language Limitations</h3>
+                                        <p className="text-[10px] font-mono text-white-500/80 leading-relaxed mb-3">
+                                            The custom voice engine natively supports exactly 13 languages. Using unsupported languages will result in generation failures.
+                                        </p>
+                                        <a href="/docs/custom-voices" target="_blank" className="text-[10px] font-mono font-bold text-cyan-400 hover:text-cyan-300 uppercase tracking-widest underline decoration-cyan-500/30 underline-offset-4 transition-colors">
+                                            View Supported Languages →
+                                        </a>
+                                    </div>
+
+                                    <div className="bg-black/40 border border-white/5 rounded-xl p-4">
+                                        <h3 className="text-[10px] font-mono font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+                                            <ShieldCheck className="w-3 h-3 text-cyan-400" /> Legal Responsibility
+                                        </h3>
+                                        <ul className="list-disc list-inside space-y-2 text-[10px] font-mono text-zinc-500 leading-relaxed">
+                                            <li>You must possess explicit permission to clone and synthesize this individual's voice.</li>
+                                            <li>The creation of audio that is defamatory, misleading, serves fraudulent or illegal purposes is strictly prohibited.</li>
+                                            <li>Accounts violating these terms are subject to immediate and permanent termination.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowCustomVoiceModal(false);
+                                            setPendingVoice(null);
+                                        }}
+                                        className="flex-1 py-3 px-4 glass border border-white/10 hover:bg-white/5 rounded-xl text-[10px] md:text-xs font-mono font-bold uppercase tracking-widest text-zinc-400 hover:text-white transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowCustomVoiceModal(false);
+                                            if (pendingVoice) {
+                                                setSelectedVoice(pendingVoice);
+                                                if (['Hindi', 'Vietnamese'].includes(selectedLanguage)) {
+                                                    setSelectedLanguage('English');
+                                                }
+                                            }
+                                        }}
+                                        className="flex-[2] py-3 px-4 bg-cyan-400 hover:bg-cyan-300 text-black rounded-xl text-[10px] md:text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all text-center"
+                                    >
+                                        I Agree & Continue
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
