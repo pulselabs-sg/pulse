@@ -36,7 +36,7 @@ function DashboardContent() {
   const [textInput, setTextInput] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [selectedVoice, setSelectedVoice] = useState(VOICES[0].id);
-  const [result, setResult] = useState<{ type: 'text' | 'audio'; content: string } | null>(null);
+  const [result, setResult] = useState<{ type: 'text' | 'audio'; content: string; blob?: Blob } | null>(null);
 
   // User & Billing States
   const [userState, setUserState] = useState({

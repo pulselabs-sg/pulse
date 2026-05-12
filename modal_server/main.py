@@ -7,7 +7,7 @@ import base64
 import threading
 import sys
 import modal
-import requests
+import httpx 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 
@@ -32,7 +32,7 @@ image = (
         "wandb", "librosa", "soundfile", "funasr", "silero-vad",
         "descript-audio-codec", "pydub", "zstandard", "resampy",
         "numpy", "pillow", "fastapi", "uvicorn", "kui", "pydantic",
-        "requests", "tiktoken", "cachetools", "ormsgpack",
+        "requests", "httpx", "tiktoken", "cachetools", "ormsgpack", # Thêm httpx vào đây
         "modelscope", "opencc-python-reimplemented", "grpcio"
     )
     .run_commands(
@@ -43,28 +43,23 @@ image = (
     )
 )
 
-
 @app.cls(
     image=image,
     gpu="L4",
     timeout=300,
     scaledown_window=30,
+    max_containers=15,
     secrets=[modal.Secret.from_name("voicelab-modal-auth")],
 )
-@modal.concurrent(max_inputs=2) # <--- CORRECT MODAL 1.0 WAY
+@modal.concurrent(max_inputs=2)
 class FishSpeechInference:
     
     @modal.enter()
     def load_model(self):
-        """
-        Load the model only once when the container starts (Cold Start).
-        COMPLETELY REMOVED SUBPROCESS, running directly via Python Native.
-        """
         print("--- [COLD START] Starting internal Python Engine to load VRAM... ---")
         sys.path.append("/workspace/fish-speech")
         
         def run_python_engine():
-            # Pass mock arguments to activate Fish Speech's api_server
             sys.argv = [
                 "api_server.py",
                 "--listen", "127.0.0.1:8080",
@@ -73,24 +68,21 @@ class FishSpeechInference:
                 "--device", "cuda"
             ]
             import runpy
-            # runpy runs the module directly within the current process (NO subprocess spawned)
             try:
                 runpy.run_module("tools.api_server", run_name="__main__")
             except Exception as e:
                 print(f"Engine exited: {e}")
 
-        # Run engine on a background thread
         self.engine_thread = threading.Thread(target=run_python_engine, daemon=True)
         self.engine_thread.start()
         
-        # Wait for Engine to load weights into GPU (Only wait the very first time)
         print("Waiting for Engine to load Weights into GPU (about 30-60s)...")
         start_time = time.time()
         ready = False
         while time.time() - start_time < 180:
             try:
+                import requests
                 res = requests.get("http://127.0.0.1:8080/v1/tts", timeout=2)
-                # Their API returns 405 (Method Not Allowed for GET), which means the server is alive and ready
                 if res.status_code in [200, 404, 405, 422]:
                     print("--- [READY] Successfully loaded the model into GPU! ---")
                     ready = True
@@ -121,10 +113,6 @@ class FishSpeechInference:
 
             return await call_next(request)
 
-        @web_app.get("/health")
-        async def health():
-            return {"status": "ok", "model": "fish-speech-1.5-native-class"}
-
         @web_app.post("/v1/tts")
         async def tts_endpoint(request: Request):
             body = await request.json()
@@ -136,26 +124,24 @@ class FishSpeechInference:
             if not text:
                 raise HTTPException(status_code=400, detail="Missing 'text' field")
 
-            # 1. Download Reference Audio
+            # 1. Download Reference Audio (Vẫn dùng urllib đơn giản)
             ref_audio_content = None
             if ref_url:
                 try:
                     req_urllib = urllib.request.Request(ref_url, headers={'User-Agent': 'Mozilla/5.0'})
                     with urllib.request.urlopen(req_urllib) as response:
                         raw_audio = response.read()
-                        
                         from pydub import AudioSegment
                         audio_segment = AudioSegment.from_file(io.BytesIO(raw_audio))
                         if len(audio_segment) > 30000:
                             audio_segment = audio_segment[:30000]
-                        
                         out_io = io.BytesIO()
                         audio_segment.export(out_io, format="wav")
                         ref_audio_content = out_io.getvalue()
                 except Exception as e:
                     print(f"Error downloading reference audio: {e}")
 
-            # 2. Process Audio Generation Logic
+            # 2. Process Audio Generation Logic (Async httpx)
             try:
                 payload = {
                     "text": text,
@@ -168,18 +154,16 @@ class FishSpeechInference:
                     audio_b64 = base64.b64encode(ref_audio_content).decode("utf-8")
                     payload["references"] = [{"audio": audio_b64, "text": ref_text}]
 
-                # Call directly via loopback. No network overhead as it only communicates RAM-to-RAM.
-                # Does not waste time creating processes like subprocess.
-                response = requests.post("http://127.0.0.1:8080/v1/tts", json=payload, stream=True)
-                
-                if response.status_code != 200:
-                    raise Exception(f"Internal Engine Error {response.status_code}: {response.text}")
+                async with httpx.AsyncClient(timeout=300.0) as client:
+                    async with client.stream("POST", "http://127.0.0.1:8080/v1/tts", json=payload) as response:
+                        if response.status_code != 200:
+                            error_content = await response.aread()
+                            raise Exception(f"Internal Engine Error {response.status_code}: {error_content.decode()}")
 
-                # 3. Return the file to Next.js
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{format_ext}")
-                for chunk in response.iter_content(chunk_size=16384):
-                    temp_file.write(chunk)
-                temp_file.close()
+                        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=f".{format_ext}")
+                        async for chunk in response.aiter_bytes(chunk_size=16384):
+                            temp_file.write(chunk)
+                        temp_file.close()
 
                 media_type = f"audio/{'mpeg' if format_ext == 'mp3' else format_ext}"
                 return FileResponse(temp_file.name, media_type=media_type)

@@ -10,7 +10,6 @@ import { textToSpeechSchema, apiResponse, validateCredits, CREDIT_COSTS, TIER_LI
 import { ratelimit } from '@/lib/ratelimit';
 import { chunkText, concatAudioBuffers } from '@/lib/audio';
 
-
 export async function POST(req: Request) {
   const prisma = getPrisma();
   let pulseCost = 0;
@@ -19,7 +18,6 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    // 1. Rate Limiting (Specific for TTS: 20 per minute)
     if (ratelimit) {
       const { success } = await ratelimit.limit(`ratelimit_tts_${session.user.id}`);
       if (!success) return apiResponse("Too many synthesis requests. Please slow down.", 429);
@@ -48,7 +46,6 @@ export async function POST(req: Request) {
       return apiResponse(`Text too long. Maximum ${maxChars} characters allowed.`, 413);
     }
 
-    // 3. Deduct Credits Atomically
     const updatedUser = await prisma.user.updateMany({
       where: {
         id: user.id,
@@ -63,7 +60,7 @@ export async function POST(req: Request) {
 
     const isFishVoice = voiceId.startsWith('fish_');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 290000 : 30000); // Max 290s for Modal to stay under 300s Vercel limit
+    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 290000 : 30000);
 
     try {
       let audioBuffer: ArrayBuffer;
@@ -72,47 +69,60 @@ export async function POST(req: Request) {
         const referenceAudioUrl = voiceId.replace('fish_', '');
         const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
 
-        const textChunks = chunkText(text, 1000);
-        const buffers: ArrayBuffer[] = [];
-        const BATCH_SIZE = 3;
-        
-        console.log(`[FISH SPEECH] Starting synthesis for ${textChunks.length} chunks (Batch Size: ${BATCH_SIZE})...`);
-        
-        for (let i = 0; i < textChunks.length; i += BATCH_SIZE) {
-          const currentBatch = textChunks.slice(i, i + BATCH_SIZE);
-          console.log(`[FISH SPEECH] Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(textChunks.length/BATCH_SIZE)} (Chunks ${i+1}-${Math.min(i+BATCH_SIZE, textChunks.length)})`);
-          
-          const batchPromises = currentBatch.map(async (chunk, index) => {
-            const chunkIndex = i + index;
-            const res = await fetch(modalApiUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-                'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-              },
-              body: JSON.stringify({
-                text: chunk,
-                reference_audio_url: referenceAudioUrl,
-                format
-              }),
-              signal: controller.signal,
-            });
+        const textChunks = chunkText(text, 300);
+        const buffers: ArrayBuffer[] = new Array(textChunks.length);
 
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status} on chunk ${chunkIndex + 1}`, errorText);
-              throw new Error(`Modal API processing failed on chunk ${chunkIndex + 1}`);
+        const MAX_CONCURRENT_REQUESTS = 15;
+        let currentIndex = 0;
+
+        const processChunk = async (chunk: string, index: number) => {
+          let retries = 2;
+          while (retries >= 0) {
+            try {
+              const res = await fetch(modalApiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+                  'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
+                },
+                body: JSON.stringify({
+                  text: chunk,
+                  reference_audio_url: referenceAudioUrl,
+                  format
+                }),
+                signal: controller.signal,
+              });
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Status ${res.status}: ${errorText}`);
+              }
+              return await res.arrayBuffer();
+            } catch (err: any) {
+              if (retries === 0 || err.name === 'AbortError') {
+                console.error(`[FISH SPEECH ERROR] Chunk ${index} failed permanently:`, err);
+                throw err;
+              }
+              console.warn(`[TTS RETRY] Network error, trying chunk ${index} again... (Left ${retries} retries)`);
+              await new Promise(r => setTimeout(r, 2000));
+              retries--;
             }
-            
-            return res.arrayBuffer();
-          });
+          }
+        };
 
-          const batchResults = await Promise.all(batchPromises);
-          buffers.push(...batchResults);
-          console.log(`[FISH SPEECH] Batch ${Math.floor(i/BATCH_SIZE) + 1} completed.`);
-        }
+        const worker = async () => {
+          while (currentIndex < textChunks.length) {
+            const index = currentIndex++;
+            const chunk = textChunks[index];
+            buffers[index] = await processChunk(chunk, index) as ArrayBuffer;
+          }
+        };
 
+        const workers = Array(Math.min(MAX_CONCURRENT_REQUESTS, textChunks.length))
+          .fill(null)
+          .map(() => worker());
+        await Promise.all(workers);
         audioBuffer = concatAudioBuffers(buffers, format);
       } else {
         const response = await fetch('https://api.x.ai/v1/tts', {
@@ -130,11 +140,7 @@ export async function POST(req: Request) {
           signal: controller.signal,
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`[X.AI TTS ERROR] Status: ${response.status}`, errorText);
-          throw new Error("External API processing failed");
-        }
+        if (!response.ok) throw new Error("External API processing failed");
         audioBuffer = await response.arrayBuffer();
       }
 
@@ -143,7 +149,6 @@ export async function POST(req: Request) {
         contentType: format === 'wav' ? 'audio/wav' : 'audio/mpeg',
       });
 
-      // --- TTS ---
       await prisma.history.create({
         data: {
           userId: user.id,
@@ -180,9 +185,9 @@ export async function POST(req: Request) {
     }
 
     const clientMessage = isTimeout
-      ? "AI Engine is taking too long to respond. Please try again."
-      : "An internal error occurred during processing.";
+      ? "The AI server is busy or the text is too long. Please try again later."
+      : "An error occurred during audio processing.";
 
     return apiResponse(clientMessage, isTimeout ? 504 : 500);
   }
-}
+} 

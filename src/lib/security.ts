@@ -43,8 +43,7 @@ const safeUrlSchema = z.string()
 
 const safeFileNameSchema = z.string()
   .min(1)
-  .max(100)
-  .regex(/^[a-zA-Z0-9\s._-]+$/, "File name contains invalid characters.");
+  .max(255);
 
 // Text to Speech
 export const textToSpeechSchema = z.object({

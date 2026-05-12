@@ -122,47 +122,60 @@ export async function POST(req: Request) {
         const referenceAudioUrl = targetVoice.replace('fish_', '');
         const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
 
-        const textChunks = chunkText(transcribedText, 1000);
-        const buffers: ArrayBuffer[] = [];
-        const BATCH_SIZE = 3;
-        
-        console.log(`[FISH SPEECH VC] Starting synthesis for ${textChunks.length} chunks (Batch Size: ${BATCH_SIZE})...`);
-        
-        for (let i = 0; i < textChunks.length; i += BATCH_SIZE) {
-          const currentBatch = textChunks.slice(i, i + BATCH_SIZE);
-          console.log(`[FISH SPEECH VC] Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(textChunks.length/BATCH_SIZE)} (Chunks ${i+1}-${Math.min(i+BATCH_SIZE, textChunks.length)})`);
-          
-          const batchPromises = currentBatch.map(async (chunk, index) => {
-            const chunkIndex = i + index;
-            const res = await fetch(modalApiUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-                'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-              },
-              body: JSON.stringify({
-                text: chunk,
-                reference_audio_url: referenceAudioUrl,
-                format
-              }),
-              signal: controllerTTS.signal,
-            });
+        const textChunks = chunkText(transcribedText, 300);
 
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error(`[FISH SPEECH VC-TTS ERROR] Status: ${res.status} on chunk ${chunkIndex + 1}`, errorText);
-              throw new Error(`Modal TTS Phase failed on chunk ${chunkIndex + 1}`);
+        const buffers: ArrayBuffer[] = new Array(textChunks.length);
+        const MAX_CONCURRENT_REQUESTS = 15;
+        let currentIndex = 0;
+
+        const processChunk = async (chunk: string, index: number) => {
+          let retries = 2;
+          while (retries >= 0) {
+            try {
+              const res = await fetch(modalApiUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+                  'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
+                },
+                body: JSON.stringify({
+                  text: chunk,
+                  reference_audio_url: referenceAudioUrl,
+                  format
+                }),
+                signal: controllerTTS.signal,
+              });
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Status ${res.status}: ${errorText}`);
+              }
+              return await res.arrayBuffer();
+            } catch (err: any) {
+              if (retries === 0 || err.name === 'AbortError') {
+                console.error(`[FISH SPEECH ERROR] Chunk ${index} failed permanently:`, err);
+                throw err;
+              }
+              console.warn(`[TTS RETRY] Network error, trying chunk ${index} again... (Left ${retries} retries)`);
+              await new Promise(r => setTimeout(r, 2000));
+              retries--;
             }
-            
-            return res.arrayBuffer();
-          });
+          }
+        };
 
-          const batchResults = await Promise.all(batchPromises);
-          buffers.push(...batchResults);
-          console.log(`[FISH SPEECH VC] Batch ${Math.floor(i/BATCH_SIZE) + 1} completed.`);
-        }
+        const worker = async () => {
+          while (currentIndex < textChunks.length) {
+            const index = currentIndex++;
+            const chunk = textChunks[index];
+            buffers[index] = await processChunk(chunk, index) as ArrayBuffer;
+          }
+        };
 
+        const workers = Array(Math.min(MAX_CONCURRENT_REQUESTS, textChunks.length))
+          .fill(null)
+          .map(() => worker());
+        await Promise.all(workers);
         audioBuffer = concatAudioBuffers(buffers, format);
       } else {
         const ttsResponse = await fetch('https://api.x.ai/v1/tts', {

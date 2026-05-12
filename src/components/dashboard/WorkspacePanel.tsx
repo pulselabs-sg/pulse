@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { upload } from '@vercel/blob/client';
 import { Tab, VOICES, formatSTTText, TRANSLATION_LANGUAGES } from '@/lib/dashboard-constants';
+import { CustomAudioPlayer } from './CustomAudioPlayer';
 
 // ── Processing stage definitions by tab ─────────────────────────────────────
 const TAB_STAGES: Record<string, string[]> = {
@@ -64,7 +65,7 @@ interface WorkspaceProps {
     session: any;
     userState: any;
     setUserState: any;
-    result: { type: 'text' | 'audio', content: string } | null;
+    result: { type: 'text' | 'audio', content: string, blob?: Blob } | null;
     setResult: (v: any) => void;
     textInput: string;
     setTextInput: (v: string) => void;
@@ -313,7 +314,8 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                 if (activeTab === 'stt') {
                     const data = await res.json(); setResult({ type: 'text', content: data.text });
                 } else {
-                    const url = URL.createObjectURL(await res.blob()); setResult({ type: 'audio', content: url });
+                    const audioBlob = await res.blob();
+                    const url = URL.createObjectURL(audioBlob); setResult({ type: 'audio', content: url, blob: audioBlob });
                 }
             }
         } catch (err: any) { alert(err.message); } finally { setLoading(false); }
@@ -706,7 +708,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                                     {stages[stageIdx]}
                                                 </motion.p>
                                             </AnimatePresence>
-                                            <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+                                            <p className="text-[9px] font-mono text-zinc-500 tracking-widest">
                                                 Neural Engine Active · {elapsed}s elapsed
                                             </p>
                                         </div>
@@ -782,16 +784,16 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                                         className="w-full max-w-md space-y-8"
                                     >
-                                        <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5 shadow-2xl">
-                                            <audio controls src={result.content} className="w-full h-10 accent-cyan-500" />
+                                        <div className="w-full">
+                                            <CustomAudioPlayer src={result.content} blob={result.blob} />
                                         </div>
                                         <a
                                             href={result.content}
                                             download={result.content.startsWith('http') ? `ipulse_output_${Date.now()}.${result.content.split('.').pop()}` : `ipulse_output.${outputFormat}`}
-                                            className="flex items-center justify-center gap-3 w-full py-4 bg-white text-black font-bold text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-cyan-300 transition-all active:scale-95 shadow-[0_0_30px_rgba(34,211,238,0.2)]"
+                                            className="flex items-center justify-center gap-3 w-full py-3 bg-white text-black font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] rounded-xl hover:bg-cyan-300 transition-all active:scale-95 shadow-[0_0_30px_rgba(34,211,238,0.2)]"
                                         >
                                             <UploadCloud className="w-4 h-4 rotate-180" />
-                                            Download Mastered Audio
+                                            Download
                                         </a>
                                     </motion.div>
                                 )}

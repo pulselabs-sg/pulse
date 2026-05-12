@@ -40,10 +40,10 @@ export async function POST(req: Request) {
     const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
     const limit = TIER_LIMITS[tier].pulse;
     const maxAudioMins = TIER_LIMITS[tier].maxAudioMins;
-    
+
     const body = await req.json().catch(() => ({}));
     const validation = speechToTextSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return apiResponse({ error: 'Invalid request data', details: validation.error.format() }, 400);
     }
@@ -107,27 +107,27 @@ export async function POST(req: Request) {
       try {
         const formatResponse = await fetch('https://api.x.ai/v1/chat/completions', {
           method: 'POST',
-          headers: { 
+          headers: {
             'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             model: "grok-4-1-fast-reasoning",
             messages: [
-              { 
-                role: "system", 
-                content: "You are a professional editor. Take the raw text, add punctuation, capitalize proper nouns, and create line breaks for paragraphs. THE ULTIMATE RULE: ONLY return the formatted text, DO NOT add any other words like 'Here is...', 'Understood', etc." 
+              {
+                role: "system",
+                content: "You are a professional editor. Take the raw text, add punctuation, capitalize proper nouns, and create line breaks for paragraphs. THE ULTIMATE RULE: ONLY return the formatted text, DO NOT add any other words like 'Here is...', 'Understood', etc."
               },
               { role: "user", content: finalText }
             ],
-            temperature: 0.1 
+            temperature: 0.1
           })
         });
 
         if (formatResponse.ok) {
           const formatData = await formatResponse.json();
           if (formatData.choices?.[0]?.message?.content) {
-            finalText = formatData.choices[0].message.content.trim(); 
+            finalText = formatData.choices[0].message.content.trim();
           }
         } else {
           const errLog = await formatResponse.text();
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
           userId: user.id,
           type: 'stt',
           input: fileName,
-          output: finalText 
+          output: finalText
         }
       });
 
