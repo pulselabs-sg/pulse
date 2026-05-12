@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120; // 2 minutes, as it calls 3 APIs
+export const maxDuration = 300; // 2 minutes, as it calls 3 APIs
 
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
         const textChunks = chunkText(translatedText, 300);
 
         const buffers: ArrayBuffer[] = new Array(textChunks.length);
-        const MAX_CONCURRENT_REQUESTS = 15;
+        const MAX_CONCURRENT_REQUESTS = 10;
         let currentIndex = 0;
 
         const processChunk = async (chunk: string, index: number) => {

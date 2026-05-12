@@ -47,11 +47,11 @@ image = (
     image=image,
     gpu="L4",
     timeout=300,
-    scaledown_window=30,
+    scaledown_window=60,
     max_containers=15,
     secrets=[modal.Secret.from_name("voicelab-modal-auth")],
 )
-@modal.concurrent(max_inputs=2)
+@modal.concurrent(max_inputs=5)
 class FishSpeechInference:
     
     @modal.enter()
@@ -124,7 +124,7 @@ class FishSpeechInference:
             if not text:
                 raise HTTPException(status_code=400, detail="Missing 'text' field")
 
-            # 1. Download Reference Audio (Vẫn dùng urllib đơn giản)
+            # 1. Download Reference Audio
             ref_audio_content = None
             if ref_url:
                 try:
