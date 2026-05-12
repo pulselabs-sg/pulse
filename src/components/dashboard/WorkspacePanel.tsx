@@ -6,6 +6,59 @@ import { cn } from '@/lib/utils';
 import { upload } from '@vercel/blob/client';
 import { Tab, VOICES, formatSTTText, TRANSLATION_LANGUAGES } from '@/lib/dashboard-constants';
 
+// ── Processing stage definitions by tab ─────────────────────────────────────
+const TAB_STAGES: Record<string, string[]> = {
+    tts: ['Encoding Text', 'Synthesizing Voice', 'Rendering Audio', 'Finalizing Output'],
+    stt: ['Uploading Audio', 'Decoding Signal', 'Transcribing', 'Formatting Text'],
+    changer: ['Uploading Audio', 'Analyzing Voice', 'Transforming', 'Mastering Output'],
+    clean: ['Uploading Audio', 'Denoising Signal', 'Deep Filtering', 'Enhancing Quality'],
+    translate: ['Uploading Audio', 'Detecting Language', 'Translating', 'Synthesizing Voice'],
+    clone: ['Uploading Sample', 'Mapping Neural Identity', 'Training Model', 'Saving Voice'],
+};
+const DEFAULT_STAGES = ['Uploading', 'Processing', 'Synthesizing', 'Finalizing'];
+
+// ── Simulated progress hook ──────────────────────────────────────────────────
+function useSimulatedProgress(active: boolean) {
+    const [progress, setProgress] = useState(0);
+    const [stageIdx, setStageIdx] = useState(0);
+    const [elapsed, setElapsed] = useState(0);
+    const rafRef = useRef<number | undefined>(undefined);
+    const startRef = useRef<number | undefined>(undefined);
+
+    useEffect(() => {
+        if (!active) {
+            setProgress(0);
+            setStageIdx(0);
+            setElapsed(0);
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            return;
+        }
+
+        startRef.current = Date.now();
+
+        const tick = () => {
+            const now = Date.now();
+            const sec = (now - startRef.current!) / 1000;
+            setElapsed(Math.floor(sec));
+
+            // Eased progression: fast at first, then slows near 90%
+            // Never actually reaches 100% until request resolves
+            const eased = 90 * (1 - Math.exp(-sec / 25));
+            setProgress(Math.min(eased, 90));
+
+            // Advance stage label every ~22% of the first 90%
+            setStageIdx(Math.min(Math.floor(eased / 22.5), 3));
+
+            rafRef.current = requestAnimationFrame(tick);
+        };
+
+        rafRef.current = requestAnimationFrame(tick);
+        return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    }, [active]);
+
+    return { progress, stageIdx, elapsed };
+}
+
 interface WorkspaceProps {
     activeTab: Tab;
     session: any;
@@ -30,6 +83,9 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     const [customVoices, setCustomVoices] = useState<any[]>([]);
     const [editingVoiceId, setEditingVoiceId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
+    // ── Simulated progress (driven by rAF) ──────────────────────────────────
+    const { progress, stageIdx, elapsed } = useSimulatedProgress(loading);
+    const stages = TAB_STAGES[activeTab] || DEFAULT_STAGES;
     const [selectedLanguage, setSelectedLanguage] = useState(TRANSLATION_LANGUAGES[0].id);
     const [showLanguageList, setShowLanguageList] = useState(false);
     const languageMenuRef = useRef<HTMLDivElement>(null);
@@ -98,8 +154,8 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     const isTextOverLimit = activeTab === 'tts' && textInput.length > userState.maxChars;
     const isFileInvalid = !!(fileError || durationError);
     const maxFileSizeBytes = userState.maxFileMB * 1024 * 1024;
-    // Clone tab has a fixed 120s duration limit regardless of tier
-    const maxAudioSeconds = activeTab === 'clone' ? 120 : userState.maxAudioMins * 60;
+    // Clone tab has a fixed 60s duration limit regardless of tier
+    const maxAudioSeconds = activeTab === 'clone' ? 60 : userState.maxAudioMins * 60;
 
     // Clear file errors when tab changes or file is cleared
     useEffect(() => {
@@ -130,7 +186,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
         audio.onloadedmetadata = () => {
             if (audio.duration > maxAudioSeconds) {
                 const maxLabel = activeTab === 'clone'
-                    ? '120 seconds'
+                    ? '60 seconds'
                     : `${userState.maxAudioMins} minute${userState.maxAudioMins !== 1 ? 's' : ''}`;
                 setDurationError(
                     `Audio duration (${Math.round(audio.duration)}s) exceeds the ${maxLabel} limit for your plan.`
@@ -365,7 +421,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                                 <UploadCloud className="w-7 h-7 text-zinc-500 group-hover/drop:text-blue-400 transition-colors" />
                                             </div>
                                             <p className="text-[10px] font-bold text-white uppercase tracking-widest">{activeTab === 'clone' ? 'Transmit Voice Sample (~1 min)' : 'Transmit Audio Signal'}</p>
-                                            <p className="text-[9px] font-mono text-zinc-500 uppercase">MP3, WAV, M4A • MAX {activeTab === 'clone' ? '120 SECONDS' : `${userState.maxFileMB}MB`}</p>
+                                            <p className="text-[9px] font-mono text-zinc-500 uppercase">MP3, WAV, M4A • MAX {activeTab === 'clone' ? '60 SECONDS' : `${userState.maxFileMB}MB`}</p>
                                         </div>
                                     )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-cyan-600/5 to-transparent opacity-0 group-hover/drop:opacity-100 transition-opacity" />
@@ -600,29 +656,112 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 {loading && (
                                     <motion.div
                                         key="loading"
-                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                        className="flex flex-col items-center gap-8"
+                                        initial={{ opacity: 0, scale: 0.97 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.97 }}
+                                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                                        className="flex flex-col items-center gap-6 w-full max-w-sm"
                                     >
-                                        <div className="flex items-center gap-1 h-12">
-                                            {[...Array(12)].map((_, i) => (
-                                                <motion.div
-                                                    key={i}
-                                                    animate={{
-                                                        height: [10, 40, 15, 30, 10],
-                                                        opacity: [0.3, 1, 0.3, 0.7, 0.3]
-                                                    }}
-                                                    transition={{
-                                                        repeat: Infinity,
-                                                        duration: 1 + Math.random(),
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    className="w-1 bg-cyan-500 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)]"
-                                                />
-                                            ))}
+                                        {/* ── Waveform bars ──────────────────────────── */}
+                                        <div className="relative flex items-center gap-[3px] h-14">
+                                            {/* ambient glow */}
+                                            <div className="absolute inset-0 blur-2xl opacity-30 bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500 rounded-full pointer-events-none" />
+                                            {[...Array(16)].map((_, i) => {
+                                                const colors = [
+                                                    'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.9)]',
+                                                    'bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.7)]',
+                                                    'bg-indigo-400 shadow-[0_0_12px_rgba(129,140,248,0.8)]',
+                                                    'bg-violet-400 shadow-[0_0_10px_rgba(167,139,250,0.8)]',
+                                                ];
+                                                return (
+                                                    <motion.div
+                                                        key={i}
+                                                        animate={{
+                                                            height: [8, 44, 14, 36, 10, 28, 8],
+                                                            opacity: [0.4, 1, 0.5, 0.9, 0.4, 0.8, 0.4],
+                                                        }}
+                                                        transition={{
+                                                            repeat: Infinity,
+                                                            duration: 1.2 + (i % 5) * 0.18,
+                                                            delay: i * 0.06,
+                                                            ease: 'easeInOut',
+                                                        }}
+                                                        className={`w-[3px] rounded-full ${colors[i % colors.length]}`}
+                                                    />
+                                                );
+                                            })}
                                         </div>
-                                        <div className="text-center">
-                                            <p className="text-white font-bold tracking-widest uppercase text-xs animate-pulse">Processing Neural Nodes</p>
-                                            <p className="text-[9px] font-mono text-zinc-500 uppercase mt-2">Applying custom voice parameters...</p>
+
+                                        {/* ── Stage label ────────────────────────────── */}
+                                        <div className="text-center space-y-1">
+                                            <AnimatePresence mode="wait">
+                                                <motion.p
+                                                    key={stageIdx}
+                                                    initial={{ opacity: 0, y: 6 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -6 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="text-white font-bold tracking-[0.2em] uppercase text-[10px] md:text-xs text-glow-cyan"
+                                                >
+                                                    {stages[stageIdx]}
+                                                </motion.p>
+                                            </AnimatePresence>
+                                            <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+                                                Neural Engine Active · {elapsed}s elapsed
+                                            </p>
+                                        </div>
+
+                                        {/* ── Progress bar ───────────────────────────── */}
+                                        <div className="w-full space-y-2">
+                                            <div className="flex justify-between items-center px-0.5">
+                                                <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Progress</span>
+                                                <motion.span
+                                                    className="text-[10px] font-mono font-bold text-cyan-400 tabular-nums"
+                                                    key={Math.floor(progress)}
+                                                >
+                                                    {Math.floor(progress)}%
+                                                </motion.span>
+                                            </div>
+
+                                            {/* track */}
+                                            <div className="relative h-1.5 w-full bg-white/[0.06] rounded-full overflow-hidden">
+                                                {/* shimmer overlay */}
+                                                <motion.div
+                                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full"
+                                                    animate={{ x: ['-100%', '200%'] }}
+                                                    transition={{ repeat: Infinity, duration: 1.8, ease: 'linear' }}
+                                                />
+                                                {/* fill */}
+                                                <motion.div
+                                                    className="absolute left-0 top-0 bottom-0 rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500 shadow-[0_0_12px_rgba(34,211,238,0.6)]"
+                                                    animate={{ width: `${progress}%` }}
+                                                    transition={{ ease: 'linear', duration: 0.5 }}
+                                                />
+                                            </div>
+
+                                            {/* stage dots */}
+                                            <div className="flex justify-between px-0.5 pt-1">
+                                                {stages.map((label, idx) => (
+                                                    <div key={label} className="flex flex-col items-center gap-1">
+                                                        <motion.div
+                                                            className={cn(
+                                                                'w-1.5 h-1.5 rounded-full transition-colors duration-500',
+                                                                idx <= stageIdx
+                                                                    ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]'
+                                                                    : 'bg-white/10'
+                                                            )}
+                                                            animate={idx === stageIdx ? { scale: [1, 1.5, 1] } : {}}
+                                                            transition={{ repeat: Infinity, duration: 1.2 }}
+                                                        />
+                                                        <span className={cn(
+                                                            'text-[7px] font-mono uppercase tracking-tight hidden md:block',
+                                                            idx <= stageIdx ? 'text-cyan-500' : 'text-zinc-700'
+                                                        )}>
+                                                            {label.split(' ')[0]}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}

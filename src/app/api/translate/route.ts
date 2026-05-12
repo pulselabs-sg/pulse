@@ -9,6 +9,7 @@ import { put, del } from '@vercel/blob';
 import { translationSchema, apiResponse } from '@/lib/security';
 import { parseBuffer } from 'music-metadata';
 import { ratelimit } from '@/lib/ratelimit';
+import { chunkText, concatAudioBuffers } from '@/lib/audio';
 
 const TIER_LIMITS = {
   FREE: { pulse: 20000, maxAudioMins: 5 },
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
 
     const isFishVoice = targetVoice.startsWith('fish_');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 180000 : 90000); // 90-180 seconds for whole pipeline
+    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 290000 : 90000); // 90-290 seconds for whole pipeline
 
     try {
       // 1. STT Phase
@@ -133,34 +134,42 @@ export async function POST(req: Request) {
       }
 
       // 3. TTS Phase
-      let ttsResponse: Response;
+      let audioBuffer: ArrayBuffer;
 
       if (isFishVoice) {
         const referenceAudioUrl = targetVoice.replace('fish_', '');
         const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
 
-        ttsResponse = await fetch(modalApiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-            'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-          },
-          body: JSON.stringify({
-            text: translatedText,
-            reference_audio_url: referenceAudioUrl,
-            format: 'mp3'
-          }),
-          signal: controller.signal,
+        const textChunks = chunkText(translatedText, 300);
+
+        const chunkPromises = textChunks.map(async (chunk) => {
+          const res = await fetch(modalApiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+              'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
+            },
+            body: JSON.stringify({
+              text: chunk,
+              reference_audio_url: referenceAudioUrl,
+              format: 'mp3'
+            }),
+            signal: controller.signal,
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status}`, errorText);
+            throw new Error("Modal API processing failed");
+          }
+          return res.arrayBuffer();
         });
 
-        if (!ttsResponse.ok) {
-          const errorText = await ttsResponse.text();
-          console.error(`[FISH SPEECH TTS ERROR] Status: ${ttsResponse.status}`, errorText);
-          throw new Error("Modal API processing failed");
-        }
+        const buffers = await Promise.all(chunkPromises);
+        audioBuffer = concatAudioBuffers(buffers, 'mp3');
       } else {
-        ttsResponse = await fetch('https://api.x.ai/v1/tts', {
+        const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${process.env.XAI_API_KEY}`,
@@ -176,10 +185,10 @@ export async function POST(req: Request) {
         });
 
         if (!ttsResponse.ok) throw new Error("TTS processing failed");
+        audioBuffer = await ttsResponse.arrayBuffer();
       }
       
-      const ttsAudioBuffer = await ttsResponse.arrayBuffer();
-      const blob = await put(`translate/${user.id}/${Date.now()}.mp3`, ttsAudioBuffer, {
+      const blob = await put(`translate/${user.id}/${Date.now()}.mp3`, audioBuffer, {
         access: 'public',
         contentType: 'audio/mpeg',
       });
@@ -194,7 +203,7 @@ export async function POST(req: Request) {
         }
       });
 
-      return new NextResponse(ttsAudioBuffer, {
+      return new NextResponse(audioBuffer, {
         headers: {
           'Content-Type': 'audio/mpeg',
           'Content-Disposition': `attachment; filename="translated_audio.mp3"`,

@@ -9,6 +9,7 @@ import { del, put } from '@vercel/blob';
 import { voiceChangerSchema, apiResponse, validateCredits, CREDIT_COSTS, TIER_LIMITS } from '@/lib/security';
 import { parseBuffer } from 'music-metadata';
 import { ratelimit } from '@/lib/ratelimit';
+import { chunkText, concatAudioBuffers } from '@/lib/audio';
 
 
 export async function POST(req: Request) {
@@ -112,37 +113,45 @@ export async function POST(req: Request) {
 
     const isFishVoice = targetVoice.startsWith('fish_');
     const controllerTTS = new AbortController();
-    const timeoutTTS = setTimeout(() => controllerTTS.abort(), isFishVoice ? 120000 : 120000);
+    const timeoutTTS = setTimeout(() => controllerTTS.abort(), isFishVoice ? 290000 : 120000);
 
     try {
-      let ttsResponse: Response;
+      let audioBuffer: ArrayBuffer;
 
       if (isFishVoice) {
         const referenceAudioUrl = targetVoice.replace('fish_', '');
         const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
 
-        ttsResponse = await fetch(modalApiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-            'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-          },
-          body: JSON.stringify({
-            text: transcribedText,
-            reference_audio_url: referenceAudioUrl,
-            format
-          }),
-          signal: controllerTTS.signal,
+        const textChunks = chunkText(transcribedText, 300);
+
+        const chunkPromises = textChunks.map(async (chunk) => {
+          const res = await fetch(modalApiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+              'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
+            },
+            body: JSON.stringify({
+              text: chunk,
+              reference_audio_url: referenceAudioUrl,
+              format
+            }),
+            signal: controllerTTS.signal,
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`[FISH SPEECH VC-TTS ERROR] Status: ${res.status}`, errorText);
+            throw new Error("Modal TTS Phase failed");
+          }
+          return res.arrayBuffer();
         });
 
-        if (!ttsResponse.ok) {
-          const errorText = await ttsResponse.text();
-          console.error(`[FISH SPEECH VC-TTS ERROR] Status: ${ttsResponse.status}`, errorText);
-          throw new Error("Modal TTS Phase failed");
-        }
+        const buffers = await Promise.all(chunkPromises);
+        audioBuffer = concatAudioBuffers(buffers, format);
       } else {
-        ttsResponse = await fetch('https://api.x.ai/v1/tts', {
+        const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${process.env.XAI_API_KEY}`,
@@ -162,9 +171,8 @@ export async function POST(req: Request) {
           console.error(`[X.AI VC-TTS ERROR] Status: ${ttsResponse.status}`, errorText);
           throw new Error("TTS Phase failed");
         }
+        audioBuffer = await ttsResponse.arrayBuffer();
       }
-
-      const audioBuffer = await ttsResponse.arrayBuffer();
 
       const blob = await put(`changer/${user.id}/${Date.now()}.${format}`, audioBuffer, {
         access: 'public',

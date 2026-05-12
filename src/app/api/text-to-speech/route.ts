@@ -8,6 +8,7 @@ import { getPrisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 import { textToSpeechSchema, apiResponse, validateCredits, CREDIT_COSTS, TIER_LIMITS } from '@/lib/security';
 import { ratelimit } from '@/lib/ratelimit';
+import { chunkText, concatAudioBuffers } from '@/lib/audio';
 
 
 export async function POST(req: Request) {
@@ -62,37 +63,45 @@ export async function POST(req: Request) {
 
     const isFishVoice = voiceId.startsWith('fish_');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 120000 : 30000); // Longer timeout for Modal cold starts
+    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 290000 : 30000); // Max 290s for Modal to stay under 300s Vercel limit
 
     try {
-      let response: Response;
+      let audioBuffer: ArrayBuffer;
 
       if (isFishVoice) {
         const referenceAudioUrl = voiceId.replace('fish_', '');
         const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
 
-        response = await fetch(modalApiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-            'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-          },
-          body: JSON.stringify({
-            text,
-            reference_audio_url: referenceAudioUrl,
-            format
-          }),
-          signal: controller.signal,
+        const textChunks = chunkText(text, 300);
+        
+        const chunkPromises = textChunks.map(async (chunk) => {
+          const res = await fetch(modalApiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+              'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
+            },
+            body: JSON.stringify({
+              text: chunk,
+              reference_audio_url: referenceAudioUrl,
+              format
+            }),
+            signal: controller.signal,
+          });
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status}`, errorText);
+            throw new Error("Modal API processing failed");
+          }
+          return res.arrayBuffer();
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`[FISH SPEECH TTS ERROR] Status: ${response.status}`, errorText);
-          throw new Error("Modal API processing failed");
-        }
+        const buffers = await Promise.all(chunkPromises);
+        audioBuffer = concatAudioBuffers(buffers, format);
       } else {
-        response = await fetch('https://api.x.ai/v1/tts', {
+        const response = await fetch('https://api.x.ai/v1/tts', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${process.env.XAI_API_KEY}`,
@@ -112,9 +121,8 @@ export async function POST(req: Request) {
           console.error(`[X.AI TTS ERROR] Status: ${response.status}`, errorText);
           throw new Error("External API processing failed");
         }
+        audioBuffer = await response.arrayBuffer();
       }
-
-      const audioBuffer = await response.arrayBuffer();
 
       const blob = await put(`tts/${user.id}/${Date.now()}.${format}`, audioBuffer, {
         access: 'public',

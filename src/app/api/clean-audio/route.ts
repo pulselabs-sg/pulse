@@ -34,8 +34,10 @@ function getModalHeaders(): Record<string, string> {
   if (!tokenId || !tokenSecret) {
     throw new Error("Modal credentials not configured (MODAL_TOKEN_ID / MODAL_TOKEN_SECRET).");
   }
-  const encoded = Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64');
-  return { Authorization: `Basic ${encoded}` };
+  return {
+    'Modal-Key':    tokenId,
+    'Modal-Secret': tokenSecret,
+  };
 }
 
 async function callDeepFilter(

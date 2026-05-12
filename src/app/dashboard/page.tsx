@@ -355,7 +355,7 @@ function DashboardContent() {
                   <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white text-glow-cyan">System Upgrade</h2>
                   <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-1">Select new capability matrix</p>
                 </div>
-                <button onClick={() => setShowPlanModal(false)} className="p-2 glass-mid hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm transition-all">
+                <button onClick={() => setShowPlanModal(false)} className="p-2 hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm transition-all">
                   <X className="w-4 md:w-5 h-4 md:h-5" />
                 </button>
               </div>
