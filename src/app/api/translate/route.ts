@@ -140,9 +140,15 @@ export async function POST(req: Request) {
         const referenceAudioUrl = targetVoice.replace('fish_', '');
         const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
 
-        const textChunks = chunkText(translatedText, 300);
-
-        const chunkPromises = textChunks.map(async (chunk) => {
+        const textChunks = chunkText(translatedText, 1000);
+        const buffers: ArrayBuffer[] = [];
+        
+        console.log(`[FISH SPEECH TRANSLATE] Starting synthesis for ${textChunks.length} chunks...`);
+        
+        for (let i = 0; i < textChunks.length; i++) {
+          const chunk = textChunks[i];
+          console.log(`[FISH SPEECH TRANSLATE] Processing chunk ${i + 1}/${textChunks.length} (${chunk.length} chars)`);
+          
           const res = await fetch(modalApiUrl, {
             method: 'POST',
             headers: {
@@ -160,13 +166,15 @@ export async function POST(req: Request) {
 
           if (!res.ok) {
             const errorText = await res.text();
-            console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status}`, errorText);
-            throw new Error("Modal API processing failed");
+            console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status} on chunk ${i + 1}`, errorText);
+            throw new Error(`Modal API processing failed on chunk ${i + 1}`);
           }
-          return res.arrayBuffer();
-        });
+          
+          const buffer = await res.arrayBuffer();
+          buffers.push(buffer);
+          console.log(`[FISH SPEECH TRANSLATE] Chunk ${i + 1} completed.`);
+        }
 
-        const buffers = await Promise.all(chunkPromises);
         audioBuffer = concatAudioBuffers(buffers, 'mp3');
       } else {
         const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
