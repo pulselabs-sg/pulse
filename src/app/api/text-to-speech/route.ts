@@ -74,37 +74,43 @@ export async function POST(req: Request) {
 
         const textChunks = chunkText(text, 1000);
         const buffers: ArrayBuffer[] = [];
+        const BATCH_SIZE = 3;
         
-        console.log(`[FISH SPEECH] Starting synthesis for ${textChunks.length} chunks...`);
+        console.log(`[FISH SPEECH] Starting synthesis for ${textChunks.length} chunks (Batch Size: ${BATCH_SIZE})...`);
         
-        for (let i = 0; i < textChunks.length; i++) {
-          const chunk = textChunks[i];
-          console.log(`[FISH SPEECH] Processing chunk ${i + 1}/${textChunks.length} (${chunk.length} chars)`);
+        for (let i = 0; i < textChunks.length; i += BATCH_SIZE) {
+          const currentBatch = textChunks.slice(i, i + BATCH_SIZE);
+          console.log(`[FISH SPEECH] Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(textChunks.length/BATCH_SIZE)} (Chunks ${i+1}-${Math.min(i+BATCH_SIZE, textChunks.length)})`);
           
-          const res = await fetch(modalApiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-              'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-            },
-            body: JSON.stringify({
-              text: chunk,
-              reference_audio_url: referenceAudioUrl,
-              format
-            }),
-            signal: controller.signal,
+          const batchPromises = currentBatch.map(async (chunk, index) => {
+            const chunkIndex = i + index;
+            const res = await fetch(modalApiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Modal-Key': process.env.MODAL_TOKEN_ID || '',
+                'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
+              },
+              body: JSON.stringify({
+                text: chunk,
+                reference_audio_url: referenceAudioUrl,
+                format
+              }),
+              signal: controller.signal,
+            });
+
+            if (!res.ok) {
+              const errorText = await res.text();
+              console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status} on chunk ${chunkIndex + 1}`, errorText);
+              throw new Error(`Modal API processing failed on chunk ${chunkIndex + 1}`);
+            }
+            
+            return res.arrayBuffer();
           });
 
-          if (!res.ok) {
-            const errorText = await res.text();
-            console.error(`[FISH SPEECH TTS ERROR] Status: ${res.status} on chunk ${i + 1}`, errorText);
-            throw new Error(`Modal API processing failed on chunk ${i + 1}`);
-          }
-          
-          const buffer = await res.arrayBuffer();
-          buffers.push(buffer);
-          console.log(`[FISH SPEECH] Chunk ${i + 1} completed.`);
+          const batchResults = await Promise.all(batchPromises);
+          buffers.push(...batchResults);
+          console.log(`[FISH SPEECH] Batch ${Math.floor(i/BATCH_SIZE) + 1} completed.`);
         }
 
         audioBuffer = concatAudioBuffers(buffers, format);
