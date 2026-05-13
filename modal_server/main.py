@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 
 # Configure Modal App
-app = modal.App("fish-speech-v1-5-server")
+app = modal.App("fish-speech-s2-pro-server")
 
 # Define Image with FULL dependencies
 image = (
@@ -20,6 +20,7 @@ image = (
     .apt_install("git", "ffmpeg", "build-essential", "portaudio19-dev", "libasound2-dev")
     .pip_install(
         "torch==2.4.1", 
+        "torchvision==0.19.1",
         "torchaudio==2.4.1",
         index_url="https://download.pytorch.org/whl/cu121"
     )
@@ -36,22 +37,23 @@ image = (
         "modelscope", "opencc-python-reimplemented", "grpcio"
     )
     .run_commands(
-        "git clone --branch v1.5.0 https://github.com/fishaudio/fish-speech.git /workspace/fish-speech",
+        "git clone -b v1.5.1 https://github.com/fishaudio/fish-speech.git /workspace/fish-speech",
+        "cd /workspace/fish-speech && sed -i 's/torch==2.8.0/torch>=2.4.0/g' pyproject.toml",
+        "cd /workspace/fish-speech && sed -i 's/torchaudio==2.8.0/torchaudio>=2.4.0/g' pyproject.toml",
         "cd /workspace/fish-speech && pip install -e .",
-        "export HF_HUB_ENABLE_HF_TRANSFER=1 && hf download fishaudio/fish-speech-1.5 --local-dir /workspace/fish-speech/checkpoints/fish-speech-1.5",
-        "cp /workspace/fish-speech/checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth /workspace/fish-speech/checkpoints/fish-speech-1.5/codec.pth"
+        "export HF_HUB_ENABLE_HF_TRANSFER=1 && hf download fishaudio/fish-speech-1.5 --local-dir /workspace/fish-speech/checkpoints/fish-speech-1.5"
     )
 )
 
 @app.cls(
     image=image,
-    gpu="L4",
+    gpu="A100",
     timeout=300,
     scaledown_window=60,
     max_containers=15,
     secrets=[modal.Secret.from_name("voicelab-modal-auth")],
 )
-@modal.concurrent(max_inputs=5)
+@modal.concurrent(max_inputs=3)
 class FishSpeechInference:
     
     @modal.enter()
@@ -64,7 +66,7 @@ class FishSpeechInference:
                 "api_server.py",
                 "--listen", "127.0.0.1:8080",
                 "--llama-checkpoint-path", "/workspace/fish-speech/checkpoints/fish-speech-1.5",
-                "--decoder-checkpoint-path", "/workspace/fish-speech/checkpoints/fish-speech-1.5/codec.pth",
+                "--decoder-checkpoint-path", "/workspace/fish-speech/checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth",
                 "--device", "cuda"
             ]
             import runpy
