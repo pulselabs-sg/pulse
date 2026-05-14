@@ -14,8 +14,10 @@ model User {
   image                String?
   tier                 Tier      @default(FREE)
   usageCount           Int       @default(0)
-  lemonSqueezyCustomerId     String?   @unique 
-  lemonSqueezySubscriptionId String?   @unique
+  gumroadCustomerId    String?   @unique 
+  gumroadSubscriptionId String?   @unique
+  helioCustomerId      String?   @unique
+  helioSubscriptionId   String?   @unique
   cancelAtPeriodEnd    Boolean   @default(false)
 
   accounts             Account[]

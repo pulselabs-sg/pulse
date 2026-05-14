@@ -61,6 +61,10 @@ function DashboardContent() {
   const [hasAgreedGlobalTerms, setHasAgreedGlobalTerms] = useState(false);
   const [checkoutTermsAgreed, setCheckoutTermsAgreed] = useState(false);
   const [checkoutTermsConfirmed, setCheckoutTermsConfirmed] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Billing Cycle
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
 
@@ -107,39 +111,47 @@ function DashboardContent() {
     }
   }, [successParam, update]);
 
-  // Handle Checkout logic (Lemon Squeezy Redirect)
+  // Handle Checkout logic (Gumroad Redirect)
   useEffect(() => {
-    if (showCheckoutModal && checkoutPlanContext && session?.user && checkoutTermsConfirmed) {
-      const variantMap: Record<Tier, string> = {
-        BASIC: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID_BASIC || '',
-        PREMIUM: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID_PREMIUM || '',
-        PRO: process.env.NEXT_PUBLIC_LEMON_SQUEEZY_VARIANT_ID_PRO || '',
+    if (showCheckoutModal && checkoutPlanContext && session?.user && isRedirecting) {
+      const variantMapMonthly: Record<Tier, string> = {
+        BASIC: process.env.NEXT_PUBLIC_HELIO_PAYLINK_BASIC_MONTHLY || '',
+        PREMIUM: process.env.NEXT_PUBLIC_HELIO_PAYLINK_PREMIUM_MONTHLY || '',
+        PRO: process.env.NEXT_PUBLIC_HELIO_PAYLINK_PRO_MONTHLY || '',
+        FREE: '',
+      };
+      
+      const variantMapYearly: Record<Tier, string> = {
+        BASIC: process.env.NEXT_PUBLIC_HELIO_PAYLINK_BASIC_YEARLY || '',
+        PREMIUM: process.env.NEXT_PUBLIC_HELIO_PAYLINK_PREMIUM_YEARLY || '',
+        PRO: process.env.NEXT_PUBLIC_HELIO_PAYLINK_PRO_YEARLY || '',
         FREE: '',
       };
 
-      const variantId = variantMap[checkoutPlanContext];
-      if (!variantId) return;
+      const paylinkId = billingCycle === 'monthly' ? variantMapMonthly[checkoutPlanContext] : variantMapYearly[checkoutPlanContext];
+      if (!paylinkId) {
+        alert('Payment link not configured.');
+        setShowCheckoutModal(false);
+        setIsRedirecting(false);
+        return;
+      }
 
-      const storeId = process.env.NEXT_PUBLIC_LEMON_SQUEEZY_STORE_ID;
       const userId = (session.user as any).id;
 
-      // Construct Checkout URL
-      // Use hosted checkout for maximum reliability and smooth experience
-      const checkoutUrl = `https://ipulse.lemonsqueezy.com/buy/${variantId}?checkout[custom][userId]=${userId}&checkout[custom][plan]=${checkoutPlanContext}&embed=1&media=0`;
+      // Construct Helio Checkout URL
+      // Pass userId via customerExternalId parameter for webhook reconciliation
+      const checkoutUrl = `https://hel.io/pay/${paylinkId}?customerExternalId=${userId}`;
 
-      // We'll use a small timeout to let the user see the "Connecting" state if we had one, 
-      // but here we just redirect or open in new window if preferred. 
-      // For a "smooth" feel, we'll redirect the current window.
       window.location.href = checkoutUrl;
     }
-  }, [showCheckoutModal, checkoutPlanContext, session, checkoutTermsConfirmed]);
+  }, [showCheckoutModal, checkoutPlanContext, session, isRedirecting, billingCycle]);
 
   const handleCancelSubscription = async () => {
-    if (!confirm("Are you sure you want to cancel? You will keep access until the end of the billing cycle.")) return;
+    if (!confirm("Are you sure you want to cancel? You will keep access until the end of the billing cycle. You can manage your subscription via your Helio portal.")) return;
     setIsCanceling(true);
     try {
-      const res = await fetch('/api/lemon-squeezy/cancel', { method: 'POST' });
-      if (!res.ok) throw new Error("Cancellation failed");
+      const res = await fetch('/api/helio/cancel', { method: 'POST' }); // We'll need this endpoint or redirect
+      if (!res.ok) throw new Error("Cancellation request failed. Please contact support.");
 
       setUserState(prev => ({ ...prev, cancelAtPeriodEnd: true }));
       update();
@@ -359,16 +371,38 @@ function DashboardContent() {
                   <X className="w-4 md:w-5 h-4 md:h-5" />
                 </button>
               </div>
-              <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-20 md:pb-10 relative z-10">
+              
+              <div className="flex justify-center my-6 relative z-10">
+                <div className="bg-black/50 border border-white/10 p-1 rounded-lg flex gap-1">
+                  <button
+                    onClick={() => setBillingCycle('monthly')}
+                    className={cn("px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-md transition-all", billingCycle === 'monthly' ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]" : "text-zinc-500 hover:text-white")}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle('yearly')}
+                    className={cn("px-6 py-2 text-xs font-mono uppercase tracking-widest rounded-md transition-all relative", billingCycle === 'yearly' ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]" : "text-zinc-500 hover:text-white")}
+                  >
+                    Yearly
+                    <span className="absolute -top-3 -right-3 bg-emerald-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(16,185,129,0.5)]">SAVE 16%</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-20 md:pb-10 relative z-10 pt-0">
                 {PLANS.map((plan) => {
                   const isCurrent = userState.tier === plan.id;
+                  const price = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly;
+                  const period = billingCycle === 'monthly' ? '/mo' : '/yr';
+                  
                   return (
                     <div key={plan.id} className={cn("rounded-xl border p-4 md:p-5 transition-all flex flex-col relative group", isCurrent ? "border-cyan-500/40 shadow-[0_0_20px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-cyan-500/30")}>
                       {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-cyan-400 inline-block px-2 py-0.5 mb-2 md:mb-3 self-start shadow-[0_0_10px_rgba(34,211,238,0.5)]">RECOMMENDED</div>}
                       <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
                       <div className="flex items-baseline gap-1 mb-3 md:mb-4">
-                        <span className="text-xl md:text-3xl font-mono font-bold text-white">${plan.price}</span>
-                        <span className="text-[9px] md:text-[10px] font-mono uppercase text-zinc-500">{plan.period}</span>
+                        <span className="text-xl md:text-3xl font-mono font-bold text-white">${price}</span>
+                        <span className="text-[9px] md:text-[10px] font-mono uppercase text-zinc-500">{period}</span>
                       </div>
                       <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4 md:mb-6">{plan.desc}</p>
                       <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-1">
@@ -413,7 +447,10 @@ function DashboardContent() {
               {/* --- LEFT: Plan Information --- */}
               <div className="w-full md:w-1/3 glass p-6 md:p-8 flex flex-col border-b md:border-b-0 md:border-r border-white/10 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-50" />
-                {PLANS.filter(p => p.id === checkoutPlanContext).map(selectedPlan => (
+                {PLANS.filter(p => p.id === checkoutPlanContext).map(selectedPlan => {
+                  const price = billingCycle === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly;
+                  const period = billingCycle === 'monthly' ? '/mo' : '/yr';
+                  return (
                   <div key={selectedPlan.id} className="h-full flex flex-col">
                     <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">
                       Selected Tier
@@ -424,10 +461,10 @@ function DashboardContent() {
 
                     <div className="flex items-baseline gap-1 mb-6">
                       <span className="text-4xl font-mono font-bold text-emerald-400">
-                        ${selectedPlan.price}
+                        ${price}
                       </span>
                       <span className="text-[10px] font-mono uppercase text-zinc-500">
-                        {selectedPlan.period}
+                        {period}
                       </span>
                     </div>
 
@@ -449,15 +486,14 @@ function DashboardContent() {
 
                     <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-2 text-zinc-600">
                       <ShieldCheck className="w-4 h-4" />
-                      <span className="text-[9px] font-mono uppercase tracking-widest">Secure checkout via Lemon Squeezy</span>
+                      <span className="text-[9px] font-mono uppercase tracking-widest">Secure checkout via Moonpay</span>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
 
               {/* --- RIGHT: Checkout form --- */}
-              <div className="w-full md:w-2/3 bg-black/40 relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">
-                {!checkoutTermsConfirmed ? (
+              <div className="w-full md:w-2/3 bg-black/40 relative min-h-[500px] flex flex-col items-center justify-center p-6 md:p-10">                {!checkoutTermsConfirmed ? (
                   <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
                     <div className="p-4 glass rounded-full border border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
                       <Lock className="w-8 h-8 text-zinc-500" />
@@ -500,6 +536,43 @@ function DashboardContent() {
                       Agree & Continue
                     </button>
                   </div>
+                ) : !isRedirecting ? (
+                  <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-8">
+                    <div className="p-4 glass-mid rounded-full border border-cyan-500/20 shadow-[0_0_40px_rgba(34,211,238,0.2)]">
+                      <CreditCard className="w-8 h-8 text-cyan-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-white text-lg font-mono uppercase tracking-widest mb-2 text-glow-cyan">Checkout Options</h3>
+                      <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest leading-relaxed">
+                        Select your preferred payment method to initialize the secure session.
+                      </p>
+                    </div>
+
+                    <div className="w-full space-y-4">
+                      {/* Option 1: Card / PayPal */}
+                      <button
+                        onClick={() => setIsRedirecting(true)}
+                        className="w-full py-4 bg-white text-black hover:bg-cyan-400 font-mono text-xs uppercase font-bold tracking-widest rounded-lg transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(34,211,238,0.4)] flex items-center justify-center gap-3 group"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Pay with Card / Apple / Google / PayPal
+                        <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
+                      </button>
+
+                      {/* Option 2: Crypto */}
+                      <button
+                        onClick={() => setIsRedirecting(true)}
+                        className="w-full py-3 bg-black/40 border border-white/10 text-zinc-400 hover:text-white hover:border-cyan-500/50 font-mono text-[10px] uppercase tracking-[0.2em] rounded-lg transition-all flex items-center justify-center gap-3 group"
+                      >
+                        <Sparkles className="w-3 h-3 text-cyan-400" />
+                        Pay with Crypto & Blockchains
+                      </button>
+                    </div>
+
+                    <p className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest">
+                      Secure processing via Moonpay Commerce (Helio)
+                    </p>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full max-w-sm text-center mx-auto space-y-6">
                     <div className="p-4 glass-mid rounded-full border border-cyan-500/20 shadow-[0_0_40px_rgba(34,211,238,0.2)]">
@@ -508,11 +581,12 @@ function DashboardContent() {
                     <div>
                       <h3 className="text-white text-lg font-mono uppercase tracking-widest mb-2 text-glow-cyan">Redirecting to Checkout</h3>
                       <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest leading-relaxed">
-                        Preparing your secure payment session via Lemon Squeezy. Please do not close this window.
+                        Preparing your secure payment session via Moonpay. Please do not close this window.
                       </p>
                     </div>
                   </div>
                 )}
+
               </div>
 
             </div>

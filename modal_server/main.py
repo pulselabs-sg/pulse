@@ -47,13 +47,13 @@ image = (
 
 @app.cls(
     image=image,
-    gpu="A100",
+    gpu="L4",
     timeout=300,
     scaledown_window=60,
     max_containers=15,
     secrets=[modal.Secret.from_name("voicelab-modal-auth")],
 )
-@modal.concurrent(max_inputs=3)
+@modal.concurrent(max_inputs=2)
 class FishSpeechInference:
     
     @modal.enter()

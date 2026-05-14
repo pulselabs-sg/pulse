@@ -19,10 +19,10 @@ export const TIER_LIMITS = {
 } as const;
 
 export const PLANS = [
-  { id: 'FREE' as Tier, name: 'Free', price: 0, period: '/mo', desc: 'Test the engine', features: ['20,000 Pulse/month', '5,000 characters TTS limit', '5 minutes STT/Audio limit', 'No Voice Cloning'], popular: false },
-  { id: 'BASIC' as Tier, name: 'Basic', price: 5.00, period: '/mo', desc: 'For regular creators', features: ['60,000 Pulse/month', '5,000 characters TTS limit', '5 minutes STT/Audio limit', 'Voice Cloning Access (Max 2)'], popular: true },
-  { id: 'PREMIUM' as Tier, name: 'Premium', price: 10.00, period: '/mo', desc: 'For serious creators', features: ['150,000 Pulse/month', '10,000 characters TTS limit', '10 minutes STT/Audio limit', 'Voice Cloning Access (Max 5)'], popular: false },
-  { id: 'PRO' as Tier, name: 'Pro', price: 50.00, period: '/mo', desc: 'High-volume production', features: ['800,000 Pulse/month', '15,000 characters TTS limit', '15 minutes STT/Audio limit', 'Voice Cloning Access (Max 10)'], popular: false },
+  { id: 'FREE' as Tier, name: 'Free', priceMonthly: 0, priceYearly: 0, desc: 'Test the engine', features: ['20,000 Pulse/month', '5,000 characters TTS limit', '5 minutes STT/Audio limit', 'No Voice Cloning'], popular: false },
+  { id: 'BASIC' as Tier, name: 'Basic', priceMonthly: 5, priceYearly: 50, desc: 'For regular creators', features: ['60,000 Pulse/month', '5,000 characters TTS limit', '5 minutes STT/Audio limit', 'Voice Cloning Access (Max 2)'], popular: true },
+  { id: 'PREMIUM' as Tier, name: 'Premium', priceMonthly: 10, priceYearly: 100, desc: 'For serious creators', features: ['150,000 Pulse/month', '10,000 characters TTS limit', '10 minutes STT/Audio limit', 'Voice Cloning Access (Max 5)'], popular: false },
+  { id: 'PRO' as Tier, name: 'Pro', priceMonthly: 50, priceYearly: 500, desc: 'High-volume production', features: ['800,000 Pulse/month', '15,000 characters TTS limit', '15 minutes STT/Audio limit', 'Voice Cloning Access (Max 10)'], popular: false },
 ];
 
 export const TABS = [

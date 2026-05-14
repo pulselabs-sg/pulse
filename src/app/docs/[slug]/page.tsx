@@ -110,8 +110,8 @@ export default function DocsPage() {
                 <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2">{plan.name}</div>
 
                 <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-mono font-bold text-white">${plan.price}</span>
-                  <span className="text-[10px] font-mono uppercase text-zinc-500">{plan.period}</span>
+                  <span className="text-4xl font-mono font-bold text-white">${plan.priceMonthly}</span>
+                  <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
                 </div>
 
                 <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-8 h-8 leading-relaxed">{plan.desc}</p>
