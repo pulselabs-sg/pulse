@@ -14,10 +14,8 @@ model User {
   image                String?
   tier                 Tier      @default(FREE)
   usageCount           Int       @default(0)
-  gumroadCustomerId    String?   @unique 
-  gumroadSubscriptionId String?   @unique
-  helioCustomerId      String?   @unique
-  helioSubscriptionId   String?   @unique
+  polarCustomerId      String?   @unique
+  polarSubscriptionId   String?   @unique
   cancelAtPeriodEnd    Boolean   @default(false)
 
   accounts             Account[]

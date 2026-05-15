@@ -125,7 +125,7 @@ export default function TermsOfUse() {
           {/* ── SECTION 5 ── */}
           <section>
             <h2 className="text-2xl font-semibold text-white mb-4">5. Billing, Subscriptions, and API Usage</h2>
-            <p>All payments, subscriptions, and billing cycles are processed securely via our Merchant of Record, LemonSqueezy.com. By upgrading to a paid tier, you agree to the pricing and limits specified at checkout.</p>
+            <p>All payments, subscriptions, and billing cycles are processed securely via our Merchant of Record, Polar.sh. By upgrading to a paid tier, you agree to the pricing and limits specified at checkout.</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>
                 <strong>Refunds:</strong> Due to the immediate and non-recoverable compute costs associated with AI generation, all purchases are generally final. Please review our{' '}

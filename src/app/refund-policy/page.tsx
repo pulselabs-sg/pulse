@@ -39,7 +39,7 @@ export default function RefundPolicy() {
               <Link href="/terms-of-use" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">
                 Terms of Use
               </Link>{' '}
-              and applies to all purchases made through iPulse AI (ipulselabs.net), processed via Lemon Squeezy.com as our Merchant of Record. By completing a purchase, you confirm that you have read and agree to this Policy.
+              and applies to all purchases made through iPulse AI (ipulselabs.net), processed via Polar.sh as our Merchant of Record. By completing a purchase, you confirm that you have read and agree to this Policy.
             </p>
           </div>
 
@@ -110,7 +110,7 @@ export default function RefundPolicy() {
               <li>Acknowledge that you will lose your right of withdrawal once generation begins;</li>
               <li>Confirm you have been informed of this consequence at the point of purchase (as displayed in the checkout confirmation).</li>
             </ul>
-            <p className="mt-3">This consent is recorded by Lemon Squeezy at the time of purchase and constitutes the written confirmation required under applicable consumer law. If you purchased a subscription and have made <strong>zero usage within 14 days</strong>, contact us at <strong>support@ipulse.ai</strong> — your right of withdrawal may still apply and we will assess your request in good faith.</p>
+            <p className="mt-3">This consent is recorded by Polar at the time of purchase and constitutes the written confirmation required under applicable consumer law. If you purchased a subscription and have made <strong>zero usage within 14 days</strong>, contact us at <strong>support@ipulse.ai</strong> — your right of withdrawal may still apply and we will assess your request in good faith.</p>
           </section>
 
           {/* ── SECTION 7 ── */}
@@ -134,7 +134,7 @@ export default function RefundPolicy() {
                 <strong>Documented System Outages (SLA Breach):</strong> Major, verified technical failures on our end that prevented access to the Service for more than 24 consecutive hours within a billing cycle, as confirmed by our status page (status.ipulselabs.net). We will proactively issue service credits for verified outages exceeding this threshold.
               </li>
               <li>
-                <strong>Billing Errors:</strong> Double charges, duplicate transactions, or accidental renewals caused by a verified system glitch on our or Lemon Squeezy&apos;s side, provided no credits from the erroneously charged cycle have been consumed.
+                <strong>Billing Errors:</strong> Double charges, duplicate transactions, or accidental renewals caused by a verified system glitch on our or Polar&apos;s side, provided no credits from the erroneously charged cycle have been consumed.
               </li>
               <li>
                 <strong>Unauthorized Transaction:</strong> If you can demonstrate that a purchase was made on your account without your authorization and you have promptly secured your account (e.g., changed your password), we will investigate and may issue a refund for the unauthorized charge.
@@ -143,7 +143,7 @@ export default function RefundPolicy() {
                 <strong>Unused Annual Plan (first 7 days):</strong> As described in §4B, a full refund may be issued for annual plans with zero usage within 7 days of purchase.
               </li>
             </ul>
-            <p className="mt-4">All refund requests must be submitted within <strong>14 days of the transaction date</strong>. We will review internal server logs, Lemon Squeezy transaction records, and usage data to verify the claim. Decisions on discretionary refunds are final.</p>
+            <p className="mt-4">All refund requests must be submitted within <strong>14 days of the transaction date</strong>. We will review internal server logs, Polar transaction records, and usage data to verify the claim. Decisions on discretionary refunds are final.</p>
           </section>
 
           {/* ── SECTION 9 ── */}
@@ -167,21 +167,21 @@ export default function RefundPolicy() {
             </div>
             <p className="mt-4">You have the right to dispute charges with your bank or payment provider. However, we ask that you first contact us at <strong>support@ipulse.ai</strong> and allow us 5 business days to investigate and resolve the issue before initiating a formal chargeback.</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Fraudulent chargebacks:</strong> If you initiate a chargeback for a charge that our records confirm was authorized and consumed, we will contest the chargeback with Lemon Squeezy using transaction logs, usage records, and this signed Policy. A successful fraudulent chargeback may result in account suspension pending resolution.</li>
+              <li><strong>Fraudulent chargebacks:</strong> If you initiate a chargeback for a charge that our records confirm was authorized and consumed, we will contest the chargeback with Polar using transaction logs, usage records, and this signed Policy. A successful fraudulent chargeback may result in account suspension pending resolution.</li>
               <li><strong>Legitimate disputes:</strong> If a chargeback results in a ruling in your favor by the payment provider, we will honor the outcome. Accounts suspended during an investigation will be reviewed for reinstatement following a resolved dispute in the customer&apos;s favor.</li>
-              <li><strong>Chargeback fees:</strong> For chargebacks that we successfully contest (i.e., ruled in our favor), we reserve the right to recover Lemon Squeezy&apos;s chargeback processing fee from future credits or to deduct it from any future refunds owed.</li>
-              <li><strong>Chargeback fees:</strong> For chargebacks that we successfully contest (i.e., ruled in our favor), we reserve the right to recover LemonSqueezy&apos;s chargeback processing fee from future credits or to deduct it from any future refunds owed.</li>
+              <li><strong>Chargeback fees:</strong> For chargebacks that we successfully contest (i.e., ruled in our favor), we reserve the right to recover Polar&apos;s chargeback processing fee from future credits or to deduct it from any future refunds owed.</li>
+              <li><strong>Chargeback fees:</strong> For chargebacks that we successfully contest (i.e., ruled in our favor), we reserve the right to recover Polar&apos;s chargeback processing fee from future credits or to deduct it from any future refunds owed.</li>
             </ul>
           </section>
 
           {/* ── SECTION 11 ── */}
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">11. Lemon Squeezy as Merchant of Record</h2>
-            <p>Our payment infrastructure is managed by <strong>LemonSqueezy.com</strong>, which acts as our Merchant of Record. This means Lemon Squeezy is the legal seller of record for all iPulse transactions and is responsible for collecting taxes and processing payments.</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">11. Polar as Merchant of Record</h2>
+            <p>Our payment infrastructure is managed by <strong>Polar.sh</strong>, which acts as our Merchant of Record. This means Polar is the legal seller of record for all iPulse transactions and is responsible for collecting taxes and processing payments.</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Refund processing:</strong> If a refund is approved by our team, the transaction will be processed exclusively through LemonSqueezy&apos;s system back to your original payment method. Depending on your bank, it may take 5–10 business days for funds to appear.</li>
-              <li><strong>Lemon Squeezy-initiated refunds:</strong> In some cases, Lemon Squeezy may issue a refund on their own authority in accordance with their own Buyer Protection policies (e.g., if a charge is flagged as potentially fraudulent by their risk systems). iPulse does not control or initiate these refunds, and they do not constitute an admission of liability on our part. If you receive an unexpected Lemon Squeezy-initiated refund, your account access may be adjusted to reflect the refunded period.</li>
-              <li><strong>Tax handling:</strong> Lemon Squeezy collects and remits applicable sales tax, VAT, and GST on your behalf. Refund amounts will reflect the original charged amount; tax implications of refunds are handled by Lemon Squeezy in accordance with applicable tax law.</li>
+              <li><strong>Refund processing:</strong> If a refund is approved by our team, the transaction will be processed exclusively through Polar&apos;s system back to your original payment method. Depending on your bank, it may take 5–10 business days for funds to appear.</li>
+              <li><strong>Polar-initiated refunds:</strong> In some cases, Polar may issue a refund on their own authority in accordance with their own Buyer Protection policies (e.g., if a charge is flagged as potentially fraudulent by their risk systems). iPulse does not control or initiate these refunds, and they do not constitute an admission of liability on our part. If you receive an unexpected Polar-initiated refund, your account access may be adjusted to reflect the refunded period.</li>
+              <li><strong>Tax handling:</strong> Polar collects and remits applicable sales tax, VAT, and GST on your behalf. Refund amounts will reflect the original charged amount; tax implications of refunds are handled by Polar in accordance with applicable tax law.</li>
             </ul>
           </section>
 
@@ -191,12 +191,12 @@ export default function RefundPolicy() {
             <p>To submit a refund request under the permitted exceptions (§8), please email our billing team at <strong>support@ipulse.ai</strong> or open a support ticket in your Dashboard with the following information:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>Your account email address.</li>
-              <li>Your Lemon Squeezy order/receipt number (found in your Lemon Squeezy confirmation email).</li>
+              <li>Your Polar order/receipt number (found in your Polar confirmation email).</li>
               <li>The date of the transaction.</li>
               <li>A clear description of the issue and the exception category you believe applies (e.g., &quot;Billing Error — double charge&quot; or &quot;System Outage — unable to access service from [date] to [date]&quot;).</li>
-              <li>Any supporting evidence (e.g., screenshots of error messages, your Lemon Squeezy receipt).</li>
+              <li>Any supporting evidence (e.g., screenshots of error messages, your Polar receipt).</li>
             </ul>
-            <p className="mt-4">We aim to acknowledge all refund requests within <strong>2 business days</strong> and to provide a final decision within <strong>7 business days</strong>. If approved, processing time via Lemon Squeezy is an additional 5–10 business days.</p>
+            <p className="mt-4">We aim to acknowledge all refund requests within <strong>2 business days</strong> and to provide a final decision within <strong>7 business days</strong>. If approved, processing time via Polar is an additional 5–10 business days.</p>
           </section>
 
           {/* ── SECTION 13 ── */}

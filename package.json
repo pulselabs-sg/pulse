@@ -12,6 +12,8 @@
   "dependencies": {
     "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
     "@next-auth/prisma-adapter": "^1.0.7",
+    "@polar-sh/nextjs": "^0.9.6",
+    "@polar-sh/sdk": "^0.47.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@stripe/stripe-js": "^9.3.1",

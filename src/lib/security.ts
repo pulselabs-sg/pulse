@@ -3,22 +3,9 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPrisma } from './prisma';
 
-// ==========================================
-// 0. Security & Credit Constants
-// ==========================================
+import { SECURITY_HEADERS, CREDIT_COSTS, TIER_LIMITS } from './security-constants';
 
-export const CREDIT_COSTS = {
-  CLONE_VOICE: 5000,
-  TTS_PER_CHAR: 1,
-  VOICE_CHANGER_PER_MIN: 1000,
-} as const;
-
-export const TIER_LIMITS = {
-  FREE: { pulse: 20000, maxTTSChars: 5000, maxAudioMins: 5 },
-  BASIC: { pulse: 60000, maxTTSChars: 5000, maxAudioMins: 5 },
-  PREMIUM: { pulse: 150000, maxTTSChars: 10000, maxAudioMins: 10 },
-  PRO: { pulse: 800000, maxTTSChars: 15000, maxAudioMins: 15 },
-} as const;
+export { SECURITY_HEADERS, CREDIT_COSTS, TIER_LIMITS };
 
 // ==========================================
 // 1. Zod Schemas
@@ -47,7 +34,7 @@ const safeFileNameSchema = z.string()
 
 // Text to Speech
 export const textToSpeechSchema = z.object({
-  text: z.string().min(1).max(5000, "Text exceeds maximum allowed length of 5000 characters."),
+  text: z.string().min(1).max(15000, "Text exceeds maximum allowed length of 15000 characters."),
   voiceId: z.string().optional().default('eve'),
   format: z.enum(['mp3', 'wav', 'ogg', 'pcm', 'ulaw']).optional().default('mp3'),
 });
@@ -139,7 +126,7 @@ export async function validateRequest<T>(
 }
 export async function validateCredits(userId: string, cost: number) {
   const prisma = getPrisma();
-  
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, tier: true, usageCount: true }
@@ -157,21 +144,3 @@ export async function validateCredits(userId: string, cost: number) {
   return { data: { user, limit, tier } };
 }
 
-export const SECURITY_HEADERS = {
-  'Content-Security-Policy':
-    "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.lemonsqueezy.com https://app.lemonsqueezy.com https://www.google.com https://www.gstatic.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.lemonsqueezy.com; " +
-    "img-src 'self' blob: data: https://*.vercel-storage.com https://lh3.googleusercontent.com https://www.gravatar.com; " +
-    "font-src 'self' https://fonts.gstatic.com; " +
-    "frame-src 'self' https://*.lemonsqueezy.com; " +
-    "connect-src 'self' https://*.vercel-storage.com https://api.x.ai https://*.lemonsqueezy.com https://vercel.com https://*.modal.run; " +
-    "media-src 'self' blob: https://*.vercel-storage.com;",
-  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
-  'X-Permitted-Cross-Domain-Policies': 'none',
-};

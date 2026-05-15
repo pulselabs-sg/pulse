@@ -512,7 +512,7 @@ const Footer = () => {
             © 2026 iPulse Labs. All rights reserved.
           </div>
           {/* <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
-            <ShieldCheck className="w-4 h-4 text-cyan-500/50" /> Secure Payments by Lemon Squeezy
+            <ShieldCheck className="w-4 h-4 text-cyan-500/50" /> Secure Payments by Polar
           </div> */}
         </div>
       </div>
