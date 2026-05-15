@@ -31,27 +31,18 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
             barRadius: 3,
             height: 60,
             normalize: true,
-            // LOẠI BỎ backend: 'WebAudio'. Bằng cách nạp Peaks thủ công,
-            // chúng ta vẫn vẽ được sóng, vẫn sửa được lỗi MP3 duration,
-            // và quan trọng nhất: Ép WaveSurfer sử dụng thẻ <audio> để stream mà KHÔNG dùng fetch()!
         });
 
         const initAudio = async () => {
             try {
                 if (blob) {
-                    // 1. Chuyển Blob thành ArrayBuffer trực tiếp trên RAM (Không qua network)
                     const arrayBuffer = await blob.arrayBuffer();
-
-                    // 2. Giải mã âm thanh bằng AudioContext của trình duyệt 
-                    // => Sửa triệt để lỗi sai thời lượng MP3 gốc
                     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
                     const audioContext = new AudioContextClass();
                     const decodedBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    await audioContext.close();
 
                     if (!isMounted) return;
-
-                    // 3. Tự động nội suy điểm sóng (Downsample) để đưa cho WaveSurfer
-                    // Lấy ra 3000 điểm ảnh sóng đại diện để trình duyệt vẽ mượt mà mà không đơ lag
                     const channelData = decodedBuffer.getChannelData(0);
                     const sampleCount = 3000;
                     const blockSize = Math.max(1, Math.floor(channelData.length / sampleCount));
@@ -67,20 +58,14 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
                         }
                         peaks[i] = max;
                     }
-
-                    // 4. Load Audio kèm theo Peaks và Thời lượng chính xác
-                    // KIẾN TRÚC NÀY CHẶN WAVESURFER GỌI fetch() VÀ BYPASS HOÀN TOÀN LỖI CỦA NEXT.JS
-                    const objectUrl = URL.createObjectURL(blob);
-
                     // ws.load(url, peaks, duration)
-                    await ws.load(objectUrl, [peaks as any], decodedBuffer.duration);
+                    await ws.load(currentUrl, [peaks as any], decodedBuffer.duration);
 
                     if (isMounted) {
                         setDuration(decodedBuffer.duration);
                         setIsReady(true);
                     }
                 } else {
-                    // Xử lý mặc định nếu chỉ truyền vào src (các bản preview mp3 đã có sẵn)
                     await ws.load(src);
                 }
             } catch (error) {
@@ -88,10 +73,14 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
             }
         };
 
+        let currentUrl = '';
+        if (blob) {
+            currentUrl = URL.createObjectURL(blob);
+        }
+
         initAudio();
 
         ws.on('ready', () => {
-            // Chỉ cập nhật nếu không dùng blob (vì blob đã được tính toán thời lượng tuyệt đối từ phía trên)
             if (!blob && isMounted) {
                 setDuration(ws.getDuration());
                 setIsReady(true);
@@ -99,7 +88,17 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
         });
 
         ws.on('timeupdate', (time) => {
-            if (isMounted) setCurrentTime(time);
+            if (isMounted) {
+                setCurrentTime(time);
+                // Fallback: If current time or player duration exceeds our state, update it
+                // This fixes issues where MP3 duration is initially misreported
+                const wsDuration = ws.getDuration();
+                if (wsDuration > duration && wsDuration !== Infinity) {
+                    setDuration(wsDuration);
+                } else if (time > duration) {
+                    setDuration(time);
+                }
+            }
         });
 
         ws.on('play', () => isMounted && setIsPlaying(true));
@@ -110,6 +109,7 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
 
         return () => {
             isMounted = false;
+            if (currentUrl) URL.revokeObjectURL(currentUrl);
             ws.destroy();
         };
     }, [src, blob]);
@@ -133,7 +133,7 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
     };
 
     return (
-        <div className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 md:p-6 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-sm relative group transition-all hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(34,211,238,0.1)]">
+        <div className="w-full bg-black/40 border border-white/10 rounded-2xl p-3 md:p-4 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-sm relative group transition-all hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(34,211,238,0.1)]">
             {/* Control Header */}
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-4">
@@ -145,10 +145,10 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
                         {isPlaying ? <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current" /> : <Play className="w-4 h-4 md:w-5 md:h-5 fill-current ml-1" />}
                     </button>
                     <div className="flex flex-col">
-                        <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] mb-0.5 text-zinc-500">
+                        <span className="text-[8px] md:text-[10px] font-mono uppercase tracking-[0.2em] mb-0.5 text-zinc-500">
                             {isReady ? 'Neural Audio Output' : 'Decoding Waveform...'}
                         </span>
-                        <div className="text-xs md:text-sm font-bold font-mono flex items-center gap-2">
+                        <div className="text-[11px] md:text-sm font-bold font-mono flex items-center gap-2">
                             <span className="text-cyan-400 text-glow-cyan">{formatTime(currentTime)}</span>
                             <span className="text-zinc-600">/</span>
                             <span className="text-zinc-400">{formatTime(duration)}</span>
