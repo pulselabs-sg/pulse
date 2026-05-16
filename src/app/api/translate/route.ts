@@ -143,7 +143,7 @@ export async function POST(req: Request) {
         const textChunks = chunkText(translatedText, 300);
 
         const buffers: ArrayBuffer[] = new Array(textChunks.length);
-        const MAX_CONCURRENT_REQUESTS = 15;
+        const MAX_CONCURRENT_REQUESTS = 8;
         let currentIndex = 0;
 
         const processChunk = async (chunk: string, index: number) => {

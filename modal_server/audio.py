@@ -14,16 +14,22 @@ from fastapi.responses import FileResponse, JSONResponse
 # Configure Modal App
 app = modal.App("fish-speech-s2-pro-server")
 
-# Define Image with FULL dependencies
+# Define Image with FULL dependencies + Flash Attention 2
 image = (
     modal.Image.debian_slim(python_version="3.10")
     .apt_install("git", "ffmpeg", "build-essential", "portaudio19-dev", "libasound2-dev")
+
     .pip_install(
         "torch==2.4.1", 
         "torchvision==0.19.1",
         "torchaudio==2.4.1",
         index_url="https://download.pytorch.org/whl/cu121"
     )
+
+    .run_commands(
+        "pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.6.3/flash_attn-2.6.3%2Bcu123torch2.4cxx11abiFALSE-cp310-cp310-linux_x86_64.whl"
+    )
+
     .pip_install(
         "vector-quantize-pytorch>=1.18.5", "einx[torch]", "omegaconf",
         "hydra-core", "hydra-colorlog", "pyrootutils", "loguru",
@@ -33,7 +39,7 @@ image = (
         "wandb", "librosa", "soundfile", "funasr", "silero-vad",
         "descript-audio-codec", "pydub", "zstandard", "resampy",
         "numpy", "pillow", "fastapi", "uvicorn", "kui", "pydantic",
-        "requests", "httpx", "tiktoken", "cachetools", "ormsgpack", # Thêm httpx vào đây
+        "requests", "httpx", "tiktoken", "cachetools", "ormsgpack",
         "modelscope", "opencc-python-reimplemented", "grpcio"
     )
     .run_commands(
@@ -50,14 +56,20 @@ image = (
     gpu="L4",
     timeout=300,
     scaledown_window=60,
-    max_containers=15,
+    max_containers=10,
     secrets=[modal.Secret.from_name("voicelab-modal-auth")],
 )
-@modal.concurrent(max_inputs=2)
+@modal.concurrent(max_inputs=1)
 class FishSpeechInference:
     
     @modal.enter()
     def load_model(self):
+        try:
+            import flash_attn
+            print(f"--- [FA2] ✅ Flash Attention {flash_attn.__version__} loaded ---")
+        except ImportError:
+            print("--- [FA2] ⚠️  Flash Attention 2 not found ---")
+
         print("--- [COLD START] Starting internal Python Engine to load VRAM... ---")
         sys.path.append("/workspace/fish-speech")
         
