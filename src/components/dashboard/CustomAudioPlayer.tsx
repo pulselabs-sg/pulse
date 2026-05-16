@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,8 +23,8 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
 
         const ws = WaveSurfer.create({
             container: containerRef.current,
-            waveColor: 'rgba(34, 211, 238, 0.3)',
-            progressColor: 'rgba(34, 211, 238, 1)',
+            waveColor: 'rgba(255, 255, 255, 0.3)',
+            progressColor: 'rgba(255, 255, 255, 1)',
             cursorColor: 'rgba(255, 255, 255, 0.8)',
             barWidth: 2,
             barGap: 3,
@@ -133,14 +133,14 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
     };
 
     return (
-        <div className="w-full bg-black/40 border border-white/10 rounded-2xl p-3 md:p-4 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-sm relative group transition-all hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(34,211,238,0.1)]">
+        <div className="w-full bg-black/40 border border-white/10 rounded-2xl p-3 md:p-4 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-sm relative group transition-all hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]">
             {/* Control Header */}
             <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={handlePlayPause}
                         disabled={!isReady}
-                        className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-400 hover:text-black transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                        className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/10 text-white border border-white/30 hover:bg-white hover:text-black transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                     >
                         {isPlaying ? <Pause className="w-4 h-4 md:w-5 md:h-5 fill-current" /> : <Play className="w-4 h-4 md:w-5 md:h-5 fill-current ml-1" />}
                     </button>
@@ -149,7 +149,7 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
                             {isReady ? 'Neural Audio Output' : 'Decoding Waveform...'}
                         </span>
                         <div className="text-[11px] md:text-sm font-bold font-mono flex items-center gap-2">
-                            <span className="text-cyan-400 text-glow-cyan">{formatTime(currentTime)}</span>
+                            <span className="text-white">{formatTime(currentTime)}</span>
                             <span className="text-zinc-600">/</span>
                             <span className="text-zinc-400">{formatTime(duration)}</span>
                         </div>
@@ -174,9 +174,9 @@ export function CustomAudioPlayer({ src, blob }: CustomAudioPlayerProps) {
                 {!isReady && (
                     <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" style={{ animationDelay: '150ms' }} />
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" style={{ animationDelay: '300ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.4)] animate-pulse" style={{ animationDelay: '0ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.4)] animate-pulse" style={{ animationDelay: '150ms' }} />
+                            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.4)] animate-pulse" style={{ animationDelay: '300ms' }} />
                         </div>
                     </div>
                 )}
