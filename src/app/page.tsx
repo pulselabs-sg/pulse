@@ -27,7 +27,7 @@ const Navbar = () => {
         <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
       </div>
       <div className="flex-1 flex justify-end">
-        <Link href="/dashboard" target='_blank' className="px-5 py-2 bg-white text-black rounded-sm text-[10px] font-mono uppercase tracking-widest font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 group">
+        <Link href="/dashboard" target='_blank' className="px-5 py-2 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-widest font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 group">
           Launch App <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
@@ -72,10 +72,10 @@ const HeroSection = () => (
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
-          <Link href="/dashboard" target='_blank' className="px-8 py-4 bg-white text-black rounded-sm text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_40px_rgba(255,255,255,0.12)] flex items-center gap-2 group">
+          <Link href="/dashboard" target='_blank' className="px-2.5 md:px-8 py-2.5 md:py-3 bg-white text-black rounded-lg text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_40px_rgba(255,255,255,0.12)] flex items-center gap-2 group">
             Start Building <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <Link href="/docs" target='_blank' className="px-8 py-4 glass-mid text-white rounded-sm text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
+          <Link href="/docs" target='_blank' className="px-2.5 md:px-8 py-2.5 md:py-3 glass-mid text-white rounded-lg text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
             <Code className="w-3.5 h-3.5" /> Read the Docs
           </Link>
         </div>
@@ -410,8 +410,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">2026 iPulse Labs. All rights reserved.</div>
-        <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Neural synthesis - crafted with precision</div>
+        <div className="text-[10px] font-mono text-zinc-500 tracking-widest">2026 iPulse Labs. All rights reserved.</div>
       </div>
     </div>
   </footer>
@@ -491,7 +490,7 @@ const InteractiveTypographyGrid = () => {
           {/* Frame 1 */}
           <motion.div
             whileHover={{ scale: 0.98 }}
-            className="glass-dark border border-white/10 rounded-2xl p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+            className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
           >
             <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10">Neural Architecture</div>
             <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
@@ -510,7 +509,7 @@ const InteractiveTypographyGrid = () => {
 `}
               </motion.div>
             </div>
-            <div className="text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
               Infinite Scaling
             </div>
           </motion.div>
@@ -518,7 +517,7 @@ const InteractiveTypographyGrid = () => {
           {/* Frame 2 */}
           <motion.div
             whileHover={{ scale: 0.98 }}
-            className="glass-dark border border-white/10 rounded-2xl p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+            className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
           >
             <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10">Latency Metrics</div>
             <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
@@ -535,7 +534,7 @@ const InteractiveTypographyGrid = () => {
                 ))}
               </motion.div>
             </div>
-            <div className="text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
               Sub-200ms
             </div>
           </motion.div>
@@ -543,18 +542,18 @@ const InteractiveTypographyGrid = () => {
           {/* Frame 3 */}
           <motion.div
             whileHover={{ scale: 0.98 }}
-            className="glass-dark border border-white/10 rounded-2xl p-8 aspect-[2/1] lg:aspect-square lg:col-span-1 md:col-span-2 flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+            className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square sm:aspect-[2/1] lg:aspect-square lg:col-span-1 md:col-span-2 flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
           >
             <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10">Model Accuracy</div>
             <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
               <motion.div
-                className="text-6xl md:text-8xl font-editorial italic text-zinc-600 group-hover:text-white transition-all duration-700 select-none"
+                className="text-5xl md:text-6xl lg:text-8xl font-editorial italic text-zinc-600 group-hover:text-white transition-all duration-700 select-none"
                 whileHover={{ letterSpacing: "0.1em", scale: 1.05 }}
               >
                 99.9%
               </motion.div>
             </div>
-            <div className="text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
               Zero-Shot
             </div>
           </motion.div>
@@ -602,20 +601,20 @@ const FeatureShowcase = () => {
   return (
     // Tall spacer — 500vh gives ~400vh of pinned scroll (same idea as ScrollRevealText)
     <div ref={spacerRef} className="relative z-10 bg-black h-[500vh] border-t border-white/5">
-      <div className="sticky top-0 h-screen flex items-center">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="sticky top-0 h-screen flex items-center overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
 
           {/* ── Left: sequential scroll-reveal feature list ── */}
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6 lg:gap-8">
             <div>
-              <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-600 mb-3">Platform Capabilities</p>
-              <h2 className="text-2xl md:text-3xl text-white tracking-tight leading-[1.1]">
+              <p className="text-[10px] lg:text-[11px] font-mono uppercase tracking-widest text-zinc-600 mb-2 lg:mb-3">Platform Capabilities</p>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl text-white tracking-tight leading-[1.1]">
                 Everything you need.<br />
                 <span className="text-zinc-500">All in one API.</span>
               </h2>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4 lg:gap-5">
               {featureItems.map((f, i) => {
                 // item starts revealing at its slot start, fully lit at slot end
                 const slotStart = i * slotSize;
@@ -628,15 +627,15 @@ const FeatureShowcase = () => {
                   <motion.div
                     key={i}
                     style={{ opacity, x }}
-                    className="flex items-start gap-4"
+                    className="flex items-start gap-3 lg:gap-4"
                   >
-                    <div className={`mt-0.5 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-300 ${isLit ? 'bg-white/10 border-white/25' : 'bg-white/[0.02] border-white/8'
+                    <div className={`mt-0.5 w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-300 ${isLit ? 'bg-white/10 border-white/25' : 'bg-white/[0.02] border-white/8'
                       }`}>
-                      <f.icon className={`w-4 h-4 transition-colors duration-300 ${isLit ? 'text-white' : 'text-zinc-700'}`} />
+                      <f.icon className={`w-3.5 h-3.5 lg:w-4 lg:h-4 transition-colors duration-300 ${isLit ? 'text-white' : 'text-zinc-700'}`} />
                     </div>
                     <div>
-                      <p className={`text-sm font-bold mb-1 transition-colors duration-300 ${isLit ? 'text-white' : 'text-zinc-700'}`}>{f.tag}</p>
-                      <p className={`text-xs font-mono leading-relaxed transition-colors duration-300 ${isLit ? 'text-zinc-400' : 'text-zinc-800'}`}>{f.desc}</p>
+                      <p className={`text-sm font-bold mb-0.5 lg:mb-1 transition-colors duration-300 ${isLit ? 'text-white' : 'text-zinc-700'}`}>{f.tag}</p>
+                      <p className={`text-[10px] lg:text-xs font-mono leading-relaxed transition-colors duration-300 ${isLit ? 'text-zinc-400' : 'text-zinc-800'}`}>{f.desc}</p>
                     </div>
                   </motion.div>
                 );
@@ -644,7 +643,7 @@ const FeatureShowcase = () => {
             </div>
 
             <motion.div style={{ opacity: Math.max(0, Math.min(1, (progress - 0.85) / 0.1)) }}>
-              <Link href="/docs" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white border-b border-white/20 pb-0.5 hover:border-white/60 transition-colors w-fit group">
+              <Link href="/docs" className="inline-flex items-center gap-2 text-[10px] lg:text-xs font-mono uppercase tracking-widest text-white border-b border-white/20 pb-0.5 hover:border-white/60 transition-colors w-fit group">
                 View full API reference <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </motion.div>
@@ -653,9 +652,9 @@ const FeatureShowcase = () => {
           {/* ── Right: image ── */}
           <motion.div
             style={{ opacity: Math.min(1, progress * 4), y: 20 * (1 - Math.min(1, progress * 4)) }}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center mt-2 lg:mt-0"
           >
-            <div className="w-full max-w-[600px] aspect-square overflow-hidden">
+            <div className="w-full max-w-[180px] sm:max-w-[280px] lg:max-w-[600px] aspect-square overflow-hidden">
               <img
                 src="/phone.webp"
                 alt="iPulse dashboard"
