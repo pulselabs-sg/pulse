@@ -12,7 +12,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 
 # Configure Modal App
-app = modal.App("fish-speech-s2-pro-server")
+app = modal.App("ipulse-0.1")
 
 # Define Image with FULL dependencies + Flash Attention 2
 image = (

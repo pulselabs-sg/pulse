@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { motion, useScroll } from 'framer-motion';
 import { ArrowRight, AudioLines, Zap, Terminal, Mic, Check, Layers, Code, ShieldCheck, Globe, Activity, Server, Users } from 'lucide-react';
@@ -56,9 +56,12 @@ const HeroSection = () => (
         transition={{ duration: 1, ease: 'easeOut' }}
         className="flex flex-col items-start"
       >
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-[10px] font-mono uppercase tracking-widest mb-10 animate-badge-pulse">
-          <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
-          <span className="text-zinc-300">Neural Synthesis Engine v2.4 - Live</span>
+        <div className="relative inline-flex overflow-hidden rounded-full p-[1px] mb-10">
+          <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_50%,rgba(255,255,255,0.3)_75%,rgba(255,255,255,0.9)_100%)]" />
+          <div className="inline-flex h-full w-full items-center gap-2 rounded-full bg-zinc-950 px-3 py-1.5 text-[10px] font-mono tracking-widest backdrop-blur-3xl cursor-default">
+            <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
+            <span className="text-zinc-300">Neural Synthesis Engine v2.4 - Live</span>
+          </div>
         </div>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl tracking-tighter leading-[1.15] text-white mb-6">
@@ -80,7 +83,7 @@ const HeroSection = () => (
           </Link>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-4 text-[10px] font-mono text-zinc-600 uppercase tracking-widest">
+        <div className="mt-10 flex flex-wrap items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
           <span className="flex items-center gap-1.5"><ShieldCheck className="w-3 h-3" /> SOC 2 Compliant</span>
           <span className="w-px h-3 bg-white/10" />
           <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Sub-200ms Latency</span>
@@ -188,9 +191,9 @@ fetch('/v1/tts/generate', {
 );
 
 const featuresData = [
-  { tag: 'Text-to-Speech', title: 'Words spoken with\nhuman-level nuance.', desc: 'Acoustic models that understand context, emotion, and prosody. Studio-quality voiceovers indistinguishable from real recordings. Zero-shot cloning. Sub-200ms latency.', icon: AudioLines, visual: <FeatureVisualTTS />, reverse: false },
-  { tag: 'Voice Cloning', title: 'Any voice.\nFive seconds of audio.', desc: 'Upload a short reference clip and our neural encoder extracts the full vocal identity - tone, cadence, accent, texture - ready to synthesize anything.', icon: Mic, visual: <FeatureVisualClone />, reverse: true },
-  { tag: 'Developer API', title: 'Integrate neural audio\ninto any stack.', desc: 'Standard REST endpoints, WebSocket streaming, and SDKs for Python, Node, and Go. Built for production with 99.99% uptime and global edge delivery.', icon: Terminal, visual: <FeatureVisualAPI />, reverse: false },
+  { id: 'text-to-speech', tag: 'Text-to-Speech', title: 'Words spoken with\nhuman-level nuance.', desc: 'Acoustic models that understand context, emotion, and prosody. Studio-quality voiceovers indistinguishable from real recordings. Zero-shot cloning. Sub-200ms latency.', icon: AudioLines, visual: <FeatureVisualTTS />, reverse: false },
+  { id: 'voice-cloning', tag: 'Voice Cloning', title: 'Any voice.\nFive seconds of audio.', desc: 'Upload a short reference clip and our neural encoder extracts the full vocal identity - tone, cadence, accent, texture - ready to synthesize anything.', icon: Mic, visual: <FeatureVisualClone />, reverse: true },
+  { id: 'api', tag: 'Developer API', title: 'Integrate neural audio\ninto any stack.', desc: 'Standard REST endpoints, WebSocket streaming, and SDKs for Python, Node, and Go. Built for production with 99.99% uptime and global edge delivery.', icon: Terminal, visual: <FeatureVisualAPI />, reverse: false },
 ];
 
 const FeaturesAlternating = () => (
@@ -202,7 +205,7 @@ const FeaturesAlternating = () => (
       </div>
       <div className="flex flex-col gap-32">
         {featuresData.map((f, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8 }} className={cn('grid grid-cols-1 lg:grid-cols-2 gap-16 items-center', f.reverse ? 'lg:grid-flow-dense' : '')}>
+          <motion.div key={i} id={f.id} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8 }} className={cn('grid grid-cols-1 lg:grid-cols-2 gap-16 items-center', f.reverse ? 'lg:grid-flow-dense' : '')}>
             <div className={f.reverse ? 'lg:col-start-2' : ''}>
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4">{f.tag}</p>
               <h3 className="text-3xl md:text-4xl text-white tracking-tight mb-6 whitespace-pre-line">{f.title}</h3>
@@ -264,7 +267,7 @@ const StudioPanel = () => {
         <div className="glass-dark rounded-2xl overflow-hidden border border-white/8 shadow-[0_0_80px_rgba(0,0,0,0.6)]">
           <div className="h-11 border-b border-white/6 flex items-center px-4 gap-2 bg-black/40">
             <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-white/15" /></div>
-            <span className="flex-1 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest">iPulse Studio - Neural TTS</span>
+            <span className="flex-1 text-center text-[10px] font-mono text-zinc-500 uppercase tracking-widest">iPulse Studio - Neural TTS</span>
             <span className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-600"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />Online</span>
           </div>
           <div className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -317,7 +320,7 @@ const CinematicQuote = () => {
   return (
     <section className="relative z-10 py-32 border-y border-white/5">
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-600 mb-16">Community</p>
+        <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-16">Community</p>
         <div className="relative min-h-[180px] flex flex-col items-center justify-center">
           <div className="text-8xl font-editorial text-white/6 absolute -top-4 left-4 leading-none select-none">&ldquo;</div>
           <motion.div key={animKey} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
@@ -394,11 +397,16 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="md:col-span-1">
           <div className="flex items-center gap-3 mb-5"><img src="/logo.webp" alt="iPulse" className="w-7 h-7 rounded-sm object-cover" /><span className="font-mono text-sm tracking-[0.2em] text-white font-bold uppercase">iPulse</span></div>
-          <p className="text-xs font-mono text-zinc-600 max-w-xs leading-relaxed">Neural-powered voice engine. Real-time TTS, STT, and voice cloning for the modern web.</p>
+          <p className="text-xs font-mono text-zinc-500 max-w-xs leading-relaxed">Neural-powered voice engine. Real-time TTS, STT, and voice cloning for the modern web.</p>
         </div>
         <div>
-          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Platform</h4>
-          <ul className="space-y-3 text-sm text-zinc-600"><li><Link href="#features" target='_blank' className="hover:text-white transition-colors">Modules</Link></li><li><Link href="#pricing" target='_blank' className="hover:text-white transition-colors">Pricing</Link></li><li><Link href="/dashboard" target='_blank' className="hover:text-white transition-colors">Dashboard</Link></li></ul>
+          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Features</h4>
+          <ul className="space-y-3 text-sm text-zinc-600">
+            <li><Link href="#text-to-speech" className="hover:text-white transition-colors">Text to Speech</Link></li>
+            <li><Link href="#voice-cloning" className="hover:text-white transition-colors">Voice Cloning</Link></li>
+            <li><Link href="#speech-to-text" className="hover:text-white transition-colors">Speech to Text</Link></li>
+            <li><Link href="#api" className="hover:text-white transition-colors">Developer API</Link></li>
+          </ul>
         </div>
         <div>
           <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Resources</h4>
@@ -482,6 +490,13 @@ const ScrollRevealText = () => {
   );
 };
 
+const getDeterministicRandom = (i: number) => {
+  const x = Math.sin(i * 12.345) * 15;
+  const y = Math.cos(i * 43.21) * 15;
+  const rotate = Math.sin(i * 76.54) * 45;
+  return { x, y, rotate };
+};
+
 const InteractiveTypographyGrid = () => {
   return (
     <section className="relative z-10 py-32 overflow-hidden border-t border-white/5">
@@ -492,24 +507,29 @@ const InteractiveTypographyGrid = () => {
             whileHover={{ scale: 0.98 }}
             className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
           >
-            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10">Neural Architecture</div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
-              <motion.div
-                className="font-mono text-[8px] md:text-[10px] leading-[1.1] text-zinc-600 group-hover:text-white transition-colors duration-500 whitespace-pre text-center"
-                whileHover={{ scale: 1.1, rotate: 2 }}
-              >
-                {`
-/ / / / / / / / / / /
- / / / / / / / / / / 
-/ / / / / / / / / / /
- / / / / / / / / / / 
-/ / / / / / / / / / /
- / / / / / / / / / / 
-/ / / / / / / / / / /
-`}
-              </motion.div>
+            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10 pointer-events-none">Neural Architecture</div>
+            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700">
+              <div className="flex flex-col items-center justify-center font-mono text-[8px] md:text-[10px] leading-[1.8] text-zinc-600 transition-colors duration-500">
+                {[...Array(7)].map((_, row) => (
+                  <div key={row} className="flex gap-2">
+                    {[...Array(11)].map((_, col) => {
+                      const { x, y, rotate } = getDeterministicRandom(row * 11 + col);
+                      return (
+                        <motion.span
+                          key={col}
+                          className="inline-block cursor-default group-hover:text-white transition-colors duration-500"
+                          whileHover={{ scale: 1.8, x, y, rotate, color: '#22d3ee' }} // cyan-400
+                          transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                        >
+                          /
+                        </motion.span>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
               Infinite Scaling
             </div>
           </motion.div>
@@ -519,22 +539,25 @@ const InteractiveTypographyGrid = () => {
             whileHover={{ scale: 0.98 }}
             className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
           >
-            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10">Latency Metrics</div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10 pointer-events-none">Latency Metrics</div>
+            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700">
               <motion.div
                 className="grid grid-cols-5 gap-2 md:gap-3"
               >
-                {[...Array(25)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-1.5 h-1.5 md:w-2 md:h-2 bg-zinc-600 group-hover:bg-white rounded-full transition-colors duration-500"
-                    initial={{ scale: 1 }}
-                    whileHover={{ scale: 2 }}
-                  />
-                ))}
+                {[...Array(25)].map((_, i) => {
+                  const { x, y } = getDeterministicRandom(i + 100);
+                  return (
+                    <motion.div
+                      key={i}
+                      className="w-1.5 h-1.5 md:w-2 md:h-2 bg-zinc-600 group-hover:bg-white rounded-full transition-colors duration-500"
+                      whileHover={{ scale: 2.5, x: x * 1.5, y: y * 1.5, backgroundColor: '#22d3ee' }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    />
+                  );
+                })}
               </motion.div>
             </div>
-            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
               Sub-200ms
             </div>
           </motion.div>
@@ -544,16 +567,27 @@ const InteractiveTypographyGrid = () => {
             whileHover={{ scale: 0.98 }}
             className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square sm:aspect-[2/1] lg:aspect-square lg:col-span-1 md:col-span-2 flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
           >
-            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10">Model Accuracy</div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10 pointer-events-none">Model Accuracy</div>
+            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700">
               <motion.div
-                className="text-5xl md:text-6xl lg:text-8xl font-editorial italic text-zinc-600 group-hover:text-white transition-all duration-700 select-none"
-                whileHover={{ letterSpacing: "0.1em", scale: 1.05 }}
+                className="flex text-5xl md:text-6xl lg:text-8xl font-editorial italic text-zinc-600 transition-colors duration-700 select-none"
               >
-                99.9%
+                {['9', '9', '.', '9', '%'].map((char, i) => {
+                  const { x, y, rotate } = getDeterministicRandom(i + 200);
+                  return (
+                    <motion.span
+                      key={i}
+                      className="inline-block cursor-default group-hover:text-white transition-colors duration-500"
+                      whileHover={{ scale: 1.3, x: x * 0.8, y: y * 0.8, rotate: rotate * 0.3, color: '#22d3ee' }}
+                      transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                    >
+                      {char}
+                    </motion.span>
+                  );
+                })}
               </motion.div>
             </div>
-            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500">
+            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
               Zero-Shot
             </div>
           </motion.div>
@@ -600,14 +634,14 @@ const FeatureShowcase = () => {
 
   return (
     // Tall spacer — 500vh gives ~400vh of pinned scroll (same idea as ScrollRevealText)
-    <div ref={spacerRef} className="relative z-10 bg-black h-[500vh] border-t border-white/5">
+    <div id="speech-to-text" ref={spacerRef} className="relative z-10 bg-black h-[500vh] border-t border-white/5">
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
 
           {/* ── Left: sequential scroll-reveal feature list ── */}
           <div className="flex flex-col gap-6 lg:gap-8">
             <div>
-              <p className="text-[10px] lg:text-[11px] font-mono uppercase tracking-widest text-zinc-600 mb-2 lg:mb-3">Platform Capabilities</p>
+              <p className="text-[10px] lg:text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-2 lg:mb-3">Platform Capabilities</p>
               <h2 className="text-2xl md:text-3xl lg:text-4xl text-white tracking-tight leading-[1.1]">
                 Everything you need.<br />
                 <span className="text-zinc-500">All in one API.</span>

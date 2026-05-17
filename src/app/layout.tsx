@@ -15,20 +15,20 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://ipulselabs.net/'),
   title: {
-    default: 'iPulse | AI Voice Generator & Text to Speech',
+    default: 'Free Text-to-Speech Online & AI Voice Generator | iPulse',
     template: '%s | iPulse AI',
   },
-  description: 'iPulse is the leading AI voice platform for creators. Generate realistic text to speech, clone voices, transcribe audio with 99% accuracy, and clean audio instantly.',
+  description: 'Transform text into lifelike speech with iPulse. Generate realistic Text-to-Speech, Voice Cloning, and Speech-to-Text with 99% accuracy. Built for creators and developers.',
   keywords: [
+    'Text-to-Speech',
+    'Speech-to-Text',
+    'Voice Cloning',
     'AI voice generator',
     'text to speech online',
-    'voice cloning AI',
-    'speech to text converter',
+    'free text to speech',
     'AI voice changer',
     'clean audio AI',
-    'ElevenLabs alternative',
-    'realistic AI voices',
-    'AI audio tools'
+    'realistic AI voices'
   ],
   authors: [{ name: 'iPulse Team' }],
   creator: 'iPulse AI',
@@ -53,8 +53,8 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://ipulselabs.net/',
     siteName: 'iPulse AI',
-    title: 'iPulse | Premium AI Voice Generator & Audio Tools',
-    description: 'Transform your audio with neural-powered AI. The ultimate platform for realistic voice synthesis and transcription.',
+    title: 'Free Text-to-Speech Online & AI Voice Generator | iPulse',
+    description: 'Transform text into lifelike speech with iPulse. Generate realistic Text-to-Speech, Voice Cloning, and Speech-to-Text with 99% accuracy.',
     images: [
       {
         url: '/og-image.jpg',
@@ -66,8 +66,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'iPulse | Next-Gen AI Voice Generator',
-    description: 'Create lifelike speech with our AI voice generator and audio tools. Built for the future of content creation.',
+    title: 'Free Text-to-Speech Online & AI Voice Generator | iPulse',
+    description: 'Transform text into lifelike speech with iPulse. Generate realistic Text-to-Speech, Voice Cloning, and Speech-to-Text with 99% accuracy.',
     images: ['/og-image.jpg'],
     creator: '@iPulseAI',
   },
@@ -82,6 +82,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  alternates: {
+    canonical: 'https://ipulselabs.net/',
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -90,7 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'iPulse AI',
-    operatingSystem: 'Windows, macOS, Linux, Android, iOS',
+    operatingSystem: 'Web, Windows, macOS, Linux, Android, iOS',
     applicationCategory: 'MultimediaApplication',
     offers: {
       '@type': 'Offer',
@@ -120,6 +123,54 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     url: 'https://ipulselabs.net/',
     logo: 'https://ipulselabs.net/logo.png',
     sameAs: [
+      // Add social links here if available
+    ]
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'iPulse AI',
+    url: 'https://ipulselabs.net/',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://ipulselabs.net/?q={search_term_string}',
+      'query-input': 'required name=search_term_string'
+    }
+  };
+
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: [
+      {
+        '@type': 'SiteNavigationElement',
+        position: 1,
+        name: 'Text-to-Speech',
+        description: 'Generate hyper-realistic AI voices from text instantly.',
+        url: 'https://ipulselabs.net/#text-to-speech'
+      },
+      {
+        '@type': 'SiteNavigationElement',
+        position: 2,
+        name: 'Voice Cloning',
+        description: 'Clone any voice from just a 5-second audio sample.',
+        url: 'https://ipulselabs.net/#voice-cloning'
+      },
+      {
+        '@type': 'SiteNavigationElement',
+        position: 3,
+        name: 'Speech-to-Text',
+        description: 'Transcribe audio with 99% accuracy and speaker diarisation.',
+        url: 'https://ipulselabs.net/#speech-to-text'
+      },
+      {
+        '@type': 'SiteNavigationElement',
+        position: 4,
+        name: 'Developer API',
+        description: 'Integrate neural audio models directly into your applications.',
+        url: 'https://ipulselabs.net/#api'
+      }
     ]
   };
 
@@ -133,6 +184,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
         />
       </head>
       <body className={`${inter.variable} ${playfair.variable} ${inter.className} bg-zinc-950 text-zinc-50 min-h-screen antialiased custom-scrollbar`}>

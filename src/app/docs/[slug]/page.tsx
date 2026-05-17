@@ -11,7 +11,7 @@ export default function DocsPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const validSlugs = ['introduce', 'pricing', 'guide', 'faqs', 'terms', 'custom-voices'];
+  const validSlugs = ['introduce', 'pricing', 'guide', 'faqs', 'terms', 'custom-voices', 'api'];
   if (!slug || !validSlugs.includes(slug)) {
     notFound();
   }
@@ -35,14 +35,42 @@ export default function DocsPage() {
           <div className="border-b border-white/5 pb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
               <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full"></span>
-              <span className="text-zinc-400">SYSTEM ONLINE</span>
+              <span className="text-zinc-400">SYSTEM ONLINE v2.4</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
-              Introduction to iPulse
+              Platform Overview
             </h1>
-            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Welcome to the official documentation for iPulse AI. We provide state-of-the-art neural voice engines, capable of real-time text-to-speech, speech-to-text, voice cloning, and audio cleaning. Our models are designed for developers, creators, and enterprises looking for the ultimate voice synthesis toolkit.
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl mb-6">
+              Welcome to the official documentation for iPulse AI. We engineer state-of-the-art neural audio models optimized for ultra-low latency inference, high-fidelity synthesis, and robust voice preservation. Designed for enterprise developers, interactive applications, and global content creators.
             </p>
+            <div className="flex gap-4">
+              <Link href="/docs/guide" className="px-5 py-2 bg-white text-black text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-zinc-200 transition-colors">
+                Quick Start
+              </Link>
+              <Link href="/docs/api" className="px-5 py-2 bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-white/10 transition-colors">
+                API Reference
+              </Link>
+            </div>
+          </div>
+
+          <div className="space-y-6 pt-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-cyan-400" /> Core Concepts
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">Projects & Workspaces</h3>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">Organize your synthesis workflows into dedicated workspaces. Each project maintains its own history log, custom voice registry, and API keys.</p>
+              </div>
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">Pulse Credits</h3>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">Our unified metering system. All operations (TTS, STT, Cloning) consume Pulse credits based on compute intensity and duration.</p>
+              </div>
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">Neural Cache</h3>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">Identical text-to-speech requests are automatically cached at the CDN edge level, resulting in 0ms compute latency and zero credit cost.</p>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -224,13 +252,17 @@ export default function DocsPage() {
                 <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Generating Speech (TTS)</h3>
               </div>
               <div className="p-6 md:p-8">
-                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
-                  <li>Navigate to the <strong className="text-white">TTS tab</strong> in the primary dashboard sidebar.</li>
-                  <li>Enter your desired script into the text workspace array. You can use expressiveness tags like <strong className="text-white">[laugh]</strong>, <strong className="text-white">[pause]</strong>, <strong className="text-white">[sigh]</strong>, <strong className="text-white">&lt;whisper&gt;</strong>, <strong className="text-white">&lt;emphasis&gt;</strong>, and <strong className="text-white">&lt;singing&gt;</strong> to add emotional nuance.</li>
-                  <li>Select a voice avatar from the matrix (e.g., Eve for Energetic, Rex for Clear).</li>
-                  <li>Hit the <strong className="text-white">Generate</strong> button. The neural engine will synthesize the audio within seconds.</li>
-                  <li>Download the resulting high-fidelity waveform or review it in the History Log.</li>
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">Our Text-to-Speech (TTS) module leverages advanced autoregressive transformers to produce speech that is virtually indistinguishable from human recording.</p>
+                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold mb-6">
+                  <li>Navigate to the <strong className="text-white">TTS module</strong> in the primary dashboard sidebar.</li>
+                  <li>Enter your desired script into the text workspace array. You can use expressiveness tags like <strong className="text-white">[laugh]</strong>, <strong className="text-white">[sigh]</strong>, or wrap text in <strong className="text-white">&lt;whisper&gt;...&lt;/whisper&gt;</strong> to enforce emotional nuance.</li>
+                  <li>Adjust the <strong className="text-white">Stability Parameter</strong> (0.0 - 1.0). Lower values allow the model to be more expressive and variable, while higher values enforce a more monotonous, stable reading.</li>
+                  <li>Adjust the <strong className="text-white">Similarity Boost</strong> to dictate how closely the output should mirror the original voice clone's exact acoustic properties versus the default model prosody.</li>
+                  <li>Hit the <strong className="text-white">Generate</strong> button. The neural engine will synthesize the audio within milliseconds.</li>
                 </ol>
+                <div className="p-4 bg-white/5 border border-white/10 rounded-sm text-[10px] text-zinc-400 font-mono">
+                  <strong className="text-cyan-400">Pro Tip:</strong> For extremely long texts, the system automatically chunks the input by sentence boundaries to stream the first audio chunks back in under 250ms, ensuring immediate playback.
+                </div>
               </div>
             </div>
 
@@ -271,12 +303,13 @@ export default function DocsPage() {
                 <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Transcribing Audio (STT)</h3>
               </div>
               <div className="p-6 md:p-8">
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">Our STT engine utilizes advanced Whisper-architecture variations optimized for extreme noisy environments and multi-speaker dialogues.</p>
                 <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
                   <li>Access the <strong className="text-white">STT workspace</strong> via the dashboard.</li>
-                  <li>Upload any supported audio file (MP3, WAV, MP4) using the drag-and-drop zone. The system utilizes <strong className="text-white">Automatic Language Detection</strong> to transcribe multi-lingual inputs seamlessly.</li>
-                  <li>The system will automatically extract and detect speech components.</li>
-                  <li>A clean, punctuated, and formatted transcript will be generated in the output panel.</li>
-                  <li>Copy the text to your clipboard or download it as a raw `.txt` file.</li>
+                  <li>Upload any supported audio file (MP3, WAV, MP4, FLAC) using the drag-and-drop zone. Limit file sizes to 500MB per request.</li>
+                  <li>Enable <strong className="text-white">Speaker Diarization</strong> if your audio contains multiple speakers. The system will automatically label segments as Speaker A, Speaker B, etc.</li>
+                  <li>Select your desired output format: Plain Text, SRT (for subtitles), or VTT.</li>
+                  <li>Initiate the transcription. Real-time websocket streaming is also available via the API.</li>
                 </ol>
               </div>
             </div>
@@ -358,7 +391,7 @@ export default function DocsPage() {
                 <span className="text-cyan-400">Q.</span> Can I use generated audio commercially?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                Yes, commercial rights are fully included for all users on the <strong className="text-white">Basic, Premium, and Pro plans</strong>. Free tier users are restricted to non-commercial, personal, or evaluation use only.
+                Yes, commercial rights are fully included for all users on the <strong className="text-white">Basic, Premium, and Pro plans</strong>. This means you own the copyright to the synthesized audio and can monetize it on YouTube, Podcasts, Games, or Commercial Broadcasts. Free tier users are restricted to non-commercial, personal, or evaluation use only and must provide attribution.
               </p>
             </div>
             <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
@@ -366,15 +399,23 @@ export default function DocsPage() {
                 <span className="text-cyan-400">Q.</span> How are usages counted?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                One usage equals exactly one generation or processing request, regardless of the output length, provided it falls within your plan's maximum character or MB limits per request.
+                One Pulse credit maps to roughly 1 character of Text-to-Speech processing. Speech-to-Text and Voice Changer modules consume pulses based on audio duration (typically 1000 Pulses per 1 minute of processing). Failed requests or HTTP errors (e.g. 4xx, 5xx) do not consume any credits.
               </p>
             </div>
             <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
               <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-3">
-                <span className="text-cyan-400">Q.</span> How do I cancel my subscription?
+                <span className="text-cyan-400">Q.</span> What are your rate limits and concurrency caps?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                You can cancel anytime via the Dashboard's <strong className="text-white">Profile</strong> section by clicking 'Cancel Subscription'. Your access will remain fully active until the end of your current billing cycle.
+                By default, Basic accounts are limited to 3 concurrent requests. Premium accounts support up to 15 concurrent requests, and Pro accounts support up to 50 concurrent requests. Our standard API rate limit is 100 requests per minute per IP address. Contact Enterprise support to raise these limits.
+              </p>
+            </div>
+            <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
+              <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-3">
+                <span className="text-cyan-400">Q.</span> What is your data retention policy?
+              </h3>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
+                We strictly adhere to SOC-2 and GDPR compliance. We do not use your generated audio or custom voice clones to train our foundational models. Data is encrypted at rest and in transit. You can delete your History Logs or Custom Voices at any time, which permanently purges them from our servers within 24 hours.
               </p>
             </div>
           </div>
@@ -435,6 +476,41 @@ export default function DocsPage() {
             <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
                 <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
+                  <Mic className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Best Practices for Audio Samples</h3>
+              </div>
+              <div className="p-6 md:p-8">
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
+                  The quality of your Custom Voice clone is directly proportional to the quality of the training sample you provide. Our neural mapping extracts acoustic characteristics, meaning any background noise will be learned as part of the voice.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-mono font-bold text-white uppercase tracking-widest text-emerald-400">Do's</h4>
+                    <ul className="list-disc list-inside space-y-2 text-xs font-mono text-zinc-400">
+                      <li>Provide a single, continuous speaker.</li>
+                      <li>Ensure a high-quality microphone without clipping.</li>
+                      <li>Provide exactly 1 to 5 minutes of varied speech.</li>
+                      <li>Use a dead, non-reverberant room (studio quality).</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-mono font-bold text-white uppercase tracking-widest text-rose-400">Don'ts</h4>
+                    <ul className="list-disc list-inside space-y-2 text-xs font-mono text-zinc-400">
+                      <li>Do not include background music or sound effects.</li>
+                      <li>Avoid extreme compression or heavy EQ on the sample.</li>
+                      <li>Do not use phone call recordings (8kHz limitations).</li>
+                      <li>Do not have multiple speakers overlapping.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
+                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-cyan-400" />
                 </div>
                 <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Supported Languages</h3>
@@ -488,6 +564,115 @@ export default function DocsPage() {
                 </ul>
               </div>
             </div>
+          </div>
+        </PageTransition>
+      );
+
+    case 'api':
+      return (
+        <PageTransition>
+          <div className="border-b border-white/5 pb-8">
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              API Reference
+            </h1>
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl mb-6">
+              The iPulse API is organized around REST. Our API has predictable resource-oriented URLs, accepts form-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.
+            </p>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#080808] border border-white/10 rounded-sm text-[10px] font-mono uppercase tracking-widest text-white">
+              Base URL: <span className="text-cyan-400">https://api.ipulselabs.net/v1</span>
+            </div>
+          </div>
+
+          <div className="space-y-12 mt-8">
+            {/* Authentication Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+                Authentication
+              </h2>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed max-w-2xl">
+                The iPulse API uses API keys to authenticate requests. You can view and manage your API keys in the Dashboard. Your API keys carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth.
+              </p>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed max-w-2xl">
+                Authentication to the API is performed via HTTP Bearer Auth. Provide your API key as the bearer token value.
+              </p>
+              <div className="bg-[#080808] border border-white/5 rounded-sm p-4 overflow-x-auto">
+                <pre className="text-[11px] font-mono text-zinc-300">
+                  <span className="text-emerald-400">Authorization:</span> Bearer <span className="text-amber-400">sk_live_...</span>
+                </pre>
+              </div>
+            </div>
+
+            {/* TTS Endpoint */}
+            <div className="space-y-6">
+              <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+                <div className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-1 rounded-sm">POST</div> Text to Speech
+              </h2>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                <code className="bg-white/10 px-1 py-0.5 rounded-sm text-white">/v1/audio/speech</code>
+                <br /><br />
+                Converts text to lifelike spoken audio. Streams the audio file directly back to the client.
+              </p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                {/* Request Params */}
+                <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
+                  <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02] text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                    Request Body
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div className="border-b border-white/5 pb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[11px] font-mono text-white font-bold">model</span>
+                        <span className="text-[9px] font-mono text-rose-400">required</span>
+                        <span className="text-[9px] font-mono text-zinc-500">string</span>
+                      </div>
+                      <p className="text-[10px] font-mono text-zinc-400">The model to use, e.g., <code className="text-cyan-400">ipulse-tts-1</code> or <code className="text-cyan-400">ipulse-tts-1-hd</code>.</p>
+                    </div>
+                    <div className="border-b border-white/5 pb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[11px] font-mono text-white font-bold">input</span>
+                        <span className="text-[9px] font-mono text-rose-400">required</span>
+                        <span className="text-[9px] font-mono text-zinc-500">string</span>
+                      </div>
+                      <p className="text-[10px] font-mono text-zinc-400">The text to generate audio for. Maximum length is 4096 characters.</p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[11px] font-mono text-white font-bold">voice</span>
+                        <span className="text-[9px] font-mono text-rose-400">required</span>
+                        <span className="text-[9px] font-mono text-zinc-500">string</span>
+                      </div>
+                      <p className="text-[10px] font-mono text-zinc-400">The voice ID to use. Can be a default voice or a Custom Voice ID.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Example Request/Response */}
+                <div className="space-y-4">
+                  <div className="bg-black border border-white/10 rounded-sm overflow-hidden shadow-2xl">
+                    <div className="px-4 py-2 border-b border-white/10 bg-[#111] flex gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
+                    </div>
+                    <div className="p-4 overflow-x-auto text-[11px] font-mono leading-relaxed">
+<pre className="text-zinc-300">
+<span className="text-rose-400">curl</span> <span className="text-emerald-400">https://api.ipulselabs.net/v1/audio/speech</span> \
+  -H <span className="text-amber-300">"Authorization: Bearer $IPULSE_API_KEY"</span> \
+  -H <span className="text-amber-300">"Content-Type: application/json"</span> \
+  -d '{'{'}
+    <span className="text-cyan-300">"model"</span>: <span className="text-amber-300">"ipulse-tts-1"</span>,
+    <span className="text-cyan-300">"input"</span>: <span className="text-amber-300">"The neural synthesis engine is online."</span>,
+    <span className="text-cyan-300">"voice"</span>: <span className="text-amber-300">"alloy"</span>
+  {'}'}' \
+  --output speech.mp3
+</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </PageTransition>
       );
