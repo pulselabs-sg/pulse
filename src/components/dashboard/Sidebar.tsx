@@ -1,4 +1,4 @@
-﻿import { Menu, X, Crown, CreditCard, User, BookOpen } from 'lucide-react';
+import { Menu, X, Crown, CreditCard, User, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, setActiveTab, userState, session, setShowPlanModal }: SidebarProps) {
   const isLimitReached = userState.limit !== Infinity && userState.usage >= userState.limit;
-  const mainTabs = TABS.filter(t => t.id !== 'profile' && t.id !== 'history');
+  const mainTabs = TABS.filter(t => t.id !== 'profile' && t.id !== 'history' && t.id !== 'clone');
   const bottomTabs = TABS.filter(t => t.id === 'profile' || t.id === 'history');
 
   const handleTabClick = (id: Tab) => {

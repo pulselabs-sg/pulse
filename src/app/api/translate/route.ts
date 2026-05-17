@@ -88,9 +88,10 @@ export async function POST(req: Request) {
     const xaiFormData = new FormData();
     xaiFormData.append('file', new Blob([arrayBuffer], { type: 'audio/mp3' }), 'audio.mp3');
 
-    const isFishVoice = targetVoice.startsWith('fish_');
+    // ── Custom voice (Fish Speech) temporarily disabled; all requests use xAI Grok TTS ──
+    // const isFishVoice = targetVoice.startsWith('fish_');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), isFishVoice ? 290000 : 90000); // 90-290 seconds for whole pipeline
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
 
     try {
       // 1. STT Phase
@@ -133,87 +134,37 @@ export async function POST(req: Request) {
         translatedText = grokData.choices[0].message.content.trim();
       }
 
+      // ── Custom voice (Fish Speech) temporarily disabled ──
+
       // 3. TTS Phase
       let audioBuffer: ArrayBuffer;
 
-      if (isFishVoice) {
-        const referenceAudioUrl = targetVoice.replace('fish_', '');
-        const modalApiUrl = process.env.MODAL_API_URL || 'https://api.placeholder.modal.run/v1/tts';
+      // ── TEMPORARILY COMMENTED OUT: Fish Speech / Custom Voice pipeline ──
+      // if (isFishVoice) {
+      //   const referenceAudioUrl = targetVoice.replace('fish_', '');
+      //   const modalApiUrl = process.env.MODAL_API_URL || '...';
+      //   ... (full Fish Speech chunking pipeline)
+      // } else {
 
-        const textChunks = chunkText(translatedText, 300);
+      const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: translatedText,
+          voice_id: targetVoice,
+          language: 'auto',
+          response_format: 'mp3'
+        }),
+        signal: controller.signal,
+      });
 
-        const buffers: ArrayBuffer[] = new Array(textChunks.length);
-        const MAX_CONCURRENT_REQUESTS = 8;
-        let currentIndex = 0;
+      if (!ttsResponse.ok) throw new Error("TTS processing failed");
+      audioBuffer = await ttsResponse.arrayBuffer();
 
-        const processChunk = async (chunk: string, index: number) => {
-          let retries = 2;
-          while (retries >= 0) {
-            try {
-              const res = await fetch(modalApiUrl, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Modal-Key': process.env.MODAL_TOKEN_ID || '',
-                  'Modal-Secret': process.env.MODAL_TOKEN_SECRET || '',
-                },
-                body: JSON.stringify({
-                  text: chunk,
-                  reference_audio_url: referenceAudioUrl,
-                  format: 'mp3'
-                }),
-                signal: controller.signal,
-              });
-
-              if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(`Status ${res.status}: ${errorText}`);
-              }
-              return await res.arrayBuffer();
-            } catch (err: any) {
-              if (retries === 0 || err.name === 'AbortError') {
-                console.error(`[FISH SPEECH ERROR] Chunk ${index} failed permanently:`, err);
-                throw err;
-              }
-              console.warn(`[TTS RETRY] Network error, trying chunk ${index} again... (Left ${retries} retries)`);
-              await new Promise(r => setTimeout(r, 2000));
-              retries--;
-            }
-          }
-        };
-
-        const worker = async () => {
-          while (currentIndex < textChunks.length) {
-            const index = currentIndex++;
-            const chunk = textChunks[index];
-            buffers[index] = await processChunk(chunk, index) as ArrayBuffer;
-          }
-        };
-
-        const workers = Array(Math.min(MAX_CONCURRENT_REQUESTS, textChunks.length))
-          .fill(null)
-          .map(() => worker());
-        await Promise.all(workers);
-        audioBuffer = concatAudioBuffers(buffers, 'mp3');
-      } else {
-        const ttsResponse = await fetch('https://api.x.ai/v1/tts', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${process.env.XAI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: translatedText,
-            voice_id: targetVoice.startsWith('custom_voice_') ? 'eve' : targetVoice,
-            language: 'auto',
-            response_format: 'mp3'
-          }),
-          signal: controller.signal,
-        });
-
-        if (!ttsResponse.ok) throw new Error("TTS processing failed");
-        audioBuffer = await ttsResponse.arrayBuffer();
-      }
+      // ── END of temporarily commented Fish Speech block ──
 
       const blob = await put(`translate/${user.id}/${Date.now()}.mp3`, audioBuffer, {
         access: 'public',
