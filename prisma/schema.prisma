@@ -22,6 +22,7 @@ model User {
   sessions             Session[]
   histories            History[]
   customVoices         CustomVoice[]
+  visualProjects       VisualProject[]
 }
 
 model Account {
@@ -81,6 +82,22 @@ model History {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  visualProjectId String?
+  visualProject   VisualProject? @relation(fields: [visualProjectId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([visualProjectId])
+}
+
+model VisualProject {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  histories History[]
 
   @@index([userId])
 }

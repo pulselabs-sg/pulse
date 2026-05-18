@@ -38,7 +38,7 @@ export default function LoginPage() {
             </div>
 
             <button
-              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              onClick={() => signIn('google', { callbackUrl: '/audio' })}
               className="w-full h-14 bg-white text-black hover:bg-zinc-200 transition-all rounded-xl font-mono text-xs uppercase font-bold flex items-center justify-center gap-4 group/btn relative overflow-hidden"
             >
               <div className="flex items-center justify-center w-6 h-6 bg-black rounded-sm transition-transform group-hover/btn:scale-110">
