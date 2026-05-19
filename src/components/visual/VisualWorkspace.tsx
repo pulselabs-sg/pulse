@@ -9,12 +9,23 @@ import { GROK_FEATURES, GrokFeature, ASPECT_RATIOS, QUALITY_OPTIONS, VIDEO_DURAT
 import RevealAnimation from './RevealAnimation';
 import { useRouter } from 'next/navigation';
 
+const getCleanPath = (path: string) => {
+  if (typeof window !== 'undefined') {
+    const isSubdomain = window.location.hostname.startsWith('visual.') || window.location.hostname.startsWith('audio.');
+    if (isSubdomain) {
+      return path.replace(/^\/(visual|audio)/, '') || '/';
+    }
+  }
+  return path;
+};
+
 interface VisualWorkspaceProps {
   onShowPlanModal: () => void;
   userState: any;
   projectId?: string;
   selectedHistoryItem?: any;
   clearSelectedHistory?: () => void;
+  updateSession?: () => void;
 }
 
 export default function VisualWorkspace({
@@ -22,7 +33,8 @@ export default function VisualWorkspace({
   userState,
   projectId,
   selectedHistoryItem,
-  clearSelectedHistory
+  clearSelectedHistory,
+  updateSession
 }: VisualWorkspaceProps) {
   const router = useRouter();
 
@@ -59,6 +71,32 @@ export default function VisualWorkspace({
   // Generation State
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<{ type: 'image' | 'video', url: string } | null>(null);
+
+  // Flow State
+  const [activeFlowVideo, setActiveFlowVideo] = useState<string | null>(null);
+  const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (referenceImage) {
+      const url = URL.createObjectURL(referenceImage);
+      setReferenceImageUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setReferenceImageUrl(null);
+    }
+  }, [referenceImage]);
+
+  useEffect(() => {
+    if (mainMode === 'flow') {
+      if (result?.url) {
+        setActiveFlowVideo(result.url);
+      } else if (referenceImageUrl) {
+        setActiveFlowVideo(referenceImageUrl);
+      } else {
+        setActiveFlowVideo(null);
+      }
+    }
+  }, [mainMode, result, referenceImageUrl]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -132,7 +170,7 @@ export default function VisualWorkspace({
       });
       if (res.ok) {
         const project = await res.json();
-        router.push(`/visual/${project.id}`);
+        router.push(getCleanPath(`/visual/${project.id}`));
       }
     } catch (e) {
       console.error(e);
@@ -196,6 +234,18 @@ export default function VisualWorkspace({
   const handleGenerate = async () => {
     if (!prompt && !referenceImage) return;
 
+    const isVideo = mainMode === 'video' || mainMode === 'flow';
+    const durSec = mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration;
+    const isHD = selectedQuality === '720p' || selectedQuality === '1080p' || selectedQuality === '2k';
+    const cost = isVideo ? (durSec * (isHD ? 1500 : 1200)) : 1500;
+
+    const remainingPulses = userState.limit - userState.usage;
+    if (cost > remainingPulses) {
+      alert("Pulse quota exceeded. Please upgrade your plan.");
+      onShowPlanModal();
+      return;
+    }
+
     setIsGenerating(true);
     setResult(null);
 
@@ -205,34 +255,40 @@ export default function VisualWorkspace({
         referenceImageBase64 = await fileToBase64(referenceImage);
       }
 
-      const isVideo = mainMode === 'video' || mainMode === 'flow';
-
       if (isVideo) {
         const res = await fetch('/api/visual/generate-video', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: mainMode === 'flow' ? (flowPrompt || prompt) : prompt,
-            duration: mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration,
+            duration: durSec,
             referenceImageBase64,
-            mode: mainMode
+            mode: mainMode,
+            quality: selectedQuality
           })
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to start video generation');
+        if (!res.ok) {
+          updateSession?.();
+          throw new Error(data.error || 'Failed to start video generation');
+        }
+
+        // Deduct pulse immediately on UI side
+        updateSession?.();
 
         const requestId = data.request_id;
 
         // Polling logic
         const intervalId = setInterval(async () => {
           try {
-            const statusRes = await fetch(`/api/visual/video-status?request_id=${requestId}`);
+            const statusRes = await fetch(`/api/visual/video-status?request_id=${requestId}&duration=${durSec}&quality=${selectedQuality}`);
             const statusData = await statusRes.json();
 
             if (!statusRes.ok) {
               clearInterval(intervalId);
               setIsGenerating(false);
+              updateSession?.();
               const errMsg = statusData.details?.error || statusData.error || 'Failed to check video status';
               alert(`Video Synthesis Rejected: ${errMsg}`);
               return;
@@ -246,6 +302,7 @@ export default function VisualWorkspace({
 
               setIsGenerating(false);
               setResult({ type: 'video', url: statusData.video.url });
+              updateSession?.();
 
               // Save to history and prepend local history state
               const hRes = await fetch('/api/history', {
@@ -265,6 +322,7 @@ export default function VisualWorkspace({
             } else if (statusData.status === 'failed' || statusData.status === 'expired') {
               clearInterval(intervalId);
               setIsGenerating(false);
+              updateSession?.();
               alert(`Video generation ${statusData.status}`);
             }
           } catch (err) {
@@ -288,10 +346,14 @@ export default function VisualWorkspace({
         ]);
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to generate image');
+        if (!res.ok) {
+          updateSession?.();
+          throw new Error(data.error || 'Failed to generate image');
+        }
 
         setIsGenerating(false);
         setResult({ type: 'image', url: data.url });
+        updateSession?.();
 
         // Save to history and prepend local history state
         const hRes = await fetch('/api/history', {
@@ -313,6 +375,7 @@ export default function VisualWorkspace({
       console.error(err);
       alert(err.message);
       setIsGenerating(false);
+      updateSession?.();
     }
   };
 
@@ -387,7 +450,7 @@ export default function VisualWorkspace({
               {projects.map(project => (
                 <div
                   key={project.id}
-                  onClick={() => router.push(`/visual/${project.id}`)}
+                  onClick={() => router.push(getCleanPath(`/visual/${project.id}`))}
                   className="glass border border-white/10 rounded-3xl p-6 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 cursor-pointer relative group flex flex-col justify-between h-44 overflow-hidden shadow-lg"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -440,7 +503,7 @@ export default function VisualWorkspace({
         {/* Workspace Subheader */}
         <div className="flex items-center justify-between mb-4 shrink-0">
           <button
-            onClick={() => router.push('/visual')}
+            onClick={() => router.push(getCleanPath('/visual'))}
             className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 py-1.5 px-4 rounded-full bg-white/5 border border-white/5 hover:border-white/15"
           >
             <X className="w-3 h-3" /> Close Project
@@ -463,53 +526,204 @@ export default function VisualWorkspace({
         )}
 
         {/* Interactive Synthesis Display Screen */}
-        <div className="flex-1 glass border border-white/10 rounded-4xl mb-5 relative overflow-hidden flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.6)]">
-          {isGenerating ? (
-            <RevealAnimation isVideo={mainMode === 'video' || mainMode === 'flow'} />
-          ) : result ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full h-full p-4 flex flex-col items-center justify-center relative"
-            >
-              {result.type === 'video' ? (
-                <video
-                  src={result.url}
-                  controls
-                  autoPlay
-                  loop
-                  className="w-full h-full object-contain rounded-2xl shadow-2xl"
-                />
-              ) : (
-                <img
-                  src={result.url}
-                  alt="Generated content"
-                  className="w-full h-full object-contain rounded-2xl shadow-2xl"
-                />
-              )}
+        <div className="flex-1 glass border border-white/10 rounded-4xl mb-5 relative overflow-hidden flex shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+          {mainMode === 'flow' ? (
+            <div className="flex w-full h-full">
+              {/* Left 20% */}
+              <div className="w-2/6 md:w-[20%] border-r border-white/10 bg-black/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10">
+                <p className="text-[8px] md:text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-4 shrink-0 text-center">Sequence</p>
 
-              {/* Floating Action Overlay */}
-              <div className="absolute top-6 right-6 flex flex-col gap-2 z-10">
-                <button
-                  onClick={handleShare}
-                  title="Copy URL"
-                  className="glass p-3 rounded-full border border-white/20 hover:bg-white hover:text-black text-white transition-all shadow-lg active:scale-95 group"
+                {/* Original Video Box */}
+                <div
+                  className={cn(
+                    "w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-white/10 overflow-hidden relative group cursor-pointer transition-all duration-300 shrink-0",
+                    activeFlowVideo === referenceImageUrl && referenceImageUrl ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "hover:border-white/30"
+                  )}
+                  onClick={() => referenceImageUrl ? setActiveFlowVideo(referenceImageUrl) : fileInputRef.current?.click()}
                 >
-                  <Upload className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={handleDownload}
-                  title="Download File"
-                  className="glass p-3 rounded-full border border-white/20 hover:bg-white hover:text-black text-white transition-all shadow-lg active:scale-95 group"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                </button>
+                  {referenceImageUrl && referenceImage ? (
+                    <>
+                      {referenceImage.type.includes('video') ? (
+                        <video src={referenceImageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      ) : (
+                        <img src={referenceImageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      )}
+                      {/* Clear Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReferenceImage(null);
+                        }}
+                        className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg z-20"
+                      >
+                        <X className="w-2.5 h-2.5 text-white" />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">
+                      <Plus className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors mb-1 opacity-0 group-hover:opacity-100" />
+                      <span className="text-[8px] font-mono text-zinc-600 uppercase group-hover:text-zinc-400">Original</span>
+                    </div>
+                  )}
+                  <div className="absolute top-1.5 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[6px] font-mono text-white uppercase tracking-wider hidden md:block">
+                    Source
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="w-px h-6 bg-gradient-to-b from-white/20 to-white/5 my-2 relative shrink-0">
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-solid border-t-white/20 border-t-4 border-x-transparent border-x-[3px] border-b-0" />
+                </div>
+
+                {/* Subsequent Video (Result) */}
+                {result ? (
+                  <>
+                    <div
+                      className={cn(
+                        "w-full aspect-[9/16] max-h-32 rounded-xl border border-white/10 overflow-hidden relative group cursor-pointer transition-all duration-300 shrink-0",
+                        activeFlowVideo === result.url ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "hover:border-white/30"
+                      )}
+                      onClick={() => setActiveFlowVideo(result.url)}
+                    >
+                      {result.type === 'video' ? (
+                        <video src={result.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      ) : (
+                        <img src={result.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      )}
+                      <div className="absolute top-1 left-1 bg-cyan-500/20 border border-cyan-500/30 px-1.5 py-0.5 rounded text-[6px] font-mono text-cyan-300 uppercase tracking-wider hidden md:block">
+                        Gen 1
+                      </div>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="w-px h-6 bg-gradient-to-b from-white/20 to-white/5 my-2 relative shrink-0">
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-solid border-t-white/20 border-t-4 border-x-transparent border-x-[3px] border-b-0" />
+                    </div>
+
+                    {/* Blank Box */}
+                    <div className="w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center p-2 text-center bg-white/[0.02] shrink-0">
+                      <span className="text-[10px] font-mono text-zinc-400 tracking-widest leading-tight">
+                        Describe what happens next by typing the text below.
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  /* Blank Box directly after Original */
+                  <div className="w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center p-2 text-center bg-white/[0.02] shrink-0 relative">
+                    {isGenerating ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mb-2" />
+                    ) : (
+                      <span className="text-[10px] font-mono text-zinc-400 tracking-widest leading-tight">
+                        Describe what happens next by typing the text below.
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-            </motion.div>
+
+              {/* Right 80% */}
+              <div className="w-4/5 md:w-[80%] p-4 flex items-center justify-center relative bg-black/40">
+                {isGenerating ? (
+                  <RevealAnimation isVideo={true} />
+                ) : activeFlowVideo ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full h-full flex flex-col items-center justify-center relative"
+                  >
+                    {activeFlowVideo === referenceImageUrl && referenceImage && !referenceImage.type.includes('video') ? (
+                      <img
+                        src={activeFlowVideo}
+                        className="w-full h-full object-contain rounded-2xl shadow-2xl"
+                      />
+                    ) : (
+                      <video
+                        src={activeFlowVideo}
+                        controls
+                        autoPlay
+                        loop
+                        className="w-full h-full object-contain rounded-2xl shadow-2xl"
+                      />
+                    )}
+
+                    {/* Floating Action Overlay */}
+                    {activeFlowVideo === result?.url && (
+                      <div className="absolute top-6 right-6 flex flex-col gap-2 z-10">
+                        <button
+                          onClick={handleShare}
+                          title="Copy URL"
+                          className="glass p-3 rounded-full border border-white/20 hover:bg-white hover:text-black text-white transition-all shadow-lg active:scale-95 group"
+                        >
+                          <Upload className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={handleDownload}
+                          title="Download File"
+                          className="glass p-3 rounded-full border border-white/20 hover:bg-white hover:text-black text-white transition-all shadow-lg active:scale-95 group"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-zinc-500">
+                    <Wand2 className="w-12 h-12 mb-4 opacity-50" />
+                    <p className="text-[10px] font-mono tracking-[0.2em] uppercase">Flow Sequence Editor</p>
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-zinc-500">
-              <ImageIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p className="text-[10px] font-mono tracking-[0.2em]">Asset Synthesis Frame</p>
+            <div className="flex w-full h-full items-center justify-center">
+              {isGenerating ? (
+                <RevealAnimation isVideo={mainMode === 'video'} />
+              ) : result ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="w-full h-full p-4 flex flex-col items-center justify-center relative"
+                >
+                  {result.type === 'video' ? (
+                    <video
+                      src={result.url}
+                      controls
+                      autoPlay
+                      loop
+                      className="w-full h-full object-contain rounded-2xl shadow-2xl"
+                    />
+                  ) : (
+                    <img
+                      src={result.url}
+                      alt="Generated content"
+                      className="w-full h-full object-contain rounded-2xl shadow-2xl"
+                    />
+                  )}
+
+                  {/* Floating Action Overlay */}
+                  <div className="absolute top-6 right-6 flex flex-col gap-2 z-10">
+                    <button
+                      onClick={handleShare}
+                      title="Copy URL"
+                      className="glass p-3 rounded-full border border-white/20 hover:bg-white hover:text-black text-white transition-all shadow-lg active:scale-95 group"
+                    >
+                      <Upload className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleDownload}
+                      title="Download File"
+                      className="glass p-3 rounded-full border border-white/20 hover:bg-white hover:text-black text-white transition-all shadow-lg active:scale-95 group"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-zinc-500">
+                  <ImageIcon className="w-12 h-12 mb-4 opacity-50" />
+                  <p className="text-[10px] font-mono tracking-[0.2em]">Asset Synthesis Frame</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -524,7 +738,7 @@ export default function VisualWorkspace({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 15 }}
-                className="absolute bottom-full left-0 mb-4 w-full glass-dark border border-white/20 rounded-3xl p-3 md:p-4 shadow-[0_15px_60px_rgba(0,0,0,0.9)] z-50 flex flex-col justify-between h-[290px] md:h-[280px]"
+                className="absolute bottom-full left-0 mb-4 w-full glass-dark border border-white/20 rounded-3xl p-3 md:p-6 shadow-[0_15px_60px_rgba(0,0,0,0.9)] z-50 flex flex-col justify-between h-[290px] md:h-[280px]"
               >
                 {/* Mode Toggles Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-2.5 shrink-0">
@@ -670,18 +884,26 @@ export default function VisualWorkspace({
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  "p-2 md:p-3.5 rounded-full transition-all border duration-300 flex items-center gap-1.5",
+                  "rounded-full transition-all border duration-300 flex items-center justify-center",
                   referenceImage
-                    ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
-                    : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15"
+                    ? "p-0 bg-transparent border-transparent"
+                    : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15 p-2 md:p-3.5"
                 )}
               >
-                <Plus className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />
-                {referenceImage && (
-                  <span className="text-[9px] font-mono truncate max-w-[50px] md:max-w-[80px] hidden sm:inline">
-                    {referenceImage.name}
-                  </span>
-                )}
+                {!referenceImage ? (
+                  <Plus className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />
+                ) : referenceImageUrl ? (
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl overflow-hidden shrink-0 border border-white/20 shadow-md relative group hover:border-white/40 transition-colors">
+                    {referenceImage.type.includes('video') ? (
+                      <video src={referenceImageUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={referenceImageUrl} className="w-full h-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Plus className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                ) : null}
               </button>
 
               <input
@@ -692,41 +914,24 @@ export default function VisualWorkspace({
                 onChange={handleImageUpload}
               />
 
-              {referenceImage && mainMode !== 'flow' && (
+              {referenceImage && (
                 <button
                   onClick={() => setReferenceImage(null)}
-                  className="p-1 text-zinc-400 hover:text-red-400 transition-colors hidden md:block"
+                  className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors flex items-center justify-center"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 md:w-4.5 md:h-4.5" />
                 </button>
               )}
             </div>
 
             {/* Prompt Form & Textarea */}
             <div className="flex-1 flex flex-col relative">
-              {mainMode === 'flow' && referenceImage && (
-                <div className="absolute bottom-full left-0 mb-3 w-28 h-16 rounded-xl overflow-hidden border border-white/20 group shadow-lg z-50">
-                  {referenceImage.type.includes('video') ? (
-                    <video src={URL.createObjectURL(referenceImage)} className="w-full h-full object-cover" />
-                  ) : (
-                    <img src={URL.createObjectURL(referenceImage)} className="w-full h-full object-cover" />
-                  )}
-                  <button
-                    onClick={() => setReferenceImage(null)}
-                    className="absolute top-1.5 right-1.5 p-1 bg-black/70 hover:bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                  >
-                    <X className="w-2.5 h-2.5 text-white" />
-                  </button>
-                  <div className="absolute bottom-1 left-1 bg-black/75 px-1.5 py-0.5 rounded-full text-[6px] font-mono text-white tracking-widest">
-                    SOURCE
-                  </div>
-                </div>
-              )}
+
 
               <textarea
                 value={mainMode === 'flow' ? flowPrompt : prompt}
                 onChange={(e) => mainMode === 'flow' ? setFlowPrompt(e.target.value) : setPrompt(e.target.value)}
-                placeholder={mainMode === 'flow' ? "Next in video..." : "Imagine..."}
+                placeholder={mainMode === 'flow' ? "Describe what happens next...." : "Imagine..."}
                 className="w-full bg-transparent text-white font-mono text-xs placeholder:text-zinc-600 outline-none resize-none px-2 md:px-4 py-1.5 md:py-3 min-h-[28px] md:min-h-[46px] max-h-32 custom-scrollbar"
                 rows={1}
                 onKeyDown={(e) => {

@@ -17,6 +17,16 @@ import VisualWorkspace from '@/components/visual/VisualWorkspace';
 import { VisualTab } from '@/lib/visual-constants';
 import { Tier, TIER_LIMITS, PLANS } from '@/lib/dashboard-constants';
 
+const getCleanPath = (path: string) => {
+  if (typeof window !== 'undefined') {
+    const isSubdomain = window.location.hostname.startsWith('visual.') || window.location.hostname.startsWith('audio.');
+    if (isSubdomain) {
+      return path.replace(/^\/(visual|audio)/, '') || '/';
+    }
+  }
+  return path;
+};
+
 interface VisualDashboardLayoutProps {
   projectId?: string;
 }
@@ -63,7 +73,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace('/visual/login');
+      router.replace(getCleanPath('/visual/login'));
     }
   }, [status, router]);
 
@@ -119,9 +129,9 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
       setTimeout(() => {
         update().catch(console.error);
         if (projectId) {
-          router.replace(`/visual/${projectId}`, { scroll: false });
+          router.replace(getCleanPath(`/visual/${projectId}`), { scroll: false });
         } else {
-          router.replace('/visual', { scroll: false });
+          router.replace(getCleanPath('/visual'), { scroll: false });
         }
 
         // 4. Auto-close the modal after 4 seconds
@@ -188,9 +198,9 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
     if (tab === activeTab) return;
     setActiveTab(tab);
     if (projectId) {
-      router.replace(`/visual/${projectId}?tab=${tab}`, { scroll: false });
+      router.replace(getCleanPath(`/visual/${projectId}?tab=${tab}`), { scroll: false });
     } else {
-      router.replace(`/visual?tab=${tab}`, { scroll: false });
+      router.replace(getCleanPath(`/visual?tab=${tab}`), { scroll: false });
     }
   };
 
@@ -270,6 +280,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
             projectId={projectId}
             selectedHistoryItem={selectedHistoryItem}
             clearSelectedHistory={() => setSelectedHistoryItem(null)}
+            updateSession={update}
           />
         ) : activeTab === 'profile' ? (
           <div className="flex-1 overflow-y-auto p-4 md:p-6 w-full custom-scrollbar">
@@ -295,7 +306,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
                     </div>
                   </div>
                 </div>
-                <button onClick={() => signOut({ callbackUrl: '/visual/login' })} className="px-6 py-2.5 glass-mid hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-[0.2em] font-bold rounded-full border border-white/10 transition-all flex items-center gap-2 z-10 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] active:scale-95">
+                <button onClick={() => signOut({ callbackUrl: getCleanPath('/visual/login') })} className="px-6 py-2.5 glass-mid hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-[0.2em] font-bold rounded-full border border-white/10 transition-all flex items-center gap-2 z-10 hover:shadow-[0_0_20px_rgba(255,255,255,0.15)] active:scale-95">
                   <LogOut className="w-3.5 h-3.5" /> Sign Out
                 </button>
               </div>
@@ -643,9 +654,9 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
                   setShowSuccessModal(false);
                   window.history.replaceState(null, '', window.location.pathname);
                   if (projectId) {
-                    router.replace(`/visual/${projectId}`, { scroll: false });
+                    router.replace(getCleanPath(`/visual/${projectId}`), { scroll: false });
                   } else {
-                    router.replace('/visual', { scroll: false });
+                    router.replace(getCleanPath('/visual'), { scroll: false });
                   }
                 }}
                 className="w-full bg-white text-black py-3 rounded-full font-mono uppercase text-[10px] font-bold tracking-widest hover:bg-zinc-200 transition-colors shadow-lg"

@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { getPrisma } from '@/lib/prisma';
+import { validateCredits } from '@/lib/security';
 
 export async function POST(req: NextRequest) {
+  const prisma = getPrisma();
+  let pulseCost = 0;
+
   try {
-    const { prompt, duration, referenceImageBase64, mode } = await req.json();
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
+
+    const { prompt, duration, referenceImageBase64, mode, quality } = await req.json();
     const apiKey = process.env.XAI_API_KEY;
 
     if (!apiKey) {
@@ -13,10 +23,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Prompt or reference image is required.' }, { status: 400 });
     }
 
+    const durSec = duration ? parseInt(duration) : 5;
+    const isHD = quality === '720p' || quality === '1080p' || quality === '2k';
+    // 480p is 1200 per second. 720p and above is 1500 per second.
+    pulseCost = durSec * (isHD ? 1500 : 1200);
+
+    // Verify credits
+    const validationCredit = await validateCredits(session.user.id, pulseCost);
+    if (validationCredit.error || !validationCredit.data) {
+      return NextResponse.json(
+        { error: validationCredit.error || "Credit validation failed" }, 
+        { status: validationCredit.status || 400 }
+      );
+    }
+
+    const { user, limit } = validationCredit.data;
+
+    // Deduct credits
+    const updatedUser = await prisma.user.updateMany({
+      where: {
+        id: user.id,
+        usageCount: { lte: limit - pulseCost }
+      },
+      data: { usageCount: { increment: pulseCost } },
+    });
+
+    if (updatedUser.count === 0) {
+      return NextResponse.json({ error: "Pulse quota exceeded. Please upgrade your plan." }, { status: 429 });
+    }
+
     const payload: any = {
       model: "grok-imagine-video",
       prompt: prompt || 'Generate a video',
-      duration: duration ? parseInt(duration) : 5,
+      duration: durSec,
     };
 
     if (referenceImageBase64) {
@@ -47,14 +86,29 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('XAI API Video Error:', errorData);
+
+      // Refund credits
+      await prisma.user.updateMany({
+        where: { id: session.user.id, usageCount: { gte: pulseCost } },
+        data: { usageCount: { decrement: pulseCost } }
+      });
+
       return NextResponse.json({ error: 'Failed to initiate video generation', details: errorData }, { status: response.status });
     }
 
     const data = await response.json();
-    return NextResponse.json({ request_id: data.request_id });
+    return NextResponse.json({ request_id: data.request_id, cost: pulseCost });
 
   } catch (error: any) {
     console.error('Generate Video Route Error:', error);
+    // Refund credits if exception occurs
+    const session = await getServerSession(authOptions);
+    if (session?.user?.id && pulseCost > 0) {
+      await prisma.user.updateMany({
+        where: { id: session.user.id, usageCount: { gte: pulseCost } },
+        data: { usageCount: { decrement: pulseCost } }
+      });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

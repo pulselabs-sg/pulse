@@ -3,6 +3,7 @@ import NextAuth, { NextAuthOptions, DefaultSession } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { getPrisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
 
 declare module "next-auth" {
   interface Session {
@@ -43,7 +44,32 @@ export const authOptions: NextAuthOptions = {
   },
   pages: { signIn: "/login" },
   session: { strategy: "database" }, // Explicitly set strategy
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Secure-next-auth.session-token' 
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' 
+          ? '.ipulselabs.net' 
+          : undefined,
+      },
+    },
+  },
 };
 
-const handler = NextAuth(authOptions);
+const handler = async (req: NextRequest, ctx: any) => {
+  const host = req.headers.get("host") || "localhost:3000";
+  const proto = req.headers.get("x-forwarded-proto") || "http";
+  
+  process.env.NEXTAUTH_URL = `${proto}://${host}`;
+  
+  const authHandler = NextAuth(authOptions);
+  return authHandler(req, ctx);
+};
+
 export { handler as GET, handler as POST };

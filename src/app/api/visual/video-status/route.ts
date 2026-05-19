@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadBufferToR2 } from '@/lib/r2';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { getPrisma } from '@/lib/prisma';
+
+// Keep track of refunded requests to prevent duplicate refunding
+const refundedRequests = new Set<string>();
 
 export async function GET(req: NextRequest) {
+  const prisma = getPrisma();
+
   try {
     const requestId = req.nextUrl.searchParams.get('request_id');
+    const duration = req.nextUrl.searchParams.get('duration');
+    const quality = req.nextUrl.searchParams.get('quality');
     const apiKey = process.env.XAI_API_KEY;
 
     if (!apiKey) {
@@ -44,6 +54,24 @@ export async function GET(req: NextRequest) {
       } catch (uploadError) {
         console.error('R2 Video Upload Error:', uploadError);
         // Fallback to the temporary grok URL if upload fails
+      }
+    }
+
+    // Refund if the video generation has failed or expired
+    if ((data.status === 'failed' || data.status === 'expired') && !refundedRequests.has(requestId)) {
+      const session = await getServerSession(authOptions);
+      if (session?.user?.id && duration && quality) {
+        const durSec = Math.min(15, Math.max(0, parseInt(duration) || 0));
+        const isHD = quality === '720p' || quality === '1080p' || quality === '2k';
+        const refundCost = durSec * (isHD ? 1500 : 1200);
+
+        if (refundCost > 0) {
+          refundedRequests.add(requestId);
+          await prisma.user.updateMany({
+            where: { id: session.user.id, usageCount: { gte: refundCost } },
+            data: { usageCount: { decrement: refundCost } }
+          });
+        }
       }
     }
 

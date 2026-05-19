@@ -3,7 +3,12 @@
 import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, ShieldCheck, FileText, Zap, Mic, AudioLines, Sparkles, Terminal, Wand2 } from 'lucide-react';
+import {
+  Check, ShieldCheck, FileText, Zap, Mic, AudioLines,
+  Sparkles, Terminal, Wand2, Image as ImageIcon, Video,
+  HelpCircle, Clock, PlayCircle, Layers, CheckCircle2,
+  AlertTriangle, ArrowRight, BookOpen
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PLANS } from '@/lib/dashboard-constants';
 
@@ -11,7 +16,7 @@ export default function DocsPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const validSlugs = ['introduce', 'pricing', 'guide', 'faqs', 'terms', 'custom-voices', 'api'];
+  const validSlugs = ['introduce', 'image', 'video', 'flow', 'audio', 'pricing', 'tutorials', 'faqs', 'terms', 'api'];
   if (!slug || !validSlugs.includes(slug)) {
     notFound();
   }
@@ -22,7 +27,7 @@ export default function DocsPage() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.4 }}
-      className="space-y-10"
+      className="space-y-12"
     >
       {children}
     </motion.div>
@@ -35,84 +40,366 @@ export default function DocsPage() {
           <div className="border-b border-white/5 pb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
               <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full"></span>
-              <span className="text-zinc-400">SYSTEM ONLINE v2.4</span>
+              <span className="text-zinc-400">VISION ENGINE PLATFORM ONLINE</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+            <h1 className="text-3xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
               Platform Overview
             </h1>
-            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl mb-6">
-              Welcome to the official documentation for iPulse AI. We engineer state-of-the-art neural audio models optimized for ultra-low latency inference, high-fidelity synthesis, and robust voice preservation. Designed for enterprise developers, interactive applications, and global content creators.
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl mb-6">
+              Welcome to the official documentation for iPulse AI. We engineer professional-grade, neural generation pipelines optimized for visual and auditory synthesis. With native support for state-of-the-art video diffusion models, image edit modules, and ultra-low latency voice cloning infrastructure, iPulse represents a unified dashboard for advanced creators.
             </p>
-            <div className="flex gap-4">
-              <Link href="/docs/guide" className="px-5 py-2 bg-white text-black text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-zinc-200 transition-colors">
-                Quick Start
+            <div className="flex flex-wrap gap-4">
+              <Link href="/docs/image" className="px-5 py-2 bg-white text-black text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-zinc-200 transition-colors">
+                Image Synthesis
               </Link>
-              <Link href="/docs/api" className="px-5 py-2 bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-white/10 transition-colors">
-                API Reference
+              <Link href="/docs/video" className="px-5 py-2 bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-white/10 transition-colors">
+                Video Production
+              </Link>
+              <Link href="/docs/flow" className="px-5 py-2 bg-white/5 border border-cyan-500/20 text-zync-400 text-[10px] font-mono uppercase tracking-widest font-bold rounded-sm hover:bg-cyan-500/5 transition-colors">
+                Flow extension
               </Link>
             </div>
           </div>
 
           <div className="space-y-6 pt-6">
             <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-cyan-400" /> Core Concepts
+              <ShieldCheck className="w-5 h-5 text-cyan-400" /> Core Architectures
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
-                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">Projects & Workspaces</h3>
-                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">Organize your synthesis workflows into dedicated workspaces. Each project maintains its own history log, custom voice registry, and API keys.</p>
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm hover:border-white/10 transition-colors">
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2 flex items-center gap-2">
+                  <Video className="w-4 h-4 text-cyan-400" /> Video Diffusion
+                </h3>
+                <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                  Leverages xAI's temporal diffusion models to simulate physical dynamics, light reflections, and camera pans with incredible photorealism.
+                </p>
               </div>
-              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
-                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">Pulse Credits</h3>
-                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">Our unified metering system. All operations (TTS, STT, Cloning) consume Pulse credits based on compute intensity and duration.</p>
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm hover:border-white/10 transition-colors">
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2 flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-cyan-400" /> Imagine Diffusion
+                </h3>
+                <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                  Generates crisp, multi-aspect-ratio images and carries out localized image edits using advanced base64 image conditioning.
+                </p>
               </div>
-              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
-                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">Neural Cache</h3>
-                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed">Identical text-to-speech requests are automatically cached at the CDN edge level, resulting in 0ms compute latency and zero credit cost.</p>
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm hover:border-white/10 transition-colors">
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2 flex items-center gap-2">
+                  <Mic className="w-4 h-4 text-cyan-400" /> Neural Audio
+                </h3>
+                <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                  Autoregressive transformers for text-to-speech, cloning, and vocal conversion with real-time speaker diarization and noise clean modules.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6 pt-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-cyan-400" /> Workspace Features Matrix
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Link href="/docs/image" className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group block">
+                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
+                  <ImageIcon className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Image Synthesis (Imagine)</h3>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed">
+                  Generate images with dynamic aspect ratios and quality configurations. Modify specific areas using reference images and text instructions.
+                </p>
+              </Link>
+              <Link href="/docs/video" className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group block">
+                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
+                  <Video className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Video Production</h3>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed">
+                  Synthesize cinematic video clips from text prompts or transform static image assets into dynamic video scenes with realistic camera operations.
+                </p>
+              </Link>
+              <Link href="/docs/flow" className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group block">
+                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
+                  <Wand2 className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Flow Video Extension</h3>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed">
+                  Upload an existing video and extend the action. The model maintains continuity by feeding the final frames back as context.
+                </p>
+              </Link>
+              <Link href="/docs/audio" className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group block">
+                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
+                  <Mic className="w-5 h-5 text-cyan-400" />
+                </div>
+                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Audio Synthesis & Cloning</h3>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed">
+                  Autoregressive multi-speaker TTS, voice cloning, clean vocal processing, and voice conversion preserving original vocal styles.
+                </p>
+              </Link>
+            </div>
+          </div>
+        </PageTransition>
+      );
+
+    case 'image':
+      return (
+        <PageTransition>
+          <div className="border-b border-white/5 pb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
+              <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-zinc-400">DIFFUSION MODULES</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              Image Synthesis
+            </h1>
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl">
+              Understand the configurations, aspect ratios, editing modes, and formatting standards supported by the iPulse Imagine image synthesis modules.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <Layers className="w-5 h-5 text-cyan-400" /> Aspect Ratios
+            </h2>
+            <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+              Different aspect ratios adjust the crop grid and compositions under the hood to output balanced layouts. Choose the optimal layout based on your destination canvas:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <div className="w-8 h-8 border border-white/30 rounded-sm bg-white/5 mb-3 flex items-center justify-center font-mono text-[10px] text-white">1:1</div>
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">1:1 Square</h3>
+                <p className="text-[9px] font-mono text-zinc-500 leading-relaxed">
+                  Perfect for avatars, icons, profile portraits, and square catalog mockups. Highly balanced composition weights.
+                </p>
+              </div>
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <div className="w-12 h-6 border border-white/30 rounded-sm bg-white/5 mb-3 flex items-center justify-center font-mono text-[10px] text-white">16:9</div>
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">16:9 Cinematic</h3>
+                <p className="text-[9px] font-mono text-zinc-500 leading-relaxed">
+                  Ideal for website banners, YouTube thumbnails, cinematic backdrop plates, and widescreen presentations.
+                </p>
+              </div>
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <div className="w-6 h-12 border border-white/30 rounded-sm bg-white/5 mb-3 flex items-center justify-center font-mono text-[10px] text-white">9:16</div>
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">9:16 Portrait</h3>
+                <p className="text-[9px] font-mono text-zinc-500 leading-relaxed">
+                  Optimized for mobile-first environments, TikTok creatives, Instagram Stories, and vertical social marketing banners.
+                </p>
+              </div>
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <div className="w-10 h-8 border border-white/30 rounded-sm bg-white/5 mb-3 flex items-center justify-center font-mono text-[10px] text-white">4:3</div>
+                <h3 className="text-xs font-mono font-bold uppercase text-white mb-2">4:3 Classical</h3>
+                <p className="text-[9px] font-mono text-zinc-500 leading-relaxed">
+                  Traditional web layout. Highly compatible with legacy UI components and standard document print dimensions.
+                </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-6">
             <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-cyan-400" /> Capabilities Matrix
+              <Sparkles className="w-5 h-5 text-cyan-400" /> Quality & Editing Features
             </h2>
+            <div className="space-y-4">
+              <div className="border-l-2 border-cyan-400 pl-4 py-1">
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">Image Generation Mode</h3>
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mt-1">
+                  Synthesize new images from pure text prompts. Our system uses advanced diffusion solvers to generate fine details, realistic skin textures, metallic reflections, and volumetric light scattering.
+                </p>
+              </div>
+              <div className="border-l-2 border-cyan-400 pl-4 py-1">
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">Image Editing (Inpainting / Style Transfer)</h3>
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mt-1">
+                  By uploading a reference image and selecting the image-editing mode, the workspace passes a base64 image data-URI alongside your text instructions. The model overlays the new styles, replaces the background, or modifies items while maintaining structural alignment.
+                </p>
+              </div>
+              <div className="border-l-2 border-cyan-400 pl-4 py-1">
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">Pricing & Failure Safeguards</h3>
+                <p className="text-xs font-mono text-zinc-400 leading-relaxed mt-1">
+                  Generating or editing an image costs a flat rate of <strong className="text-white">1,500 pulses</strong> per transaction. If a request is rejected by xAI or the permanent R2 storage upload fails, consumed pulses are instantly refunded.
+                </p>
+              </div>
+            </div>
+          </div>
+        </PageTransition>
+      );
+
+    case 'video':
+      return (
+        <PageTransition>
+          <div className="border-b border-white/5 pb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
+              <Video className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-zinc-400">TEMPORAL DIFFUSION</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              Video Production
+            </h1>
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl">
+              Configure resolution qualities, temporal durations, camera motions, and understand credit rates for video generations.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <Clock className="w-5 h-5 text-cyan-400" /> Temporal Durations
+            </h2>
+            <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+              Standard clips can be generated in increments of <strong className="text-white">5 seconds, 10 seconds, or 15 seconds</strong>. Longer videos require more computing time but maintain temporal consistency throughout the playback.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <Zap className="w-5 h-5 text-cyan-400" /> Quality & Pricing Matrix
+            </h2>
+            <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+              Credit pricing is computed dynamically per second, based on the selected resolution quality:
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group">
-                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
-                  <Zap className="w-5 h-5 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Text to Speech (TTS)</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed">High-fidelity natural voice synthesis supporting multiple languages and emotional tones.</p>
+              <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+                <div className="inline-block px-2.5 py-1 bg-white/5 border border-white/10 text-white font-mono text-[9px] uppercase tracking-widest mb-4">SD Quality (480p)</div>
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider mb-2">1,200 Pulses / Second</h3>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed space-y-1">
+                  • <strong>5 Seconds</strong>: 6,000 Pulses<br />
+                  • <strong>10 Seconds</strong>: 12,000 Pulses<br />
+                  • <strong>15 Seconds</strong>: 18,000 Pulses<br />
+                  • Best for social mockups, fast testing, and draft animations.
+                </p>
               </div>
-              <div className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group">
-                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
-                  <Terminal className="w-5 h-5 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Speech to Text (STT)</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed">Lightning-fast and highly accurate transcription with automatic punctuation and formatting.</p>
+              <div className="bg-[#080808] border border-cyan-400/20 p-6 rounded-sm shadow-[0_0_15px_rgba(6,182,212,0.03)]">
+                <div className="inline-block px-2.5 py-1 bg-cyan-500/10 border border-cyan-400/20 text-cyan-400 font-mono text-[9px] uppercase tracking-widest mb-4">HD Quality & above (720p+)</div>
+                <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider mb-2">1,500 Pulses / Second</h3>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed space-y-1">
+                  • <strong>5 Seconds</strong>: 7,500 Pulses<br />
+                  • <strong>10 Seconds</strong>: 15,000 Pulses<br />
+                  • <strong>15 Seconds</strong>: 22,500 Pulses<br />
+                  • High-definition textures, crisp boundaries, realistic volumetric light, cinematic output.
+                </p>
               </div>
-              <div className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group">
-                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
-                  <AudioLines className="w-5 h-5 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Voice Changer</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed">Transform source audio into target voice styles while seamlessly preserving original prosody and emotion.</p>
+            </div>
+          </div>
+
+          <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+            <h3 className="text-xs font-mono font-bold uppercase text-white mb-3 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-cyan-400" /> Automatic Fail Refund Policy
+            </h3>
+            <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+              Video synthesis is processed asynchronously. The backend deducts pulses when the generation starts. We poll status updates using the `video-status` API. If status checks show <code className="text-rose-400">failed</code> or <code className="text-rose-400">expired</code>, the system automatically runs a credit transaction refunding all deducted pulses.
+            </p>
+          </div>
+        </PageTransition>
+      );
+
+    case 'flow':
+      return (
+        <PageTransition>
+          <div className="border-b border-white/5 pb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
+              <Wand2 className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-zinc-400">FLOW EXTENSION MECHANICS</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              Flow Video Extension
+            </h1>
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl">
+              Master the mechanics behind our Flow system to sequentially extend and animate video assets.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <Layers className="w-5 h-5 text-cyan-400" /> How Flow Works
+            </h2>
+            <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+              Traditional text-to-video generators create animations from scratch. The <strong className="text-white">Flow</strong> system behaves differently:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <span className="text-cyan-400 font-mono text-xs font-bold">01 / Frame Parsing</span>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed mt-2">
+                  The model extracts visual grids and optical flows from the final frames of your uploaded source video.
+                </p>
               </div>
-              <div className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group">
-                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
-                  <Mic className="w-5 h-5 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Audio Cleaner</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed">Studio-grade noise reduction and vocal enhancement powered by advanced neural networks.</p>
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <span className="text-cyan-400 font-mono text-xs font-bold">02 / Prompt Transition</span>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed mt-2">
+                  The continuation prompt instructs the diffusion engine on how objects should move, zoom, or transition next.
+                </p>
               </div>
-              <div className="bg-black/40 border border-white/5 hover:border-white/20 transition-all rounded-sm p-6 group">
-                <div className="w-10 h-10 bg-white/5 rounded-sm flex items-center justify-center mb-4 group-hover:bg-cyan-500/10 transition-colors">
-                  <Wand2 className="w-5 h-5 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white mb-2">Voice Cloning</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed">Map and synthesize neural identities from short audio samples to create custom, reusable voices.</p>
+              <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                <span className="text-cyan-400 font-mono text-xs font-bold">03 / Fluid Synthesis</span>
+                <p className="text-[10px] font-mono text-zinc-500 leading-relaxed mt-2">
+                  The model appends new frames seamlessly, preserving color tones, brightness, and character layout.
+                </p>
               </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3">
+              <PlayCircle className="w-5 h-5 text-cyan-400" /> Flow Workspace Walkthrough
+            </h2>
+            <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
+              <li>Open your project and change the main generation mode to <strong className="text-white">Flow</strong>.</li>
+              <li>Upload a starting video (MP4) in the asset tray (thumbnail preview will show up).</li>
+              <li>Type your transition instructions in the prompt box (e.g. <code className="text-zinc-300">"the camera rotates 180 degrees to reveal a green meadow"</code>).</li>
+              <li>Configure settings (duration, quality). Click <strong className="text-white">Generate</strong>.</li>
+              <li>The timeline editor registers the progression: <strong className="text-cyan-400">Original Video &rarr; Gen 1 &rarr; Gen 2</strong>. Click cards on the sequence sidebar to preview individual clips.</li>
+            </ol>
+          </div>
+        </PageTransition>
+      );
+
+    case 'audio':
+      return (
+        <PageTransition>
+          <div className="border-b border-white/5 pb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
+              <Mic className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-zinc-400">NEURAL VOICES</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              Audio Synthesis & Cloning
+            </h1>
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl">
+              Overview of Text-to-Speech (TTS), Voice Changer, Noise Reduction cleaner, and Custom Voice Cloning settings.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {/* TTS */}
+            <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+              <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider mb-3">Text-to-Speech (TTS)</h3>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-4">
+                Enter your text and synthesis variables (Stability and Similarity controls). The model outputs highly realistic voice streams.
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-[10px] font-mono text-zinc-500">
+                <li><strong>Stability</strong> (0.0 - 1.0): Adjusts prosody variation. Lower values make vocal delivery more dynamic.</li>
+                <li><strong>Similarity Boost</strong> (0.0 - 1.0): Determines how closely the clone parameters adhere to the original training asset.</li>
+              </ul>
+            </div>
+
+            {/* Custom Voice Cloning */}
+            <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+              <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider mb-3">Custom Voice Cloning</h3>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-4">
+                Clone specific vocal profiles by uploading 1-2 minutes of clean audio datasets. Ensure minimal background echoes.
+              </p>
+              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-sm mb-4">
+                <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5" /> Language Restrictions
+                </span>
+                <p className="text-[10px] font-mono text-amber-500/80 leading-relaxed mt-1">
+                  Custom voices are optimized for exactly 13 languages (EN, ZH, JA, DE, FR, ES, KO, AR, RU, NL, IT, PL, PT). Attempting to use cloned voices on unsupported languages may result in degradation or gibberish.
+                </p>
+              </div>
+            </div>
+
+            {/* Voice Changer & Cleaner */}
+            <div className="bg-[#080808] border border-white/5 p-6 rounded-sm">
+              <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider mb-3">Changer & Cleaner Tools</h3>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                Transform source audio tracks into target voices while preserving pitch and timing, or eliminate ambient sound artifacts using neural cleaning algorithms.
+              </p>
             </div>
           </div>
         </PageTransition>
@@ -122,47 +409,178 @@ export default function DocsPage() {
       return (
         <PageTransition>
           <div className="border-b border-white/5 pb-8">
-            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
-              Resource Allocation Plans
+            <h1 className="text-3xl md:text-5xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
+              Pricing Matrix
             </h1>
-            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Choose the perfect capability tier for your production scale. All payments are processed securely via our merchant of record, Polar.sh.
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl">
+              Review pulse cost details broken down by categories, along with membership allowances. Secure payments handled via Polar.sh.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {PLANS.map((plan) => (
-              <div key={plan.id} className={cn("bg-[#080808] border p-6 flex flex-col relative transition-all duration-300 hover:-translate-y-1", plan.popular ? "border-cyan-400 shadow-[0_0_40px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-white/30")}>
-                {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-cyan-400 font-bold inline-block px-3 py-1 mb-4 self-start absolute top-0 -translate-y-1/2 left-6 shadow-[0_0_15px_rgba(34,211,238,0.5)]">RECOMMENDED</div>}
-
-                <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2">{plan.name}</div>
-
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-mono font-bold text-white">${plan.priceMonthly}</span>
-                  <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
+          {/* Three Distinct Sections: Video, Image, Audio */}
+          <div className="space-y-12">
+            <div>
+              <h2 className="text-base md:text-lg font-mono font-bold text-white uppercase tracking-[0.25em] mb-6 flex items-center gap-3 border-b border-white/5 pb-2">
+                <span className="text-cyan-400">01 /</span> Video
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-[#080808] border border-cyan-400/20 p-5 rounded-sm shadow-[0_0_15px_rgba(6,182,212,0.02)]">
+                  <h3 className="text-xs font-mono font-bold text-zync-400 uppercase mb-2">Quality Multiplier</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    SD (480p): <strong>1,200 pulses/sec</strong><br />
+                    HD (720p+): <strong>1,500 pulses/sec</strong><br />
+                    Charges calculate dynamically on target temporal length.
+                  </p>
                 </div>
-
-                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-8 h-8 leading-relaxed">{plan.desc}</p>
-
-                <ul className="space-y-4 mb-8 flex-1">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3 text-[10px] font-mono uppercase tracking-wider text-zinc-300">
-                      <div className="mt-0.5 w-4 h-4 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center shrink-0">
-                        <Check className="w-3 h-3 text-cyan-400" />
-                      </div>
-                      <span className="leading-relaxed">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/dashboard" className={cn(
-                  "w-full py-3 text-center text-[10px] font-mono uppercase tracking-widest font-bold transition-all rounded-sm flex items-center justify-center gap-2",
-                  plan.popular ? "bg-cyan-400 text-black hover:bg-white" : "bg-white/5 hover:bg-white text-zinc-400 hover:text-black border border-white/10 hover:border-transparent"
-                )}>
-                  Access Dashboard
-                </Link>
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">SD Calculations (480p)</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    • 5 seconds: <strong>6,000 pulses</strong><br />
+                    • 10 seconds: <strong>12,000 pulses</strong><br />
+                    • 15 seconds: <strong>18,000 pulses</strong>
+                  </p>
+                </div>
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">HD Calculations (720p+)</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    • 5 seconds: <strong>7,500 pulses</strong><br />
+                    • 10 seconds: <strong>15,000 pulses</strong><br />
+                    • 15 seconds: <strong>22,500 pulses</strong>
+                  </p>
+                </div>
               </div>
-            ))}
+            </div>
+
+            <div>
+              <h2 className="text-base md:text-lg font-mono font-bold text-white uppercase tracking-[0.25em] mb-6 flex items-center gap-3 border-b border-white/5 pb-2">
+                <span className="text-cyan-400">02 /</span> Image
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">Static Charge Rate</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    Standard generation: <strong>1,500 pulses</strong><br />
+                    Image-Editing (Inpainting): <strong>1,500 pulses</strong><br />
+                    Flat rates apply across all dimensions and aspect ratios.
+                  </p>
+                </div>
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">Fail-Refund Safety</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    If diffusion tasks time out or fail to upload to R2, the system automatically logs a full refund of 1,500 pulses.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-base md:text-lg font-mono font-bold text-white uppercase tracking-[0.25em] mb-6 flex items-center gap-3 border-b border-white/5 pb-2">
+                <span className="text-cyan-400">03 /</span> Voice
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">Text to Speech</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    Rate: <strong>1 pulse / character</strong><br />
+                    Identical cached requests do not consume credits.
+                  </p>
+                </div>
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">Changer & Cleaner</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    Rate: <strong>1,000 pulses / minute</strong><br />
+                    Calculated on audio timeline length.
+                  </p>
+                </div>
+                <div className="bg-[#080808] border border-white/5 p-5 rounded-sm">
+                  <h3 className="text-xs font-mono font-bold text-white uppercase mb-2">Voice Cloning</h3>
+                  <p className="text-[11px] font-mono text-zinc-500 leading-relaxed">
+                    Rate: <strong>5,000 pulses / clone</strong><br />
+                    Applies on training data compilation.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <h2 className="text-xl font-mono text-white tracking-widest uppercase flex items-center gap-3 mb-8">
+              Subscription Tiers
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {PLANS.map((plan) => (
+                <div key={plan.id} className={cn("bg-[#080808] border p-6 flex flex-col relative transition-all duration-300 hover:-translate-y-1", plan.popular ? "border-cyan-400 shadow-[0_0_40px_rgba(34,211,238,0.1)]" : "border-white/10 hover:border-white/30")}>
+                  {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-cyan-400 font-bold inline-block px-3 py-1 mb-4 self-start absolute top-0 -translate-y-1/2 left-6 shadow-[0_0_15px_rgba(34,211,238,0.5)]">RECOMMENDED</div>}
+
+                  <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-2">{plan.name}</div>
+
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-4xl font-mono font-bold text-white">${plan.priceMonthly}</span>
+                    <span className="text-[10px] font-mono uppercase text-zinc-500">/mo</span>
+                  </div>
+
+                  <p className="text-[10px] font-mono tracking-widest text-zinc-400 mb-8 h-8 leading-relaxed">{plan.desc}</p>
+
+                  <div className="space-y-6 mb-8 flex-1 text-left">
+                    {/* General Section */}
+                    <div>
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2 font-bold">General</div>
+                      <div className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-white">
+                        <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                        <span>{plan.id === 'FREE' ? '40,000' : plan.id === 'BASIC' ? '120,000' : plan.id === 'PREMIUM' ? '300,000' : '1,500,000'} Pulses/mo</span>
+                      </div>
+                    </div>
+
+                    {/* Audio Section */}
+                    <div>
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2 font-bold border-b border-white/5 pb-1">Voice & Audio</div>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-zinc-300">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span>{plan.id === 'FREE' || plan.id === 'BASIC' ? '5,000' : plan.id === 'PREMIUM' ? '10,000' : '15,000'} Char TTS Limit</span>
+                        </li>
+                        <li className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-zinc-300">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span>{plan.id === 'FREE' || plan.id === 'BASIC' ? '5 min' : plan.id === 'PREMIUM' ? '10 min' : '15 min'} STT/Audio Limit</span>
+                        </li>
+                        <li className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-zinc-300">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span>
+                            {plan.id === 'FREE' ? 'No Voice Cloning' : `Voice Cloning (Max ${plan.id === 'BASIC' ? '2' : plan.id === 'PREMIUM' ? '5' : '10'})`}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Video & Image Section */}
+                    <div>
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-2 font-bold border-b border-white/5 pb-1">Image & Video</div>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-zinc-300">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span>Image Gen & Edit (1.5k)</span>
+                        </li>
+                        <li className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-zinc-300">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span>Video Gen (1.2k - 1.5k/s)</span>
+                        </li>
+                        <li className="flex items-start gap-3 text-[10px] font-mono tracking-wider text-zinc-300">
+                          <Check className="w-3 h-3 text-cyan-400 shrink-0 mt-0.5" />
+                          <span>Flow Video Extension</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <Link href="/dashboard" className={cn(
+                    "w-full py-3 text-center text-[10px] font-mono uppercase tracking-widest font-bold transition-all rounded-sm flex items-center justify-center gap-2",
+                    plan.popular ? "bg-cyan-400 text-black hover:bg-white" : "bg-white/5 hover:bg-white text-zinc-400 hover:text-black border border-white/10 hover:border-transparent"
+                  )}>
+                    Access Dashboard
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="mt-16 overflow-x-auto border border-white/5 rounded-sm bg-[#080808]">
@@ -176,13 +594,26 @@ export default function DocsPage() {
                   <th className="p-4 border-b border-white/10 text-[10px] font-mono uppercase tracking-widest text-white font-bold bg-white/[0.02]">Pro</th>
                 </tr>
               </thead>
-              <tbody className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+              <tbody className="text-[10px] font-mono tracking-wider text-zinc-400">
+                {/* General Metric Header */}
+                <tr className="bg-white/[0.02] border-y border-white/5">
+                  <td colSpan={5} className="p-3 text-[9px] font-bold text-zinc-400 tracking-widest uppercase font-mono">
+                    General Metrics
+                  </td>
+                </tr>
                 <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td className="p-4 font-bold text-white">Pulse Allowance</td>
-                  <td className="p-4">20,000 / mo</td>
-                  <td className="p-4 text-cyan-400">60,000 / mo</td>
-                  <td className="p-4">150,000 / mo</td>
-                  <td className="p-4">800,000 / mo</td>
+                  <td className="p-4">40,000 / mo</td>
+                  <td className="p-4 text-cyan-400">120,000 / mo</td>
+                  <td className="p-4">300,000 / mo</td>
+                  <td className="p-4">1,500,000 / mo</td>
+                </tr>
+
+                {/* Voice & Audio Header */}
+                <tr className="bg-white/[0.02] border-y border-white/5">
+                  <td colSpan={5} className="p-3 text-[9px] font-bold text-zinc-400 tracking-widest uppercase font-mono">
+                    Voice & Audio Limits & Rates
+                  </td>
                 </tr>
                 <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td className="p-4 font-bold text-white">TTS Max Characters</td>
@@ -219,6 +650,34 @@ export default function DocsPage() {
                   <td className="p-4">Max 5 Voices</td>
                   <td className="p-4">Max 10 Voices</td>
                 </tr>
+
+                {/* Video & Image Header */}
+                <tr className="bg-white/[0.02] border-y border-white/5">
+                  <td colSpan={5} className="p-3 text-[9px] font-bold text-zinc-400 tracking-widest uppercase font-mono">
+                    Video & Image Limits & Rates
+                  </td>
+                </tr>
+                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                  <td className="p-4 font-bold text-white">Image Gen Cost</td>
+                  <td className="p-4">1500 / img</td>
+                  <td className="p-4">1500 / img</td>
+                  <td className="p-4">1500 / img</td>
+                  <td className="p-4">1500 / img</td>
+                </tr>
+                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                  <td className="p-4 font-bold text-white">Video Gen Cost (480p)</td>
+                  <td className="p-4">1200 / sec</td>
+                  <td className="p-4">1200 / sec</td>
+                  <td className="p-4">1200 / sec</td>
+                  <td className="p-4">1200 / sec</td>
+                </tr>
+                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                  <td className="p-4 font-bold text-white">Video Gen Cost (720p+)</td>
+                  <td className="p-4">1500 / sec</td>
+                  <td className="p-4">1500 / sec</td>
+                  <td className="p-4">1500 / sec</td>
+                  <td className="p-4">1500 / sec</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -230,146 +689,100 @@ export default function DocsPage() {
         </PageTransition>
       );
 
-    case 'guide':
+    case 'tutorials':
       return (
         <PageTransition>
           <div className="border-b border-white/5 pb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-sm text-[9px] font-mono uppercase tracking-widest backdrop-blur-sm mb-6">
+              <Zap className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-zinc-400">CREATIVE WORKFLOWS</span>
+            </div>
             <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
-              Usage Guides
+              Platform Tutorials
             </h1>
-            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Comprehensive step-by-step instructions for utilizing the iPulse dashboard modules to their fullest potential.
+            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-4xl">
+              Step-by-step developer and creator tutorials showcasing the integration of visual and audio features.
             </p>
           </div>
 
-          <div className="space-y-8">
-            {/* TTS */}
-            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Generating Speech (TTS)</h3>
+          <div className="space-y-12">
+            {/* Tutorial A */}
+            <div className="bg-[#080808] border border-white/5 p-6 rounded-sm hover:border-cyan-400/20 transition-all">
+              <div className="flex items-center gap-2 text-cyan-400 text-xs font-mono uppercase tracking-widest mb-3">
+                <span>Tutorial A</span>
+                <span className="text-zinc-600">•</span>
+                <span className="text-zinc-400">Cinematic Video Sequences with Flow</span>
               </div>
-              <div className="p-6 md:p-8">
-                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">Our Text-to-Speech (TTS) module leverages advanced autoregressive transformers to produce speech that is virtually indistinguishable from human recording.</p>
-                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold mb-6">
-                  <li>Navigate to the <strong className="text-white">TTS module</strong> in the primary dashboard sidebar.</li>
-                  <li>Enter your desired script into the text workspace array. You can use expressiveness tags like <strong className="text-white">[laugh]</strong>, <strong className="text-white">[sigh]</strong>, or wrap text in <strong className="text-white">&lt;whisper&gt;...&lt;/whisper&gt;</strong> to enforce emotional nuance.</li>
-                  <li>Adjust the <strong className="text-white">Stability Parameter</strong> (0.0 - 1.0). Lower values allow the model to be more expressive and variable, while higher values enforce a more monotonous, stable reading.</li>
-                  <li>Adjust the <strong className="text-white">Similarity Boost</strong> to dictate how closely the output should mirror the original voice clone's exact acoustic properties versus the default model prosody.</li>
-                  <li>Hit the <strong className="text-white">Generate</strong> button. The neural engine will synthesize the audio within milliseconds.</li>
-                </ol>
-                <div className="p-4 bg-white/5 border border-white/10 rounded-sm text-[10px] text-zinc-400 font-mono">
-                  <strong className="text-cyan-400">Pro Tip:</strong> For extremely long texts, the system automatically chunks the input by sentence boundaries to stream the first audio chunks back in under 250ms, ensuring immediate playback.
-                </div>
-              </div>
-            </div>
-
-            {/* Languages */}
-            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Multilingual Support</h3>
-              </div>
-              <div className="p-6 md:p-8">
-                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
-                  iPulse utilizes advanced <strong className="text-white">Automatic Language Detection</strong>. The engine will detect the primary language of your input (text or audio) and adjust the neural synthesis parameters accordingly to preserve authentic accents and prosody.
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
+                Learn how to generate a starting keyframe image, animate it, and extend the cinematic flow into a continuous 15-second tracking sequence:
+              </p>
+              <div className="space-y-4 text-xs font-mono text-zinc-400 pl-4 border-l border-white/10">
+                <p>
+                  <strong className="text-white">Step 1: Synthesis of starting frame:</strong><br />
+                  Navigate to the Imagine workspace, select Aspect Ratio <code className="text-white">16:9</code>, set mode to <code className="text-white">Image</code>, and input: <code className="text-zinc-300">"wide-angle shot of a glowing cyberpunk space station docking hub, high detail"</code>. Click generate (deducts 1,500 pulses).
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[
-                    'English (EN)', 'Spanish (ES)', 'French (FR)', 'German (DE)',
-                    'Italian (IT)', 'Portuguese (PT)', 'Arabic (AR)', 'Chinese (ZH)',
-                    'Japanese (JA)', 'Korean (KO)', 'Hindi (HI)', 'Russian (RU)',
-                    'Turkish (TR)', 'Vietnamese (VI)', 'Indonesian (ID)', 'Bengali (BN)'
-                  ].map(lang => (
-                    <div key={lang} className="flex items-center gap-2 text-[9px] font-mono text-zinc-500 uppercase tracking-tight">
-                      <div className="w-1 h-1 bg-cyan-500/40 rounded-full" />
-                      {lang}
-                    </div>
-                  ))}
-                </div>
+                <p>
+                  <strong className="text-white">Step 2: Initialize Animation:</strong><br />
+                  Save the generated image. Switch the workspace mode to <code className="text-white">Video</code>, select the output image as the Reference Image upload, set duration to <code className="text-white">5 seconds</code>, set resolution to <code className="text-white">720p</code>, and prompt: <code className="text-zinc-300">"a futuristic ship enters the docking hub"</code> (deducts 7,500 pulses).
+                </p>
+                <p>
+                  <strong className="text-white">Step 3: Extend with Flow:</strong><br />
+                  Once the video is generated, switch workspace mode to <code className="text-white">Flow</code>. Upload the 5-second video clip into the Sequence timeline, select <code className="text-white">5 seconds</code> duration, and input: <code className="text-zinc-300">"the ship lands and passengers step out onto the docking platform"</code>. Click generate to extend the video timeline to 10 seconds.
+                </p>
               </div>
             </div>
 
-            {/* STT */}
-            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Terminal className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Transcribing Audio (STT)</h3>
+            {/* Tutorial B */}
+            <div className="bg-[#080808] border border-white/5 p-6 rounded-sm hover:border-cyan-400/20 transition-all">
+              <div className="flex items-center gap-2 text-cyan-400 text-xs font-mono uppercase tracking-widest mb-3">
+                <span>Tutorial B</span>
+                <span className="text-zinc-600">•</span>
+                <span className="text-zinc-400">E-Commerce Product Background Overrides</span>
               </div>
-              <div className="p-6 md:p-8">
-                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">Our STT engine utilizes advanced Whisper-architecture variations optimized for extreme noisy environments and multi-speaker dialogues.</p>
-                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
-                  <li>Access the <strong className="text-white">STT workspace</strong> via the dashboard.</li>
-                  <li>Upload any supported audio file (MP3, WAV, MP4, FLAC) using the drag-and-drop zone. Limit file sizes to 500MB per request.</li>
-                  <li>Enable <strong className="text-white">Speaker Diarization</strong> if your audio contains multiple speakers. The system will automatically label segments as Speaker A, Speaker B, etc.</li>
-                  <li>Select your desired output format: Plain Text, SRT (for subtitles), or VTT.</li>
-                  <li>Initiate the transcription. Real-time websocket streaming is also available via the API.</li>
-                </ol>
-              </div>
-            </div>
-
-            {/* Voice Changer */}
-            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <AudioLines className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Voice Changer</h3>
-              </div>
-              <div className="p-6 md:p-8">
-                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
-                  <li>Navigate to the <strong className="text-white">Voice Changer</strong> module.</li>
-                  <li>Upload a source audio file containing the base vocal track.</li>
-                  <li>Select a target voice profile from the available roster to define the new vocal characteristics.</li>
-                  <li>Initiate the transformation. The system uses advanced Voice Conversion (VC) to map the source intonation to the target timbre.</li>
-                  <li>Download your transformed, studio-ready audio file.</li>
-                </ol>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
+                Understand how to clean and overlay styles on an e-commerce product asset using Image-Editing:
+              </p>
+              <div className="space-y-4 text-xs font-mono text-zinc-400 pl-4 border-l border-white/10">
+                <p>
+                  <strong className="text-white">Step 1: Upload Product Asset:</strong><br />
+                  Drag and drop your raw product mockup image (e.g. a perfume bottle) into the image input drop-zone.
+                </p>
+                <p>
+                  <strong className="text-white">Step 2: Trigger Edit:</strong><br />
+                  Switch the mode parameter to <code className="text-white">Image</code>, and write details on the target background styling: <code className="text-zinc-300">"perfume bottle sitting on a wet marble stone plate surrounded by tropical palm leaves, soft lighting"</code>. Click generate (deducts 1,500 pulses).
+                </p>
+                <p>
+                  <strong className="text-white">Step 3: Export:</strong><br />
+                  The system will output a high-end overlay with matching lighting vectors and reflections matching your marble context.
+                </p>
               </div>
             </div>
 
-            {/* Audio Cleaner */}
-            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Mic className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Audio Cleaner</h3>
+            {/* Tutorial C */}
+            <div className="bg-[#080808] border border-white/5 p-6 rounded-sm hover:border-cyan-400/20 transition-all">
+              <div className="flex items-center gap-2 text-cyan-400 text-xs font-mono uppercase tracking-widest mb-3">
+                <span>Tutorial C</span>
+                <span className="text-zinc-600">•</span>
+                <span className="text-zinc-400">Voice Cloning and TTS Overdubbing</span>
               </div>
-              <div className="p-6 md:p-8">
-                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
-                  <li>Open the <strong className="text-white">Audio Cleaner</strong> utility.</li>
-                  <li>Upload an audio file suffering from background noise, reverb, or low fidelity.</li>
-                  <li>The neural filter automatically isolates human speech and suppresses non-vocal artifacts.</li>
-                  <li>Wait for processing to complete. The output will be a highly intelligible, enhanced waveform.</li>
-                </ol>
-              </div>
-            </div>
-
-            {/* Voice Cloning */}
-            <div className="bg-[#080808] border border-white/5 hover:border-white/10 transition-colors rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Wand2 className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Cloning Voices</h3>
-              </div>
-              <div className="p-6 md:p-8">
-                <ol className="list-decimal list-inside space-y-4 text-xs font-mono text-zinc-400 leading-relaxed marker:text-cyan-400 marker:font-bold">
-                  <li>Navigate to the <strong className="text-white">Clone Voice</strong> module.</li>
-                  <li>Upload a clear, 1-2 minute audio clip containing the speaker's voice with minimal background noise.</li>
-                  <li>Click <strong className="text-white">Clone Voice</strong> and wait for the neural processing to complete.</li>
-                  <li>The new identity will be saved in your <strong className="text-white">Saved Identities</strong> list, where you can rename it.</li>
-                  <li>You can now select this custom voice in the TTS or Voice Changer modules.</li>
-                </ol>
+              <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
+                Synthesize custom spoken audio voiceovers for video campaigns using saving identities:
+              </p>
+              <div className="space-y-4 text-xs font-mono text-zinc-400 pl-4 border-l border-white/10">
+                <p>
+                  <strong className="text-white">Step 1: Record reference dataset:</strong><br />
+                  Record 1-2 minutes of voice reading a script. Eliminate echo or background whispers. Save as a WAV file.
+                </p>
+                <p>
+                  <strong className="text-white">Step 2: Generate Clone:</strong><br />
+                  Navigate to Voice Cloning, upload the WAV file, and click Clone. Save the generated profile under a nickname (e.g., "Narrator A") (deducts 5,000 pulses).
+                </p>
+                <p>
+                  <strong className="text-white">Step 3: Synthesis:</strong><br />
+                  Navigate to the Audio tab. Select "Narrator A" as the active voice. Enter your script in English or Spanish, set Stability to <code className="text-white">0.65</code> for expressive inflections, and click generate (deducts 1 pulse per character).
+                </p>
               </div>
             </div>
-
           </div>
         </PageTransition>
       );
@@ -382,40 +795,40 @@ export default function DocsPage() {
               Frequently Asked Questions
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Common inquiries regarding limits, licensing, and general usage of the iPulse platform.
+              Common inquiries regarding visual generation tools, failed video refunds, and billing details.
             </p>
           </div>
           <div className="space-y-6">
             <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
               <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-3">
-                <span className="text-cyan-400">Q.</span> Can I use generated audio commercially?
+                <span className="text-cyan-400">Q.</span> What happens if my video generation times out or fails?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                Yes, commercial rights are fully included for all users on the <strong className="text-white">Basic, Premium, and Pro plans</strong>. This means you own the copyright to the synthesized audio and can monetize it on YouTube, Podcasts, Games, or Commercial Broadcasts. Free tier users are restricted to non-commercial, personal, or evaluation use only and must provide attribution.
+                Video synthesis takes some processing time because the server polls xAI APIs asynchronously. If a video fails, is rejected, or expires, the backend automatically refunds all consumed pulses to your balance. Your session is updated automatically.
               </p>
             </div>
             <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
               <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-3">
-                <span className="text-cyan-400">Q.</span> How are usages counted?
+                <span className="text-cyan-400">Q.</span> Can I extend video outputs continuously using Flow?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                One Pulse credit maps to roughly 1 character of Text-to-Speech processing. Speech-to-Text and Voice Changer modules consume pulses based on audio duration (typically 1000 Pulses per 1 minute of processing). Failed requests or HTTP errors (e.g. 4xx, 5xx) do not consume any credits.
+                Yes! Flow lets you upload an initial generated video and append new movements sequentially. The system feeds the tail end frames of the previous clip back as optical priors, ensuring continuity.
               </p>
             </div>
             <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
               <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-3">
-                <span className="text-cyan-400">Q.</span> What are your rate limits and concurrency caps?
+                <span className="text-cyan-400">Q.</span> Do I own copyrights for generated visual assets?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                By default, Basic accounts are limited to 3 concurrent requests. Premium accounts support up to 15 concurrent requests, and Pro accounts support up to 50 concurrent requests. Our standard API rate limit is 100 requests per minute per IP address. Contact Enterprise support to raise these limits.
+                Yes. For all commercial memberships (Basic, Premium, Pro), full copyrights are granted to you. You can monetize, share, and utilize generated files in any commercial, broadcast, or streaming project.
               </p>
             </div>
             <div className="bg-[#080808] border border-white/5 p-8 rounded-sm hover:border-white/10 transition-colors">
               <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-3">
-                <span className="text-cyan-400">Q.</span> What is your data retention policy?
+                <span className="text-cyan-400">Q.</span> What is the language limitation for cloned voices?
               </h3>
               <p className="text-xs font-mono text-zinc-400 leading-relaxed pl-7">
-                We strictly adhere to SOC-2 and GDPR compliance. We do not use your generated audio or custom voice clones to train our foundational models. Data is encrypted at rest and in transit. You can delete your History Logs or Custom Voices at any time, which permanently purges them from our servers within 24 hours.
+                Cloned voice identities are restricted to 13 fully validated languages (EN, ZH, JA, DE, FR, ES, KO, AR, RU, NL, IT, PL, PT) under our Fish Speech cloning subsystem. Default system voices do not share this limitation.
               </p>
             </div>
           </div>
@@ -430,7 +843,7 @@ export default function DocsPage() {
               Terms & Policy
             </h1>
             <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Please review our comprehensive legal documentation to understand your rights, data privacy, and obligations when utilizing the iPulse platform infrastructure.
+              Please review our operational guidelines and policies to ensure compliant use of our visual and voice systems.
             </p>
           </div>
 
@@ -441,7 +854,7 @@ export default function DocsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-2">Terms of Use</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Read our core operational guidelines and user agreements.</p>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Review standard usage policies, user licensing, and billing structures.</p>
                 <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full document →</span>
               </div>
             </Link>
@@ -452,118 +865,10 @@ export default function DocsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-mono font-bold text-white uppercase tracking-widest mb-2">Privacy Policy</h3>
-                <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Understand how we process, store, and protect your data.</p>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed mb-6">Understand data protection metrics, storage structures, and R2 encryption standards.</p>
                 <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest group-hover:underline">Read full policy →</span>
               </div>
             </Link>
-          </div>
-        </PageTransition>
-      );
-
-    case 'custom-voices':
-      return (
-        <PageTransition>
-          <div className="border-b border-white/5 pb-8">
-            <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tighter text-white uppercase mb-6">
-              Custom Voice Capabilities
-            </h1>
-            <p className="text-sm md:text-base font-mono text-zinc-400 leading-relaxed max-w-3xl">
-              Understanding the capabilities and limitations of our Custom Voice engine (powered by Fish Speech v1.5).
-            </p>
-          </div>
-
-          <div className="space-y-8 mt-8">
-            <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Mic className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Best Practices for Audio Samples</h3>
-              </div>
-              <div className="p-6 md:p-8">
-                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
-                  The quality of your Custom Voice clone is directly proportional to the quality of the training sample you provide. Our neural mapping extracts acoustic characteristics, meaning any background noise will be learned as part of the voice.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div className="space-y-3">
-                    <h4 className="text-[10px] font-mono font-bold text-white uppercase tracking-widest text-emerald-400">Do's</h4>
-                    <ul className="list-disc list-inside space-y-2 text-xs font-mono text-zinc-400">
-                      <li>Provide a single, continuous speaker.</li>
-                      <li>Ensure a high-quality microphone without clipping.</li>
-                      <li>Provide exactly 1 to 5 minutes of varied speech.</li>
-                      <li>Use a dead, non-reverberant room (studio quality).</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="text-[10px] font-mono font-bold text-white uppercase tracking-widest text-rose-400">Don'ts</h4>
-                    <ul className="list-disc list-inside space-y-2 text-xs font-mono text-zinc-400">
-                      <li>Do not include background music or sound effects.</li>
-                      <li>Avoid extreme compression or heavy EQ on the sample.</li>
-                      <li>Do not use phone call recordings (8kHz limitations).</li>
-                      <li>Do not have multiple speakers overlapping.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Supported Languages</h3>
-              </div>
-              <div className="p-6 md:p-8">
-                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-6">
-                  While our default <strong className="text-white">x.ai</strong> voices support a vast array of global languages, our advanced <strong className="text-white">Custom Voice Cloning</strong> engine natively supports exactly 13 languages. Generating audio with a cloned voice in an unsupported language may result in severe acoustic degradation, gibberish, or infinite repetition.
-                </p>
-
-                <h4 className="text-xs font-mono font-bold text-white uppercase tracking-widest mb-4">Fully Supported Languages:</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-                  {[
-                    'English (EN)', 'Chinese (ZH)', 'Japanese (JA)',
-                    'German (DE)', 'French (FR)', 'Spanish (ES)',
-                    'Korean (KO)', 'Arabic (AR)', 'Russian (RU)',
-                    'Dutch (NL)', 'Italian (IT)', 'Polish (PL)', 'Portuguese (PT)'
-                  ].map(lang => (
-                    <div key={lang} className="flex items-center gap-2 text-[10px] font-mono text-zinc-300 uppercase tracking-tight">
-                      <div className="w-1.5 h-1.5 bg-emerald-400/80 rounded-full" />
-                      {lang}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-sm">
-                  <h4 className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Zap className="w-3 h-3" /> Important Warning
-                  </h4>
-                  <p className="text-[10px] font-mono text-amber-500/80 leading-relaxed">
-                    Attempting to synthesize speech in unsupported languages (e.g., Vietnamese, Hindi, Turkish) using a Custom Voice will likely fail. Please use our default voice matrix for those languages.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3 bg-white/[0.02]">
-                <div className="w-8 h-8 bg-cyan-500/10 border border-cyan-500/20 rounded-sm flex items-center justify-center">
-                  <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h3 className="text-sm font-mono font-bold uppercase text-white tracking-widest">Legal & Ethical Usage</h3>
-              </div>
-              <div className="p-6 md:p-8">
-                <p className="text-xs font-mono text-zinc-400 leading-relaxed mb-4">
-                  Voice Cloning technology is powerful and must be used responsibly. By utilizing Custom Voices, you agree to the following constraints:
-                </p>
-                <ul className="list-disc list-inside space-y-3 text-[10px] font-mono text-zinc-500 leading-relaxed marker:text-cyan-400">
-                  <li>You must have explicit, documented permission from the original speaker to clone their voice.</li>
-                  <li>Generating deepfakes, misinformation, hate speech, or defamatory content is strictly prohibited.</li>
-                  <li>We actively monitor usage and reserve the right to permanently terminate access and notify authorities if illegal cloning activities are detected.</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </PageTransition>
       );
@@ -612,7 +917,7 @@ export default function DocsPage() {
                 <br /><br />
                 Converts text to lifelike spoken audio. Streams the audio file directly back to the client.
               </p>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 {/* Request Params */}
                 <div className="bg-[#080808] border border-white/5 rounded-sm overflow-hidden">
@@ -656,17 +961,17 @@ export default function DocsPage() {
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
                     </div>
                     <div className="p-4 overflow-x-auto text-[11px] font-mono leading-relaxed">
-<pre className="text-zinc-300">
-<span className="text-rose-400">curl</span> <span className="text-emerald-400">https://api.ipulselabs.net/v1/audio/speech</span> \
-  -H <span className="text-amber-300">"Authorization: Bearer $IPULSE_API_KEY"</span> \
-  -H <span className="text-amber-300">"Content-Type: application/json"</span> \
-  -d '{'{'}
-    <span className="text-cyan-300">"model"</span>: <span className="text-amber-300">"ipulse-tts-1"</span>,
-    <span className="text-cyan-300">"input"</span>: <span className="text-amber-300">"The neural synthesis engine is online."</span>,
-    <span className="text-cyan-300">"voice"</span>: <span className="text-amber-300">"alloy"</span>
-  {'}'}' \
-  --output speech.mp3
-</pre>
+                      <pre className="text-zinc-300">
+                        curl https://api.ipulselabs.net/v1/audio/speech \
+                        -H "Authorization: Bearer $IPULSE_API_KEY" \
+                        -H "Content-Type: application/json" \
+                        -d '{'{'}
+                        "model": "ipulse-tts-1",
+                        "input": "The neural synthesis engine is online.",
+                        "voice": "alloy"
+                        {'}'}' \
+                        --output speech.mp3
+                      </pre>
                     </div>
                   </div>
                 </div>

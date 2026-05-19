@@ -23,11 +23,14 @@ export const CREDIT_COSTS = {
   CLONE_VOICE: 5000,
   TTS_PER_CHAR: 1,
   VOICE_CHANGER_PER_MIN: 1000,
+  IMAGE_GENERATION: 1500,
+  VIDEO_480P_PER_SEC: 1200,
+  VIDEO_720P_PER_SEC: 1500,
 } as const;
 
 export const TIER_LIMITS = {
-  FREE: { pulse: 20000, maxTTSChars: 5000, maxAudioMins: 5 },
-  BASIC: { pulse: 60000, maxTTSChars: 5000, maxAudioMins: 5 },
-  PREMIUM: { pulse: 150000, maxTTSChars: 10000, maxAudioMins: 10 },
-  PRO: { pulse: 800000, maxTTSChars: 15000, maxAudioMins: 15 },
+  FREE: { pulse: 40000, maxTTSChars: 5000, maxAudioMins: 5 },
+  BASIC: { pulse: 120000, maxTTSChars: 5000, maxAudioMins: 5 },
+  PREMIUM: { pulse: 300000, maxTTSChars: 10000, maxAudioMins: 10 },
+  PRO: { pulse: 1500000, maxTTSChars: 15000, maxAudioMins: 15 },
 } as const;

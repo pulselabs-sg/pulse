@@ -340,10 +340,10 @@ const CinematicQuote = () => {
 };
 
 const pricingPlans = [
-  { name: 'Free', price: '0', pulse: '20,000', desc: 'Test the engine at no cost.' },
-  { name: 'Basic', price: '5', pulse: '60,000', desc: 'For regular creators.', recommended: true },
-  { name: 'Premium', price: '10', pulse: '150,000', desc: 'For serious production.' },
-  { name: 'Pro', price: '50', pulse: '800,000', desc: 'Enterprise-grade volume.' },
+  { name: 'Free', price: '0', pulse: '40,000', desc: 'Test the engine at no cost.' },
+  { name: 'Basic', price: '10', pulse: '120,000', desc: 'For regular creators.', recommended: true },
+  { name: 'Premium', price: '20', pulse: '300,000', desc: 'For serious production.' },
+  { name: 'Pro', price: '100', pulse: '1,500,000', desc: 'Enterprise-grade volume.' },
 ];
 
 const PricingSection = () => (
