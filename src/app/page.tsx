@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useScroll } from 'framer-motion';
-import { ArrowRight, AudioLines, Zap, Terminal, Mic, Check, Layers, Code, ShieldCheck, Globe, Activity, Server, Users } from 'lucide-react';
+import { motion, useScroll, AnimatePresence } from 'framer-motion';
+import { ArrowRight, AudioLines, Zap, Terminal, Mic, Check, Layers, Code, ShieldCheck, Globe, Activity, Server, Users, Video, Image, Film, Sparkles, Volume2, ChevronDown, Sliders, Play, Eye, Cpu, ImagePlus, Tv } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -10,10 +10,13 @@ import { ModernBackground } from '@/components/ui/VisualEffects';
 const Navbar = () => {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   useEffect(() => {
     const unsub = scrollY.on('change', (v) => setIsScrolled(v > 20));
     return unsub;
   }, [scrollY]);
+
   return (
     <nav className={cn('fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-500 flex items-center px-6 md:px-12', isScrolled ? 'border-b border-white/5 bg-black/60 backdrop-blur-xl' : '')}>
       <div className="flex-1 flex items-center gap-3">
@@ -21,13 +24,102 @@ const Navbar = () => {
         <span className="font-mono text-sm tracking-[0.2em] text-white uppercase">iPulse</span>
       </div>
       <div className="hidden md:flex flex-1 items-center justify-center gap-8 text-[11px] font-mono uppercase tracking-widest text-zinc-500">
-        <Link href="#features" className="hover:text-white transition-colors">Platform</Link>
+        <div
+          className="relative py-4 cursor-pointer group"
+          onMouseEnter={() => setIsDropdownOpen(true)}
+          onMouseLeave={() => setIsDropdownOpen(false)}
+        >
+          <span className="hover:text-white transition-colors flex items-center gap-1">
+            Product <ChevronDown className={cn("w-3 h-3 transition-transform duration-300", isDropdownOpen ? "rotate-180 text-white" : "")} />
+          </span>
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[640px] bg-black/95 border border-white/10 rounded-2xl p-6 grid grid-cols-3 gap-0 divide-x divide-white/10 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
+              >
+                <div className="pr-6">
+                  <h4 className="text-[10px] font-bold text-white mb-4 tracking-widest flex items-center gap-1.5 uppercase font-mono"><Video className="w-3.5 h-3.5 text-white" /> Video</h4>
+                  <ul className="space-y-4 text-[10px] normal-case text-zinc-400 font-sans">
+                    <li>
+                      <Link href="https://visual.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Prompt to Video</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Generate cinema from text prompts</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="https://visual.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Flow Extension</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Extend existing scenes seamlessly</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="https://visual.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Cinematic Render</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Produce high-fidelity visuals</span>
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+                <div className="px-6">
+                  <h4 className="text-[10px] font-bold text-white mb-4 tracking-widest flex items-center gap-1.5 uppercase font-mono"><Image className="w-3.5 h-3.5 text-white" /> Image</h4>
+                  <ul className="space-y-4 text-[10px] normal-case text-zinc-400 font-sans">
+                    <li>
+                      <Link href="https://visual.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Text to Image</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Synthesize hyper-realistic art</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="https://visual.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Style Variation</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Transfer styling dynamically</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="https://visual.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Upscaling & Edit</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Refine resolution and details</span>
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+                <div className="pl-6">
+                  <h4 className="text-[10px] font-bold text-white mb-4 tracking-widest flex items-center gap-1.5 uppercase font-mono"><Volume2 className="w-3.5 h-3.5 text-white" /> Audio</h4>
+                  <ul className="space-y-4 text-[10px] normal-case text-zinc-400 font-sans">
+                    <li>
+                      <Link href="https://audio.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Neural TTS</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Convert text to natural voice</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="https://audio.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Voice Cloning</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Create custom voice identities</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="https://audio.ipulselabs.net" target="_blank" className="hover:text-white transition-colors block group/item">
+                        <span className="font-semibold block text-zinc-200 group-hover/item:text-white transition-colors">Speech to Text</span>
+                        <span className="text-[9px] text-zinc-500 block leading-normal mt-0.5">Transcribe voice streams instantly</span>
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         <Link href="#workflow" className="hover:text-white transition-colors">Workflow</Link>
         <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
         <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
       </div>
       <div className="flex-1 flex justify-end">
-        <Link href="/dashboard" target='_blank' className="px-5 py-2 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-widest font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 group">
+        <Link href="https://visual.ipulselabs.net" target='_blank' className="px-5 py-2 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-widest font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 group">
           Launch App <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
@@ -35,83 +127,117 @@ const Navbar = () => {
   );
 };
 
-const WaveformLine = () => (
-  <div className="flex items-end justify-center gap-[3px] h-16 w-full">
-    {[...Array(60)].map((_, i) => (
-      <motion.div key={i} animate={{ height: [4, 18 + Math.random() * 40, 4] }} transition={{ duration: 1.2 + Math.random() * 1.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.04 }} className="w-[2px] bg-white/50 rounded-full" style={{ minHeight: 2 }} />
-    ))}
-  </div>
-);
+const BentoFrames = () => {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-none mx-auto lg:mx-0 lg:ml-auto">
+      {/* Column 1 */}
+      <div className="flex flex-col gap-4">
+        {/* Frame 1: 16:9 Landscape Video */}
+        <div className="h-40 sm:h-44 lg:h-48 w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-cyan-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <video
+            src="/0519.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
+        </div>
+
+        {/* Frame 2: 1:1 Image */}
+        <div className="h-64 sm:h-72 lg:h-[20rem] w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <img
+            src="/tree.png"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            alt="Creative Canvas"
+          />
+        </div>
+      </div>
+
+      {/* Column 2 */}
+      <div className="flex flex-col gap-4">
+        {/* Frame 3: 9:16 Portrait Video */}
+        <div className="h-64 sm:h-72 lg:h-[20rem] w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <img
+            src="/lion.png"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            alt="Creative Canvas"
+          />
+        </div>
+
+        {/* Frame 4: 4:3 Classic Composition */}
+        <div className="h-40 sm:h-44 lg:h-48 w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <video
+            src="/0520.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const HeroSection = () => (
-  <div className="relative z-10 min-h-screen flex items-center px-6 md:px-12 pt-24 pb-16">
+  <div className="relative z-10 min-h-screen flex items-center px-6 md:px-12 pt-20 pb-12 lg:pt-16 lg:pb-12">
     {/* vertical center-line decoration */}
     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.04) 60%, transparent 100%)' }} />
 
-    <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <div className="max-w-[90rem] 2xl:max-w-[95rem] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       {/* ── Left: copy ── */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: 'easeOut' }}
-        className="flex flex-col items-start"
+        className="flex flex-col items-start lg:col-span-5"
       >
-        <div className="relative inline-flex overflow-hidden rounded-full p-[1px] mb-10">
+        <div className="relative inline-flex overflow-hidden rounded-full p-[1px] mb-6">
           <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_50%,rgba(255,255,255,0.3)_75%,rgba(255,255,255,0.9)_100%)]" />
           <div className="inline-flex h-full w-full items-center gap-2 rounded-full bg-zinc-950 px-3 py-1.5 text-[10px] font-mono tracking-widest backdrop-blur-3xl cursor-default">
             <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
-            <span className="text-zinc-300">Neural Synthesis Engine v2.4 - Live</span>
+            <span className="text-zinc-300">Neural Creative Engine v3.0 - Live</span>
           </div>
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl tracking-tighter leading-[1.15] text-white mb-6">
-          The voice of<br />
+        <h1 className="text-4xl sm:text-5xl lg:text-5xl tracking-tighter leading-[1.15] text-white mb-5">
+          The vision of<br />
           <span className="text-white text-glow-white">Artificial</span><br />
           <span className="text-white">Intelligence.</span>
         </h1>
 
-        <p className="text-sm md:text-base font-mono text-zinc-400 max-w-md leading-relaxed">
-          Generate hyper-realistic speech, clone any voice in seconds, and transcribe audio with 99% accuracy through a single neural API.
+        <p className="text-xs md:text-xs font-mono text-zinc-400 max-w-sm leading-relaxed">
+          Synthesize cinematic video, generate stunning imagery, and orchestrate neural audio through a single unified creative API.
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
-          <Link href="/dashboard" target='_blank' className="px-2.5 md:px-8 py-2.5 md:py-3 bg-white text-black rounded-lg text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_40px_rgba(255,255,255,0.12)] flex items-center gap-2 group">
-            Start Building <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+        <div className="mt-6 flex flex-col sm:flex-row items-start gap-3">
+          <Link href="/dashboard" target='_blank' className="px-5 py-2.5 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-2 group">
+            Start Building <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <Link href="/docs" target='_blank' className="px-2.5 md:px-8 py-2.5 md:py-3 glass-mid text-white rounded-lg text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
-            <Code className="w-3.5 h-3.5" /> Read the Docs
+          <Link href="/docs" target='_blank' className="px-5 py-2.5 glass-mid text-white rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
+            <Code className="w-3 h-3" /> Read the Docs
           </Link>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3 h-3" /> SOC 2 Compliant</span>
-          <span className="w-px h-3 bg-white/10" />
-          <span className="flex items-center gap-1.5"><Zap className="w-3 h-3" /> Sub-200ms Latency</span>
-          <span className="w-px h-3 bg-white/10" />
-          <span className="flex items-center gap-1.5"><Globe className="w-3 h-3" /> 32+ Languages</span>
+        <div className="mt-6 flex flex-wrap items-center gap-3 text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+          <span className="flex items-center gap-1"><ShieldCheck className="w-2.5 h-2.5" /> SOC 2 Compliant</span>
+          <span className="w-px h-2.5 bg-white/10" />
+          <span className="flex items-center gap-1"><Zap className="w-2.5 h-2.5" /> Sub-1.2s Render</span>
+          <span className="w-px h-2.5 bg-white/10" />
+          <span className="flex items-center gap-1"><Globe className="w-2.5 h-2.5" /> 150+ Style Presets</span>
         </div>
       </motion.div>
 
-      {/* ── Right: waveform visualizer ── */}
+      {/* ── Right: bento frames grid ── */}
       <motion.div
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1.2, delay: 0.3, ease: 'easeOut' }}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3 w-full lg:col-span-7"
       >
-        <div className="bg-white/[0.04] backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-[0_0_60px_rgba(255,255,255,0.04)]">
-          <div className="flex items-center justify-between mb-5">
-            <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Live Output Stream</span>
-            <span className="flex items-center gap-1.5 text-[9px] font-mono text-zinc-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />Rendering
-            </span>
-          </div>
-          <WaveformLine />
-          <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
-            <span>24.4 kHz · 32-bit float</span>
-            <span>en-neural-1</span>
-          </div>
-        </div>
+        <BentoFrames />
       </motion.div>
     </div>
   </div>
@@ -120,9 +246,9 @@ const HeroSection = () => (
 
 const StatsStrip = () => {
   const stats = [
-    { label: 'Generations / Day', value: '2.5M+' }, { label: 'Uptime', value: '99.99%' },
-    { label: 'Active Creators', value: '150k+' }, { label: 'Languages', value: '32+' },
-    { label: 'Voice Models', value: '1,200+' }, { label: 'Avg. Latency', value: '<200ms' },
+    { label: 'Generations / Day', value: '5.2M+' }, { label: 'Uptime', value: '99.99%' },
+    { label: 'Active Creators', value: '250k+' }, { label: 'Video Models', value: '18+' },
+    { label: 'Image Presets', value: '150+' }, { label: 'Avg. Render', value: '<1.2s' },
   ];
   return (
     <div className="relative z-10 border-y border-white/5 py-8">
@@ -140,36 +266,56 @@ const StatsStrip = () => {
   );
 };
 
-const FeatureVisualTTS = () => (
-  <div className="glass-dark rounded-2xl p-6 border border-white/8 overflow-hidden">
-    <div className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mb-4">Output Stream</div>
-    <div className="flex items-end gap-[2px] h-20 mb-4">
-      {[...Array(48)].map((_, i) => (
-        <motion.div key={i} animate={{ height: [3, 15 + Math.random() * 45, 3] }} transition={{ duration: 1.4 + Math.random() * 1, repeat: Infinity, ease: 'easeInOut', delay: i * 0.035 }} className="flex-1 bg-white/25 rounded-full" style={{ minHeight: 2 }} />
-      ))}
+const FeatureVisualVideo = () => (
+  <div className="glass-dark rounded-2xl p-6 border border-white/8 overflow-hidden relative">
+    <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-4 flex items-center justify-between">
+      <span>Video Flow Pipeline</span>
+      <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />Active</span>
     </div>
+
+    <div className="flex items-center justify-between gap-3 mb-4">
+      {/* Box 1: Video Placeholder */}
+      <div className="flex-1 aspect-[4/3] rounded-lg border border-white/10 bg-black/40 flex flex-col items-center justify-center p-3 relative group hover:border-cyan-500/20 transition-all duration-300">
+        <Film className="w-5 h-5 text-zinc-600 mb-1" />
+        <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">Video Placeholder</span>
+      </div>
+
+      {/* Arrow Icon pointing to the right */}
+      <ArrowRight className="w-5 h-5 text-zinc-600 shrink-0" />
+
+      {/* Box 2: Empty description block */}
+      <div className="flex-1 aspect-[4/3] rounded-lg border border-dashed border-white/10 bg-white/[0.01] flex items-center justify-center p-4 text-center">
+        <span className="text-[9px] font-mono text-zinc-500 leading-normal italic">
+          "Describe what happens next..."
+        </span>
+      </div>
+    </div>
+
     <div className="flex items-center justify-between border-t border-white/5 pt-4">
-      <span className="text-[10px] font-mono text-zinc-600">24.4 kHz - 32-bit float</span>
-      <span className="text-[10px] font-mono text-zinc-400 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />Live</span>
+      <span className="text-[10px] font-mono text-zinc-500">Flow Extension Mode</span>
+      <span className="text-[10px] font-mono text-cyan-400">Ready to Extend</span>
     </div>
   </div>
 );
 
-const FeatureVisualClone = () => (
-  <div className="glass-dark rounded-2xl p-6 border border-white/8 overflow-hidden">
-    <div className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mb-5">Identity Match</div>
+const FeatureVisualImage = () => (
+  <div className="glass-dark rounded-2xl p-6 border border-white/8 overflow-hidden relative">
+    <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-5">Adherence & Alignment</div>
     <div className="space-y-3">
-      {['Source Audio', 'Neural Embedding', 'Clone Output'].map((label, i) => (
+      {['Text Prompt Match', 'Style Embedding', 'Pixel Synthesis'].map((label, i) => (
         <div key={i} className="flex items-center gap-3">
-          <span className="text-[9px] font-mono text-zinc-600 w-28 shrink-0">{label}</span>
-          <div className="flex-1 h-1 rounded-full bg-white/8 overflow-hidden">
-            <motion.div animate={{ width: ['0%', `${70 + i * 10}%`] }} transition={{ duration: 1.5, delay: i * 0.3, ease: 'easeOut' }} className="h-full bg-white/40 rounded-full" />
+          <span className="text-[9px] font-mono text-zinc-500 w-28 shrink-0">{label}</span>
+          <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+            <motion.div animate={{ width: ['0%', `${85 + i * 5}%`] }} transition={{ duration: 1.8, delay: i * 0.2, ease: 'easeOut' }} className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
           </div>
-          <span className="text-[9px] font-mono text-zinc-500">{70 + i * 10}%</span>
+          <span className="text-[9px] font-mono text-zinc-400">{85 + i * 5}%</span>
         </div>
       ))}
     </div>
-    <div className="mt-5 pt-4 border-t border-white/5 text-[10px] font-mono text-zinc-500">Similarity: <span className="text-white font-bold">98.7%</span></div>
+    <div className="mt-5 pt-4 border-t border-white/5 text-[10px] font-mono text-zinc-500 flex justify-between">
+      <span>Generation Quality: <span className="text-white font-bold">Ultra-HD</span></span>
+      <span>Style affinity: <span className="text-white font-bold">97.8%</span></span>
+    </div>
   </div>
 );
 
@@ -178,22 +324,24 @@ const FeatureVisualAPI = () => (
     <div className="flex gap-1.5 mb-4">
       <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-white/20" />
     </div>
-    <pre className="text-[11px] leading-relaxed text-zinc-400 overflow-x-auto whitespace-pre-wrap">{`// Generate speech via REST
-fetch('/v1/tts/generate', {
+    <pre className="text-[11px] leading-relaxed text-zinc-400 overflow-x-auto whitespace-pre-wrap">{`// Generate AI Video via REST API
+fetch('/v1/video/generate', {
   method: 'POST',
+  headers: { 'Authorization': 'Bearer API_KEY' },
   body: JSON.stringify({
-    text: 'Hello world',
-    voice_id: 'en-neural-1',
-    format: 'mp3'
+    prompt: 'Cinematic tracking shot of futuristic city',
+    aspect_ratio: '16:9',
+    motion_scale: 1.2,
+    frames: 120
   })
 });`}</pre>
   </div>
 );
 
 const featuresData = [
-  { id: 'text-to-speech', tag: 'Text-to-Speech', title: 'Words spoken with\nhuman-level nuance.', desc: 'Acoustic models that understand context, emotion, and prosody. Studio-quality voiceovers indistinguishable from real recordings. Zero-shot cloning. Sub-200ms latency.', icon: AudioLines, visual: <FeatureVisualTTS />, reverse: false },
-  { id: 'voice-cloning', tag: 'Voice Cloning', title: 'Any voice.\nFive seconds of audio.', desc: 'Upload a short reference clip and our neural encoder extracts the full vocal identity - tone, cadence, accent, texture - ready to synthesize anything.', icon: Mic, visual: <FeatureVisualClone />, reverse: true },
-  { id: 'api', tag: 'Developer API', title: 'Integrate neural audio\ninto any stack.', desc: 'Standard REST endpoints, WebSocket streaming, and SDKs for Python, Node, and Go. Built for production with 99.99% uptime and global edge delivery.', icon: Terminal, visual: <FeatureVisualAPI />, reverse: false },
+  { id: 'video-flow', tag: 'Flow Extension', title: 'Extend any video.\nSeamless continuity.', desc: 'Power your creative timeline with neural Flow video expansion. Seamlessly extend original video assets, generate subsequent keyframes, and maintain absolute character and style consistency across long clips.', icon: Film, visual: <FeatureVisualVideo />, reverse: false },
+  { id: 'creative-canvas', tag: 'Image Synthesis', title: 'Stunning artwork.\nInfinite variations.', desc: 'Synthesize photorealistic images and high-fidelity designs from natural language prompts. Infinite style variation, hyper-accurate prompt adherence, and zero-shot control mapping.', icon: Sparkles, visual: <FeatureVisualImage />, reverse: true },
+  { id: 'api', tag: 'Developer API', title: 'Integrate neural creative\ninto any stack.', desc: 'Standard REST endpoints, WebSocket streaming, and SDKs for Python, Node, and Go. Built for production with 99.99% uptime and global edge delivery.', icon: Terminal, visual: <FeatureVisualAPI />, reverse: false },
 ];
 
 const FeaturesAlternating = () => (
@@ -224,9 +372,9 @@ const FeaturesAlternating = () => (
 
 
 const steps = [
-  { num: '01', title: 'Input text or audio', desc: 'Provide a text payload or raw audio file via REST or WebSocket. Any format, any length.' },
-  { num: '02', title: 'Neural processing', desc: 'Models analyze emotional context, cadence, and vocal characteristics to craft the perfect output.' },
-  { num: '03', title: 'Stream the result', desc: 'Receive ultra-low latency PCM or MP3 audio streamed directly to your client in real-time.' },
+  { num: '01', title: 'Prompt & Direct', desc: 'Define your scene with natural language, reference images, or keyframes. Adjust motion paths and layouts.' },
+  { num: '02', title: 'Neural Synthesis', desc: 'Models analyze context, flow maps, and styles to render high-fidelity video frames or upscale details.' },
+  { num: '03', title: 'Stream & Scale', desc: 'Receive high-fidelity video streams or image variations instantly via REST, WebSocket, or SDKs.' },
 ];
 
 const VerticalTimeline = () => (
@@ -234,7 +382,8 @@ const VerticalTimeline = () => (
     <div className="max-w-4xl mx-auto px-6">
       <div className="text-center mb-20">
         <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-3">Workflow</p>
-        <h2 className="text-4xl md:text-5xl text-white tracking-tight">From signal to sound.</h2>
+        <h2 className="text-4xl md:text-5xl text-white tracking-tight">From vision to reality.</h2>
+
       </div>
       <div className="relative pl-12">
         <div className="absolute left-[23px] top-10 bottom-10 w-px bg-gradient-to-b from-white/15 via-white/8 to-transparent" />
@@ -256,43 +405,115 @@ const VerticalTimeline = () => (
 );
 
 const StudioPanel = () => {
-  const [text, setText] = useState('The neural synthesis engine renders speech with remarkable precision and emotional depth.');
+  const [prompt, setPrompt] = useState('A cinematic landscape of glowing crystal forests, purple gas giant rising in the background, unreal engine 5 render, highly detailed.');
+  const [style, setStyle] = useState('Cinematic');
+  const [ratio, setRatio] = useState('16:9');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(100);
+
+  const triggerGeneration = () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    setProgress(0);
+  };
+
+  useEffect(() => {
+    if (!isGenerating) return;
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          setIsGenerating(false);
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 150);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
+
   return (
     <section className="relative z-10 py-32 max-w-5xl mx-auto px-6">
       <div className="text-center mb-16">
-        <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-3">Live Studio</p>
-        <h2 className="text-4xl text-white tracking-tight">Hear it for yourself.</h2>
+        <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-3">Live Creative Studio</p>
+        <h2 className="text-4xl text-white tracking-tight">Direct the model live.</h2>
       </div>
       <motion.div initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
         <div className="glass-dark rounded-2xl overflow-hidden border border-white/8 shadow-[0_0_80px_rgba(0,0,0,0.6)]">
           <div className="h-11 border-b border-white/6 flex items-center px-4 gap-2 bg-black/40">
             <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-zinc-800" /><div className="w-2.5 h-2.5 rounded-full bg-white/15" /></div>
-            <span className="flex-1 text-center text-[10px] font-mono text-zinc-500 uppercase tracking-widest">iPulse Studio - Neural TTS</span>
-            <span className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-600"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />Online</span>
+            <span className="flex-1 text-center text-[10px] font-mono text-zinc-500 uppercase tracking-widest">iPulse Studio - Prompt to Video</span>
+            <span className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-600">
+              <span className={cn("w-1.5 h-1.5 rounded-full", isGenerating ? "bg-cyan-400 animate-pulse" : "bg-emerald-400")} />
+              {isGenerating ? "Rendering" : "Ready"}
+            </span>
           </div>
           <div className="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex flex-col gap-5">
               <div>
-                <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-2">Text Input</label>
-                <textarea value={text} onChange={e => setText(e.target.value)} className="w-full h-28 bg-black/50 border border-white/8 rounded-lg px-3 py-3 text-sm text-zinc-300 font-mono resize-none focus:outline-none focus:border-white/20 transition-colors" />
+                <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-2">Prompt Input</label>
+                <textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="w-full h-24 bg-black/50 border border-white/8 rounded-lg px-3 py-3 text-xs text-zinc-300 font-mono resize-none focus:outline-none focus:border-white/20 transition-colors" />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-2">Voice Model</label><div className="bg-black/50 border border-white/8 rounded-lg px-3 py-2.5 text-xs font-mono text-zinc-400">en-neural-1</div></div>
-                <div><label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-2">Format</label><div className="bg-black/50 border border-white/8 rounded-lg px-3 py-2.5 text-xs font-mono text-zinc-400">MP3 128kbps</div></div>
-              </div>
-              <Link href="/dashboard" target='_blank' className="flex items-center justify-center gap-2 py-3 bg-white text-black rounded-lg text-xs font-mono uppercase tracking-widest font-bold hover:bg-zinc-100 transition-all">
-                <Layers className="w-3.5 h-3.5" /> Try in Dashboard
-              </Link>
-            </div>
-            <div className="flex flex-col gap-4">
-              <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600">Output Waveform</label>
-              <div className="flex-1 glass rounded-xl border border-white/6 flex flex-col items-center justify-center p-4 min-h-[160px]">
-                <div className="flex items-end gap-[2px] h-16 w-full">
-                  {[...Array(50)].map((_, i) => (<motion.div key={i} animate={{ height: [2, 10 + Math.random() * 40, 2] }} transition={{ duration: 1.2 + Math.random() * 1, repeat: Infinity, ease: 'easeInOut', delay: i * 0.04 }} className="flex-1 bg-white/20 rounded-full" style={{ minHeight: 2 }} />))}
+                <div>
+                  <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-2">Creative Style</label>
+                  <select value={style} onChange={e => setStyle(e.target.value)} className="w-full bg-black/50 border border-white/8 rounded-lg px-3 py-2 text-xs font-mono text-zinc-400 focus:outline-none focus:border-white/20">
+                    <option value="Cinematic">Cinematic 3D</option>
+                    <option value="Anime">Anime Dream</option>
+                    <option value="Cyberpunk">Cyberpunk Neon</option>
+                    <option value="OilPainting">Classical Oil</option>
+                  </select>
                 </div>
-                <p className="text-[9px] font-mono text-zinc-700 mt-4 uppercase tracking-widest">Visualizing output waveform</p>
+                <div>
+                  <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-2">Aspect Ratio</label>
+                  <select value={ratio} onChange={e => setRatio(e.target.value)} className="w-full bg-black/50 border border-white/8 rounded-lg px-3 py-2 text-xs font-mono text-zinc-400 focus:outline-none focus:border-white/20">
+                    <option value="16:9">16:9 Landscape</option>
+                    <option value="9:16">9:16 Portrait</option>
+                    <option value="1:1">1:1 Square</option>
+                    <option value="4:3">4:3 Classic</option>
+                  </select>
+                </div>
               </div>
-              <div className="flex justify-between text-[9px] font-mono text-zinc-700 uppercase tracking-widest px-1"><span>0:00</span><span>Confidence: 99.98%</span><span>~3s</span></div>
+              <button
+                onClick={triggerGeneration}
+                disabled={isGenerating}
+                className="flex items-center justify-center gap-2 py-3 bg-white text-black rounded-lg text-xs font-mono uppercase tracking-widest font-bold hover:bg-zinc-100 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> {isGenerating ? `Generating (${progress}%)` : "Synthesize Scene"}
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-600">Generated Preview</label>
+              <div className="flex-1 glass rounded-xl border border-white/6 flex flex-col items-center justify-center p-4 min-h-[160px] relative overflow-hidden bg-black/40">
+                {isGenerating ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center relative z-10">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
+                    <motion.div
+                      animate={{ y: ["-100%", "100%"] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      className="absolute left-0 right-0 h-0.5 bg-cyan-400/50 shadow-[0_0_8px_rgba(34,211,238,0.5)] pointer-events-none z-20"
+                    />
+                    <div className="flex flex-col items-center justify-center gap-2 bg-black/80 px-4 py-3 rounded-lg border border-white/10 z-20">
+                      <div className="w-8 h-8 rounded-full border-2 border-t-cyan-400 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                      <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Rendering Diffusion Matrix</span>
+                      <span className="text-[9px] font-mono text-cyan-400">{progress}%</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center relative z-10">
+                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/15 flex items-center justify-center mb-3">
+                      <Film className="w-5 h-5 text-zinc-400" />
+                    </div>
+                    <span className="text-[10px] font-mono text-zinc-300 uppercase tracking-widest mb-1">Rendering complete</span>
+                    <p className="text-[9px] font-mono text-zinc-500 max-w-[80%] leading-normal mb-2 italic">
+                      "{prompt.substring(0, 70)}..."
+                    </p>
+                    <span className="text-[8px] font-mono text-zinc-500 uppercase">Style: {style} · Ratio: {ratio} · Seed: 442918</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-between text-[9px] font-mono text-zinc-700 uppercase tracking-widest px-1"><span>0:04</span><span>GPU Time: ~1.2s</span><span>24 FPS</span></div>
             </div>
           </div>
         </div>
@@ -302,11 +523,11 @@ const StudioPanel = () => {
 };
 
 const quotesList = [
-  { text: '"The API latency is incredibly low. We integrated voice cloning into our game engine in under a day."', author: 'Alex R.', role: 'Lead Developer' },
-  { text: '"Best text-to-speech quality I have heard. The emotional range in the generated voices is genuinely unmatched."', author: 'Sarah M.', role: 'Content Creator' },
-  { text: '"iPulse completely transformed our automated customer service pipeline. It actually sounds human."', author: 'David T.', role: 'Product Manager' },
-  { text: '"The audio cleaning tool saves me hours of editing on every podcast episode. Truly remarkable."', author: 'Elena G.', role: 'Podcaster' },
-  { text: '"Their transcription accuracy, even with heavy accents and background noise, is phenomenal."', author: 'Priya S.', role: 'ML Researcher' },
+  { text: '"The video extension API is incredibly powerful. We integrated Flow into our visual timeline in under a day."', author: 'Alex R.', role: 'Lead Creative Dev' },
+  { text: '"Best text-to-image quality I have seen. The detail consistency across matching aspect ratios is genuinely unmatched."', author: 'Sarah M.', role: 'Creative Director' },
+  { text: '"iPulse completely transformed our marketing assets workflow. We generate highly personalized video ads instantly."', author: 'David T.', role: 'Product Lead' },
+  { text: '"The cinematic upscaler saves me hours of manual editing. The lighting diffusion consistency is remarkable."', author: 'Elena G.', role: 'VFX Artist' },
+  { text: '"Their temporal alignment on long-duration video chains is phenomenal. Perfect for procedural generation."', author: 'Priya S.', role: 'ML Researcher' },
 ];
 
 const CinematicQuote = () => {
@@ -340,10 +561,10 @@ const CinematicQuote = () => {
 };
 
 const pricingPlans = [
-  { name: 'Free', price: '0', pulse: '40,000', desc: 'Test the engine at no cost.' },
-  { name: 'Basic', price: '10', pulse: '120,000', desc: 'For regular creators.', recommended: true },
-  { name: 'Premium', price: '20', pulse: '300,000', desc: 'For serious production.' },
-  { name: 'Pro', price: '100', pulse: '1,500,000', desc: 'Enterprise-grade volume.' },
+  { name: 'Free', price: '0', pulse: '40,000', desc: 'Test the creative engine at no cost.' },
+  { name: 'Basic', price: '10', pulse: '120,000', desc: 'For regular content creators.', recommended: true },
+  { name: 'Premium', price: '20', pulse: '300,000', desc: 'For studio-grade production.' },
+  { name: 'Pro', price: '100', pulse: '1,500,000', desc: 'Enterprise volume and dedicated H100s.' },
 ];
 
 const PricingSection = () => (
@@ -382,8 +603,8 @@ const CtaBanner = () => (
         <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
         <span className="text-zinc-400">Free plan - no credit card required</span>
       </div>
-      <h2 className="text-5xl md:text-7xl text-white tracking-tight mb-6 leading-[0.92]">Hear the<br /><span className="editorial-italic">difference.</span></h2>
-      <p className="text-base text-zinc-500 font-mono mb-10 max-w-xl mx-auto leading-relaxed">Join thousands of developers and creators powering the next generation of audio experiences with iPulse.</p>
+      <h2 className="text-5xl md:text-7xl text-white tracking-tight mb-6 leading-[0.92]">Create the<br /><span className="editorial-italic">future.</span></h2>
+      <p className="text-base text-zinc-500 font-mono mb-10 max-w-xl mx-auto leading-relaxed">Join thousands of developers and creators powering the next generation of creative experiences with iPulse.</p>
     </div>
   </section>
 );
@@ -397,13 +618,13 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="md:col-span-1">
           <div className="flex items-center gap-3 mb-5"><img src="/logo.webp" alt="iPulse" className="w-7 h-7 rounded-sm object-cover" /><span className="font-mono text-sm tracking-[0.2em] text-white font-bold uppercase">iPulse</span></div>
-          <p className="text-xs font-mono text-zinc-500 max-w-xs leading-relaxed">Neural-powered voice engine. Real-time TTS, STT, and voice cloning for the modern web.</p>
+          <p className="text-xs font-mono text-zinc-500 max-w-xs leading-relaxed">Neural creative studio. High-fidelity Video flow extension, Image synthesis, and studio-grade sound.</p>
         </div>
         <div>
           <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Features</h4>
           <ul className="space-y-3 text-sm text-zinc-600">
-            <li><Link href="#text-to-speech" className="hover:text-white transition-colors">Text to Speech</Link></li>
-            <li><Link href="#voice-cloning" className="hover:text-white transition-colors">Voice Cloning</Link></li>
+            <li><Link href="#video-flow" className="hover:text-white transition-colors">Video Generation</Link></li>
+            <li><Link href="#creative-canvas" className="hover:text-white transition-colors">Image Synthesis</Link></li>
             <li><Link href="#speech-to-text" className="hover:text-white transition-colors">Speech to Text</Link></li>
             <li><Link href="#api" className="hover:text-white transition-colors">Developer API</Link></li>
           </ul>
@@ -464,7 +685,7 @@ const ScrollRevealText = () => {
     return unsub;
   }, [scrollY]);
 
-  const text = "Audio intelligence is no longer constrained by the limits of human recording. We are entering a new paradigm where synthetic speech is indistinguishable from reality, completely dynamic, and generated in milliseconds.";
+  const text = "Creative intelligence is no longer constrained by physical cameras or render farms. We are entering a new paradigm where cinematic video, stunning imagery, and synchronized audio are generated in real-time, completely from text.";
   const words = text.split(" ");
   const totalWords = words.length;
   // Spread words across 0→0.95; last word fully reveals at 95% so there's
@@ -598,11 +819,11 @@ const InteractiveTypographyGrid = () => {
 };
 
 const featureItems = [
-  { icon: AudioLines, tag: 'Text to Speech', desc: 'Turn any text into hyper-realistic speech in milliseconds. 32+ languages with neural prosody and emotional range.' },
-  { icon: Mic, tag: 'Speech to Text', desc: 'Transcribe audio at 99% accuracy even in noisy environments, with speaker diarisation, punctuation, and timestamps.' },
-  { icon: Users, tag: 'Voice Cloning', desc: 'Clone any voice from just 5 seconds of audio. Preserve tone, cadence, and accent — ready to synthesise anything.' },
-  { icon: Globe, tag: 'Translation', desc: 'Translate and re-voice content across 32+ languages while preserving the original speaker\'s voice and emotion.' },
-  { icon: Activity, tag: 'Voice Changer', desc: 'Transform voices in real-time with neural filters. Change age, gender, accent, or style with zero latency.' },
+  { icon: Video, tag: 'Video Generation', desc: 'Create cinematic videos from prompts or images. Flow technology extends existing shots seamlessly.' },
+  { icon: Sparkles, tag: 'Image Synthesis', desc: 'Generate hyper-realistic art, design assets, and styles with extreme text adherence.' },
+  { icon: AudioLines, tag: 'Neural TTS & Cloning', desc: 'Synthesize voiceovers in 32+ languages or clone any voice from a 5-second sample.' },
+  { icon: Film, tag: 'Style Transfer', desc: 'Map artistic styles onto videos or images dynamically, preserving structural consistency.' },
+  { icon: Code, tag: 'Creative API', desc: 'Deploy video rendering, image generation, and audio synthesis via REST or WebSockets.' },
 ];
 
 const FeatureShowcase = () => {

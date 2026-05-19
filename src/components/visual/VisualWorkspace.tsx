@@ -71,8 +71,39 @@ export default function VisualWorkspace({
   // Generation State
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<{ type: 'image' | 'video', url: string } | null>(null);
+  const [synthesisError, setSynthesisError] = useState<string | null>(null);
+  const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const triggerError = (message: string) => {
+    console.log("Triggering synthesis error toast UI:", message);
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+    }
+    setSynthesisError(message);
+    errorTimeoutRef.current = setTimeout(() => {
+      setSynthesisError(null);
+      errorTimeoutRef.current = null;
+    }, 5000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Flow State
+  interface FlowStep {
+    id: string;
+    url: string;
+    duration: number;
+    isLocal?: boolean;
+    prompt?: string;
+  }
+  const [flowSequence, setFlowSequence] = useState<FlowStep[]>([]);
+  const [originalVideoDuration, setOriginalVideoDuration] = useState<number>(0);
   const [activeFlowVideo, setActiveFlowVideo] = useState<string | null>(null);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
 
@@ -80,23 +111,76 @@ export default function VisualWorkspace({
     if (referenceImage) {
       const url = URL.createObjectURL(referenceImage);
       setReferenceImageUrl(url);
+      
+      if (mainMode === 'flow' && referenceImage.type.includes('video')) {
+        const tempVideo = document.createElement('video');
+        tempVideo.src = url;
+        tempVideo.onloadedmetadata = () => {
+          const duration = Math.round(tempVideo.duration) || 15;
+          setOriginalVideoDuration(duration);
+          setFlowSequence([
+            { id: 'original', url, duration, isLocal: true }
+          ]);
+          setActiveFlowVideo(url);
+        };
+        tempVideo.onerror = () => {
+          setOriginalVideoDuration(15);
+          setFlowSequence([
+            { id: 'original', url, duration: 15, isLocal: true }
+          ]);
+          setActiveFlowVideo(url);
+        };
+      }
       return () => URL.revokeObjectURL(url);
     } else {
       setReferenceImageUrl(null);
+      setOriginalVideoDuration(0);
+      setFlowSequence([]);
+      setActiveFlowVideo(null);
     }
-  }, [referenceImage]);
+  }, [referenceImage, mainMode]);
 
   useEffect(() => {
     if (mainMode === 'flow') {
-      if (result?.url) {
-        setActiveFlowVideo(result.url);
-      } else if (referenceImageUrl) {
-        setActiveFlowVideo(referenceImageUrl);
-      } else {
-        setActiveFlowVideo(null);
+      if (flowSequence.length === 0) {
+        if (referenceImageUrl) {
+          const tempVideo = document.createElement('video');
+          tempVideo.src = referenceImageUrl;
+          tempVideo.onloadedmetadata = () => {
+            const duration = Math.round(tempVideo.duration) || 15;
+            setOriginalVideoDuration(duration);
+            setFlowSequence([
+              { id: 'original', url: referenceImageUrl, duration, isLocal: true }
+            ]);
+            setActiveFlowVideo(referenceImageUrl);
+          };
+          tempVideo.onerror = () => {
+            setOriginalVideoDuration(15);
+            setFlowSequence([
+              { id: 'original', url: referenceImageUrl, duration: 15, isLocal: true }
+            ]);
+            setActiveFlowVideo(referenceImageUrl);
+          };
+        } else if (result?.url && result.type === 'video') {
+          const tempVideo = document.createElement('video');
+          tempVideo.src = result.url;
+          tempVideo.onloadedmetadata = () => {
+            const duration = Math.round(tempVideo.duration) || 15;
+            setFlowSequence([
+              { id: 'original', url: result.url, duration }
+            ]);
+            setActiveFlowVideo(result.url);
+          };
+          tempVideo.onerror = () => {
+            setFlowSequence([
+              { id: 'original', url: result.url, duration: 15 }
+            ]);
+            setActiveFlowVideo(result.url);
+          };
+        }
       }
     }
-  }, [mainMode, result, referenceImageUrl]);
+  }, [mainMode, referenceImageUrl, result]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,11 +205,29 @@ export default function VisualWorkspace({
         const output = JSON.parse(selectedHistoryItem.output);
         setResult({ type: output.type, url: output.url });
         setPrompt(selectedHistoryItem.input || '');
+
+        if (mainMode === 'flow' && output.type === 'video') {
+          const tempVideo = document.createElement('video');
+          tempVideo.src = output.url;
+          tempVideo.onloadedmetadata = () => {
+            const duration = Math.round(tempVideo.duration) || 15;
+            setFlowSequence([
+              { id: 'original', url: output.url, duration }
+            ]);
+            setActiveFlowVideo(output.url);
+          };
+          tempVideo.onerror = () => {
+            setFlowSequence([
+              { id: 'original', url: output.url, duration: 15 }
+            ]);
+            setActiveFlowVideo(output.url);
+          };
+        }
       } catch (e) {
         console.error(e);
       }
     }
-  }, [selectedHistoryItem]);
+  }, [selectedHistoryItem, mainMode]);
 
   const fetchProjects = async () => {
     setIsLoadingProjects(true);
@@ -231,11 +333,43 @@ export default function VisualWorkspace({
     });
   };
 
-  const handleGenerate = async () => {
-    if (!prompt && !referenceImage) return;
+  const getLastVideoDuration = (): number => {
+    if (flowSequence.length === 0) return 0;
+    return flowSequence[flowSequence.length - 1].duration;
+  };
 
+  const getLastVideoUrl = (): string => {
+    if (flowSequence.length === 0) return '';
+    return flowSequence[flowSequence.length - 1].url;
+  };
+
+  const handleGenerate = async () => {
     const isVideo = mainMode === 'video' || mainMode === 'flow';
-    const durSec = mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration;
+
+    if (mainMode === 'flow') {
+      if (flowSequence.length === 0) {
+        alert("Please upload or select an original video to start.");
+        return;
+      }
+      const currentDuration = getLastVideoDuration();
+      if (currentDuration >= 30) {
+        alert("Maximum video duration of 30 seconds has been reached.");
+        return;
+      }
+      if (30 - currentDuration < 2) {
+        alert("Cannot extend further as it would exceed the 30-second limit.");
+        return;
+      }
+    } else {
+      if (!prompt && !referenceImage) return;
+    }
+
+    let durSec = selectedVideoDuration;
+    if (mainMode === 'flow') {
+      const currentDuration = getLastVideoDuration();
+      durSec = Math.min(selectedFlowDuration, 30 - currentDuration);
+    }
+
     const isHD = selectedQuality === '720p' || selectedQuality === '1080p' || selectedQuality === '2k';
     const cost = isVideo ? (durSec * (isHD ? 1500 : 1200)) : 1500;
 
@@ -251,7 +385,14 @@ export default function VisualWorkspace({
 
     try {
       let referenceImageBase64 = '';
-      if (referenceImage) {
+      if (mainMode === 'flow') {
+        const lastStep = flowSequence[flowSequence.length - 1];
+        if (lastStep.isLocal && referenceImage) {
+          referenceImageBase64 = await fileToBase64(referenceImage);
+        } else {
+          referenceImageBase64 = lastStep.url;
+        }
+      } else if (referenceImage) {
         referenceImageBase64 = await fileToBase64(referenceImage);
       }
 
@@ -270,8 +411,7 @@ export default function VisualWorkspace({
 
         const data = await res.json();
         if (!res.ok) {
-          updateSession?.();
-          throw new Error(data.error || 'Failed to start video generation');
+          throw new Error(data.details?.error || data.error || 'Failed to start video generation');
         }
 
         // Deduct pulse immediately on UI side
@@ -288,9 +428,8 @@ export default function VisualWorkspace({
             if (!statusRes.ok) {
               clearInterval(intervalId);
               setIsGenerating(false);
-              updateSession?.();
               const errMsg = statusData.details?.error || statusData.error || 'Failed to check video status';
-              alert(`Video Synthesis Rejected: ${errMsg}`);
+              triggerError(`Video Synthesis Rejected: ${errMsg}`);
               return;
             }
 
@@ -304,13 +443,30 @@ export default function VisualWorkspace({
               setResult({ type: 'video', url: statusData.video.url });
               updateSession?.();
 
+              // Add generated video to the flow sequence if in flow mode
+              if (mainMode === 'flow') {
+                const currentDuration = getLastVideoDuration();
+                const newDuration = Math.min(30, currentDuration + durSec);
+                const nextStepIndex = flowSequence.length;
+                setFlowSequence(prev => [
+                  ...prev,
+                  {
+                    id: `gen-${nextStepIndex}`,
+                    url: statusData.video.url,
+                    duration: newDuration,
+                    prompt: flowPrompt || prompt
+                  }
+                ]);
+                setActiveFlowVideo(statusData.video.url);
+              }
+
               // Save to history and prepend local history state
               const hRes = await fetch('/api/history', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   type: 'visual',
-                  input: prompt || 'Video Generation',
+                  input: mainMode === 'flow' ? (flowPrompt || prompt) : (prompt || 'Video Generation'),
                   output: JSON.stringify({ type: 'video', url: statusData.video.url }),
                   projectId
                 })
@@ -322,8 +478,7 @@ export default function VisualWorkspace({
             } else if (statusData.status === 'failed' || statusData.status === 'expired') {
               clearInterval(intervalId);
               setIsGenerating(false);
-              updateSession?.();
-              alert(`Video generation ${statusData.status}`);
+              triggerError(`Video generation ${statusData.status}`);
             }
           } catch (err) {
             console.error('Polling error', err);
@@ -347,8 +502,7 @@ export default function VisualWorkspace({
 
         const data = await res.json();
         if (!res.ok) {
-          updateSession?.();
-          throw new Error(data.error || 'Failed to generate image');
+          throw new Error(data.details?.error || data.error || 'Failed to generate image');
         }
 
         setIsGenerating(false);
@@ -373,9 +527,8 @@ export default function VisualWorkspace({
       }
     } catch (err: any) {
       console.error(err);
-      alert(err.message);
+      triggerError(err.message);
       setIsGenerating(false);
-      updateSession?.();
     }
   };
 
@@ -530,94 +683,111 @@ export default function VisualWorkspace({
           {mainMode === 'flow' ? (
             <div className="flex w-full h-full">
               {/* Left 20% */}
-              <div className="w-2/6 md:w-[20%] border-r border-white/10 bg-black/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10">
+              <div className="w-2/6 md:w-[20%] border-r border-white/10 bg-black/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10 gap-1">
                 <p className="text-[8px] md:text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-4 shrink-0 text-center">Sequence</p>
 
-                {/* Original Video Box */}
-                <div
-                  className={cn(
-                    "w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-white/10 overflow-hidden relative group cursor-pointer transition-all duration-300 shrink-0",
-                    activeFlowVideo === referenceImageUrl && referenceImageUrl ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "hover:border-white/30"
-                  )}
-                  onClick={() => referenceImageUrl ? setActiveFlowVideo(referenceImageUrl) : fileInputRef.current?.click()}
-                >
-                  {referenceImageUrl && referenceImage ? (
-                    <>
-                      {referenceImage.type.includes('video') ? (
-                        <video src={referenceImageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                      ) : (
-                        <img src={referenceImageUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                {flowSequence.map((item, index) => {
+                  const isOriginal = index === 0;
+                  const isActive = activeFlowVideo === item.url;
+                  
+                  return (
+                    <div key={item.id || index} className="w-full flex flex-col items-center shrink-0">
+                      {index > 0 && (
+                        /* Arrow */
+                        <div className="w-px h-4 bg-gradient-to-b from-white/60 to-white/20 my-2 relative shrink-0">
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-solid border-t-white/20 border-t-4 border-x-transparent border-x-[3px] border-b-0" />
+                        </div>
                       )}
-                      {/* Clear Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setReferenceImage(null);
-                        }}
-                        className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg z-20"
-                      >
-                        <X className="w-2.5 h-2.5 text-white" />
-                      </button>
-                    </>
-                  ) : (
+
+                      {/* Video Box */}
+                      <div className="w-full flex flex-col gap-1 shrink-0">
+                        <div
+                          className={cn(
+                            "w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border overflow-hidden relative group cursor-pointer transition-all duration-300",
+                            isActive ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "border-white/10 hover:border-white/30"
+                          )}
+                          onClick={() => setActiveFlowVideo(item.url)}
+                        >
+                          <video src={item.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                          
+                          {isOriginal && (
+                            /* Clear Button for Original */
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReferenceImage(null);
+                                setFlowSequence([]);
+                                setActiveFlowVideo(null);
+                              }}
+                              className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg z-20"
+                            >
+                              <X className="w-2.5 h-2.5 text-white" />
+                            </button>
+                          )}
+
+                          <div className="absolute top-1.5 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[6px] font-mono text-white uppercase tracking-wider hidden md:block">
+                            {isOriginal ? 'Source' : `Gen ${index}`}
+                          </div>
+
+                          <div className="absolute bottom-1.5 right-2 bg-black/60 px-1.5 py-0.5 rounded text-[6px] font-mono text-white tracking-wider">
+                            {item.duration}s
+                          </div>
+                        </div>
+
+                        {/* Display URL and make it copyable/visible */}
+                        {!isOriginal && (
+                          <div className="w-full px-1 text-center">
+                            <span 
+                              title={item.url}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(item.url);
+                                alert("URL copied to clipboard!");
+                              }}
+                              className="block text-[7.5px] font-mono text-zinc-500 truncate hover:text-cyan-400 cursor-pointer transition-colors max-w-full"
+                            >
+                              {item.url}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* If sequence is empty, show empty Original Upload Box */}
+                {flowSequence.length === 0 && (
+                  <div
+                    className="w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-white/10 overflow-hidden relative group cursor-pointer transition-all duration-300 shrink-0"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     <div className="w-full h-full flex flex-col items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">
                       <Plus className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors mb-1 opacity-0 group-hover:opacity-100" />
                       <span className="text-[8px] font-mono text-zinc-600 uppercase group-hover:text-zinc-400">Original</span>
                     </div>
-                  )}
-                  <div className="absolute top-1.5 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[6px] font-mono text-white uppercase tracking-wider hidden md:block">
-                    Source
                   </div>
-                </div>
+                )}
 
-                {/* Arrow */}
-                <div className="w-px h-6 bg-gradient-to-b from-white/20 to-white/5 my-2 relative shrink-0">
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-solid border-t-white/20 border-t-4 border-x-transparent border-x-[3px] border-b-0" />
-                </div>
-
-                {/* Subsequent Video (Result) */}
-                {result ? (
+                {/* Arrow and Blank prompt/limit indicator box at the end of the sequence */}
+                {flowSequence.length > 0 && (
                   <>
-                    <div
-                      className={cn(
-                        "w-full aspect-[9/16] max-h-32 rounded-xl border border-white/10 overflow-hidden relative group cursor-pointer transition-all duration-300 shrink-0",
-                        activeFlowVideo === result.url ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "hover:border-white/30"
-                      )}
-                      onClick={() => setActiveFlowVideo(result.url)}
-                    >
-                      {result.type === 'video' ? (
-                        <video src={result.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                      ) : (
-                        <img src={result.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                      )}
-                      <div className="absolute top-1 left-1 bg-cyan-500/20 border border-cyan-500/30 px-1.5 py-0.5 rounded text-[6px] font-mono text-cyan-300 uppercase tracking-wider hidden md:block">
-                        Gen 1
-                      </div>
-                    </div>
-
-                    {/* Arrow */}
-                    <div className="w-px h-6 bg-gradient-to-b from-white/20 to-white/5 my-2 relative shrink-0">
+                    <div className="w-px h-4 bg-gradient-to-b from-white/60 to-white/20 my-2 relative shrink-0">
                       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full border-solid border-t-white/20 border-t-4 border-x-transparent border-x-[3px] border-b-0" />
                     </div>
 
-                    {/* Blank Box */}
-                    <div className="w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center p-2 text-center bg-white/[0.02] shrink-0">
-                      <span className="text-[10px] font-mono text-zinc-400 tracking-widest leading-tight">
-                        Describe what happens next by typing the text below.
-                      </span>
+                    <div className="w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center p-2 text-center bg-white/[0.02] shrink-0 relative">
+                      {isGenerating ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mb-2" />
+                      ) : (
+                        <span className="text-[9px] md:text-[10px] font-mono text-zinc-400 tracking-widest leading-tight">
+                          {getLastVideoDuration() >= 30 
+                            ? "30s Limit Reached" 
+                            : "Describe what happens next by typing the text below."
+                          }
+                        </span>
+                      )}
                     </div>
                   </>
-                ) : (
-                  /* Blank Box directly after Original */
-                  <div className="w-full aspect-[9/16] max-h-24 md:max-h-32 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center p-2 text-center bg-white/[0.02] shrink-0 relative">
-                    {isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mb-2" />
-                    ) : (
-                      <span className="text-[10px] font-mono text-zinc-400 tracking-widest leading-tight">
-                        Describe what happens next by typing the text below.
-                      </span>
-                    )}
-                  </div>
                 )}
               </div>
 
@@ -639,6 +809,7 @@ export default function VisualWorkspace({
                     ) : (
                       <video
                         src={activeFlowVideo}
+                        key={activeFlowVideo}
                         controls
                         autoPlay
                         loop
@@ -726,6 +897,31 @@ export default function VisualWorkspace({
               )}
             </div>
           )}
+
+          {/* Synthesis Error Notification Toast */}
+          <AnimatePresence>
+            {synthesisError && (
+              <div className="absolute top-4 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-full bg-red-950/90 border border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.3)] backdrop-blur-md max-w-full text-center"
+                >
+                  <div className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
+                  <span className="text-[10px] md:text-[11px] font-mono text-red-200 tracking-wider uppercase font-semibold">
+                    {synthesisError}
+                  </span>
+                  <button 
+                    onClick={() => setSynthesisError(null)}
+                    className="text-red-400 hover:text-white transition-colors ml-2 shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Input Bar & Parameters Controls */}
