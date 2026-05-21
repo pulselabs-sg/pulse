@@ -1,13 +1,43 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Settings, Image as ImageIcon, Video, Send,
-  X, Sparkles, Wand2, Upload, AlertCircle, Loader2, PlayCircle
+  X, Sparkles, Wand2, Upload, AlertCircle, Loader2, PlayCircle, Menu, Bot, Terminal, CheckCircle2, Cpu, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GROK_FEATURES, GrokFeature, ASPECT_RATIOS, QUALITY_OPTIONS, VIDEO_DURATION_OPTIONS, FLOW_DURATION_OPTIONS } from '@/lib/visual-constants';
 import RevealAnimation from './RevealAnimation';
 import { useRouter } from 'next/navigation';
+
+// ── TypewriterText: streams text character-by-character ─────────────────────
+function TypewriterText({ text, speed = 18, onDone }: { text: string; speed?: number; onDone?: () => void }) {
+  const [displayed, setDisplayed] = useState('');
+  const [done, setDone] = useState(false);
+  const idx = useRef(0);
+
+  useEffect(() => {
+    idx.current = 0;
+    setDisplayed('');
+    setDone(false);
+    const timer = setInterval(() => {
+      idx.current++;
+      setDisplayed(text.slice(0, idx.current));
+      if (idx.current >= text.length) {
+        clearInterval(timer);
+        setDone(true);
+        onDone?.();
+      }
+    }, speed);
+    return () => clearInterval(timer);
+  }, [text]);
+
+  return (
+    <span>
+      {displayed}
+      {!done && <span className="inline-block w-[2px] h-[1em] bg-white/70 align-middle animate-pulse ml-[1px]" />}
+    </span>
+  );
+}
 
 const getCleanPath = (path: string) => {
   if (typeof window !== 'undefined') {
@@ -26,6 +56,8 @@ interface VisualWorkspaceProps {
   selectedHistoryItem?: any;
   clearSelectedHistory?: () => void;
   updateSession?: () => void;
+  isSidebarOpen?: boolean;
+  setIsSidebarOpen?: (v: boolean) => void;
 }
 
 export default function VisualWorkspace({
@@ -34,7 +66,9 @@ export default function VisualWorkspace({
   projectId,
   selectedHistoryItem,
   clearSelectedHistory,
-  updateSession
+  updateSession,
+  isSidebarOpen,
+  setIsSidebarOpen
 }: VisualWorkspaceProps) {
   const router = useRouter();
 
@@ -52,7 +86,7 @@ export default function VisualWorkspace({
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false);
-  const [mainMode, setMainMode] = useState<'image' | 'video' | 'flow'>('image');
+  const [mainMode, setMainMode] = useState<'image' | 'video' | 'flow' | 'agent'>('image');
   const [selectedAspectRatio, setSelectedAspectRatio] = useState<string>(ASPECT_RATIOS[0].id);
   const [selectedQuality, setSelectedQuality] = useState<string>(QUALITY_OPTIONS[0].id);
   const [selectedVideoDuration, setSelectedVideoDuration] = useState<number>(VIDEO_DURATION_OPTIONS[0].id);
@@ -72,13 +106,14 @@ export default function VisualWorkspace({
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<{ type: 'image' | 'video', url: string } | null>(null);
   const [synthesisError, setSynthesisError] = useState<string | null>(null);
+  const [promptError, setPromptError] = useState<string | null>(null);
+  const [promptIntent, setPromptIntent] = useState<string | null>(null);
   const errorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const promptErrTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const triggerError = (message: string) => {
     console.log("Triggering synthesis error toast UI:", message);
-    if (errorTimeoutRef.current) {
-      clearTimeout(errorTimeoutRef.current);
-    }
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
     setSynthesisError(message);
     errorTimeoutRef.current = setTimeout(() => {
       setSynthesisError(null);
@@ -86,11 +121,19 @@ export default function VisualWorkspace({
     }, 5000);
   };
 
+  const triggerPromptError = (message: string) => {
+    if (promptErrTimeoutRef.current) clearTimeout(promptErrTimeoutRef.current);
+    setPromptError(message);
+    promptErrTimeoutRef.current = setTimeout(() => {
+      setPromptError(null);
+      promptErrTimeoutRef.current = null;
+    }, 5000);
+  };
+
   useEffect(() => {
     return () => {
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      if (promptErrTimeoutRef.current) clearTimeout(promptErrTimeoutRef.current);
     };
   }, []);
 
@@ -107,11 +150,33 @@ export default function VisualWorkspace({
   const [activeFlowVideo, setActiveFlowVideo] = useState<string | null>(null);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
 
+  // Agent State
+  interface AgentStep {
+    agent: string;
+    status: 'idle' | 'working' | 'success' | 'failed';
+    message: string;
+    reasoning?: string;
+  }
+  const [agentStatus, setAgentStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle');
+  const [agentSteps, setAgentSteps] = useState<AgentStep[]>([]);
+  const [activityLogs, setActivityLogs] = useState<AgentStep[]>([]);
+  const [activeMobileTab, setActiveMobileTab] = useState<'log' | 'script' | 'video'>('log');
+  const [finalVideoUrl, setFinalVideoUrl] = useState<string | null>(null);
+  const [finalScript, setFinalScript] = useState<string | null>(null);
+  const [finalPrompts, setFinalPrompts] = useState<string[]>([]);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const logEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll the live log terminal to bottom whenever new steps arrive
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [activityLogs]);
+
   useEffect(() => {
     if (referenceImage) {
       const url = URL.createObjectURL(referenceImage);
       setReferenceImageUrl(url);
-      
+
       if (mainMode === 'flow' && referenceImage.type.includes('video')) {
         const tempVideo = document.createElement('video');
         tempVideo.src = url;
@@ -344,6 +409,152 @@ export default function VisualWorkspace({
   };
 
   const handleGenerate = async () => {
+    if (mainMode === 'agent') {
+      if (!prompt) return;
+
+      // ── Client-side prompt validation ──────────────────────────────────────
+      try {
+        const checkRes = await fetch('/api/visual/prompt-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, hasImage: !!referenceImage }),
+        });
+        const checkData = await checkRes.json();
+        if (!checkData.ok) {
+          triggerPromptError(checkData.message || 'Prompt validation failed.');
+          return;
+        }
+        // Store detected intent for display and routing hint
+        setPromptIntent(checkData.intent || null);
+      } catch (checkErr) {
+        console.warn('Prompt check failed, proceeding anyway:', checkErr);
+      }
+
+      setAgentStatus('running');
+      setAgentSteps([
+        { agent: 'Idea Generator Agent', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Research Agent', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Script Writer & Voiceover Agent', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Visual Planner Agent', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Media Generator Agent', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Editor & Reviewer Agent', status: 'idle', message: 'Waiting to start...' },
+      ]);
+      setActivityLogs([]);
+      setActiveMobileTab('log');
+      setFinalVideoUrl(null);
+      setFinalScript(null);
+      setFinalPrompts([]);
+      setIsDemoMode(false);
+
+      // ── Convert reference image to base64 for agent mode ───────────────────
+      let agentReferenceImageBase64: string | null = null;
+      if (referenceImage) {
+        try {
+          agentReferenceImageBase64 = await fileToBase64(referenceImage);
+        } catch (encErr) {
+          console.warn('Failed to encode reference image for agent:', encErr);
+        }
+      }
+
+      try {
+        const response = await fetch('/api/visual/agent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt,
+            referenceImageBase64: agentReferenceImageBase64,
+            intent: promptIntent,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to run autonomous agent crew');
+        }
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) return;
+
+        let buffer = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop() || '';
+
+          for (const part of parts) {
+            if (part.startsWith('event: ')) {
+              const lines = part.split('\n');
+              const eventLine = lines[0];
+              const dataLine = lines[1];
+
+              if (eventLine && dataLine) {
+                const event = eventLine.replace('event: ', '').trim();
+                const dataStr = dataLine.replace('data: ', '').trim();
+                try {
+                  const data = JSON.parse(dataStr);
+                  if (event === 'agent_status') {
+                    // Early demo mode detection from log content
+                    if (data.reasoning && (
+                      data.reasoning.includes('DEMO pipeline') ||
+                      data.reasoning.includes('Grok API unavailable') ||
+                      data.reasoning.includes('Grok API rate limit') ||
+                      data.reasoning.includes('DEMO mode')
+                    )) {
+                      setIsDemoMode(true);
+                    }
+                    setAgentSteps(prev => {
+                      const idx = prev.findIndex(s => s.agent === data.agent);
+                      if (idx >= 0) {
+                        const newSteps = [...prev];
+                        newSteps[idx] = data;
+                        return newSteps;
+                      } else {
+                        return [...prev, data];
+                      }
+                    });
+                    setActivityLogs(prev => [...prev, data]);
+                  } else if (event === 'complete') {
+                    setFinalVideoUrl(data.videoUrl);
+                    setFinalScript(data.script);
+                    setFinalPrompts(data.prompts || []);
+                    setIsDemoMode(!!data.demoMode);
+                    setAgentStatus('completed');
+                    setActiveMobileTab('video');
+
+                    // Save to history and update state
+                    const hRes = await fetch('/api/history', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        type: 'visual',
+                        input: `[iPulse Agent] ${prompt}`,
+                        output: JSON.stringify({ type: 'video', url: data.videoUrl }),
+                        projectId
+                      })
+                    });
+                    if (hRes.ok) {
+                      const newHItem = await hRes.json();
+                      setHistory(prev => [newHItem, ...prev]);
+                    }
+                  }
+                } catch (err) {
+                  console.error("Error parsing event:", err);
+                }
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        console.error(err);
+        setAgentStatus('failed');
+        triggerError(err.message || 'Agent pipeline execution failed.');
+      }
+      return;
+    }
+
     const isVideo = mainMode === 'video' || mainMode === 'flow';
 
     if (mainMode === 'flow') {
@@ -364,6 +575,24 @@ export default function VisualWorkspace({
       if (!prompt && !referenceImage) return;
     }
 
+    // ── Client-side prompt validation (image/video modes) ──────────────────────
+    if (prompt) {
+      try {
+        const checkRes = await fetch('/api/visual/prompt-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, hasImage: !!referenceImage }),
+        });
+        const checkData = await checkRes.json();
+        if (!checkData.ok) {
+          triggerPromptError(checkData.message || 'Prompt validation failed.');
+          return;
+        }
+      } catch (checkErr) {
+        console.warn('Prompt check failed, proceeding anyway:', checkErr);
+      }
+    }
+
     let durSec = selectedVideoDuration;
     if (mainMode === 'flow') {
       const currentDuration = getLastVideoDuration();
@@ -382,6 +611,7 @@ export default function VisualWorkspace({
 
     setIsGenerating(true);
     setResult(null);
+
 
     try {
       let referenceImageBase64 = '';
@@ -557,7 +787,7 @@ export default function VisualWorkspace({
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-mono font-bold tracking-[0.25em] text-white uppercase text-glow-white mb-4"
           >
-            iPulse Vision
+            iPulse
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -574,14 +804,14 @@ export default function VisualWorkspace({
             onClick={handleCreateProject}
             className="px-10 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.25em] rounded-full hover:bg-zinc-200 transition-all shadow-[0_0_35px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(255,255,255,0.35)]"
           >
-            Create New Canvas
+            Create New Project
           </motion.button>
         </div>
 
         {/* Recent Projects Section */}
         <div className="w-full max-w-5xl mt-8">
           <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6">
-            <h3 className="text-[10px] font-mono text-zinc-300 font-bold uppercase tracking-[0.3em]">
+            <h3 className="text-[10px] font-mono text-zinc-400 font-bold tracking-[0.3em]">
               Active Projects Matrix
             </h3>
             <span className="text-[9px] font-mono text-zinc-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
@@ -609,10 +839,10 @@ export default function VisualWorkspace({
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                   <div>
-                    <div className="flex items-center gap-2 mb-3 text-zinc-400 group-hover:text-white transition-colors duration-300">
+                    {/* <div className="flex items-center gap-2 mb-3 text-zinc-400 group-hover:text-white transition-colors duration-300">
                       <Wand2 className="w-4 h-4" />
                       <span className="text-[9px] font-mono tracking-widest uppercase">Visual Workspace</span>
-                    </div>
+                    </div> */}
                     <h3 className="text-sm font-mono text-white tracking-wider font-bold uppercase truncate pr-8">
                       {project.name}
                     </h3>
@@ -623,7 +853,7 @@ export default function VisualWorkspace({
                       {new Date(project.createdAt).toLocaleDateString()}
                     </span>
                     <span className="text-[9px] font-mono tracking-widest font-bold text-white bg-white/10 px-3 py-1.5 rounded-full group-hover:bg-white group-hover:text-black transition-all">
-                      OPEN CANVAS
+                      OPEN
                     </span>
                   </div>
 
@@ -655,21 +885,31 @@ export default function VisualWorkspace({
 
         {/* Workspace Subheader */}
         <div className="flex items-center justify-between mb-4 shrink-0">
-          <button
-            onClick={() => router.push(getCleanPath('/visual'))}
-            className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 py-1.5 px-4 rounded-full bg-white/5 border border-white/5 hover:border-white/15"
-          >
-            <X className="w-3 h-3" /> Close Project
-          </button>
+          <div className="flex items-center gap-2">
+            {!isSidebarOpen && setIsSidebarOpen && (
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-full border border-white/10 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.05)] bg-white/5"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={() => router.push(getCleanPath('/visual'))}
+              className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 py-1.5 px-4 rounded-full bg-white/10 border border-white/5 hover:border-white/15"
+            >
+              <X className="w-3 h-3" /> Close Project
+            </button>
+          </div>
 
           <button
             onClick={() => setIsGalleryOpen(!isGalleryOpen)}
             className={cn(
-              "text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 py-1.5 px-4 rounded-full bg-white/5 border border-white/5 hover:border-white/15 ml-auto",
+              "text-[9px] font-mono uppercase tracking-[0.18em] text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 py-1.5 px-4 rounded-full bg-white/15 border border-white/5 hover:border-white/15 ml-auto",
               isGalleryOpen && "lg:hidden"
             )}
           >
-            {isGalleryOpen ? 'Hide History' : `History (${history.length})`}
+            {isGalleryOpen ? 'Hide History' : `History`}
           </button>
         </div>
 
@@ -679,17 +919,17 @@ export default function VisualWorkspace({
         )}
 
         {/* Interactive Synthesis Display Screen */}
-        <div className="flex-1 glass border border-white/10 rounded-4xl mb-5 relative overflow-hidden flex shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+        <div className="flex-1 bg-black rounded-4xl mb-5 relative overflow-hidden flex">
           {mainMode === 'flow' ? (
             <div className="flex w-full h-full">
               {/* Left 20% */}
-              <div className="w-2/6 md:w-[20%] border-r border-white/10 bg-black/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10 gap-1">
-                <p className="text-[8px] md:text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-4 shrink-0 text-center">Sequence</p>
+              <div className="w-2/6 md:w-[20%] border-r border-white/20 bg-black/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10 gap-1">
+                <p className="text-[8px] md:text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-4 shrink-0 text-center">Sequence</p>
 
                 {flowSequence.map((item, index) => {
                   const isOriginal = index === 0;
                   const isActive = activeFlowVideo === item.url;
-                  
+
                   return (
                     <div key={item.id || index} className="w-full flex flex-col items-center shrink-0">
                       {index > 0 && (
@@ -709,7 +949,7 @@ export default function VisualWorkspace({
                           onClick={() => setActiveFlowVideo(item.url)}
                         >
                           <video src={item.url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                          
+
                           {isOriginal && (
                             /* Clear Button for Original */
                             <button
@@ -737,7 +977,7 @@ export default function VisualWorkspace({
                         {/* Display URL and make it copyable/visible */}
                         {!isOriginal && (
                           <div className="w-full px-1 text-center">
-                            <span 
+                            <span
                               title={item.url}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -763,7 +1003,7 @@ export default function VisualWorkspace({
                   >
                     <div className="w-full h-full flex flex-col items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">
                       <Plus className="w-4 h-4 text-zinc-500 group-hover:text-white transition-colors mb-1 opacity-0 group-hover:opacity-100" />
-                      <span className="text-[8px] font-mono text-zinc-600 uppercase group-hover:text-zinc-400">Original</span>
+                      <span className="text-[8px] font-mono text-zinc-500 uppercase group-hover:text-zinc-400">Original</span>
                     </div>
                   </div>
                 )}
@@ -780,8 +1020,8 @@ export default function VisualWorkspace({
                         <Loader2 className="w-4 h-4 animate-spin text-zinc-500 mb-2" />
                       ) : (
                         <span className="text-[9px] md:text-[10px] font-mono text-zinc-400 tracking-widest leading-tight">
-                          {getLastVideoDuration() >= 30 
-                            ? "30s Limit Reached" 
+                          {getLastVideoDuration() >= 30
+                            ? "30s Limit Reached"
                             : "Describe what happens next by typing the text below."
                           }
                         </span>
@@ -840,9 +1080,404 @@ export default function VisualWorkspace({
                 ) : (
                   <div className="flex flex-col items-center justify-center text-zinc-500">
                     <Wand2 className="w-12 h-12 mb-4 opacity-50" />
-                    <p className="text-[10px] font-mono tracking-[0.2em] uppercase">Flow Sequence Editor</p>
+                    <p className="text-[10px] font-mono tracking-[0.2em]">Flow Sequence Editor</p>
                   </div>
                 )}
+              </div>
+            </div>
+          ) : mainMode === 'agent' ? (
+            <div className="flex flex-col w-full h-full overflow-hidden relative z-10">
+
+              {/* ── TOP: Horizontal Agent Crew Row ──────────────────────── */}
+              <div className="shrink-0 px-5 pt-4 pb-3 border-b border-white/[0.06] relative z-30 overflow-visible">
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                  <span className="text-[9px] font-mono tracking-[0.28em] text-white/40 uppercase select-none">Agent Crew Matrix</span>
+                </div>
+                <div className="flex items-center gap-3 overflow-visible pb-1 flex-wrap md:flex-nowrap">
+                  {[
+                    {
+                      name: 'Idea Generator',
+                      fullName: 'Idea Generator Agent',
+                      role: 'Gemini 1.5 Flash',
+                      image: '/agent-1.png',
+                      accent: '#a855f7',
+                      tasks: ['Receives the user topic and generates 3–5 unique video concept angles.', 'Selects the most viral-friendly hook and defines tone, audience & style.', 'Outputs a structured concept brief passed to the Research Agent.'],
+                    },
+                    {
+                      name: 'Researcher',
+                      fullName: 'Research Agent',
+                      role: 'Gemini 1.5 Flash',
+                      image: '/agent-2.png',
+                      accent: '#3b82f6',
+                      tasks: ['Queries current trends, statistics and social proof for the chosen concept.', 'Validates accuracy of facts and suggests credible data points.', 'Enriches the concept brief before handing off to the Script Writer.'],
+                    },
+                    {
+                      name: 'Script Writer',
+                      fullName: 'Script Writer & Voiceover Agent',
+                      role: 'Gemini 1.5 Flash',
+                      image: '/agent-3.png',
+                      accent: '#10b981',
+                      tasks: ['Writes a full narration script divided into timed scenes.', 'Optimises pacing for vertical short-form video (15–60 s).', 'Generates voiceover cue text and passes scene breakdown to the Visual Planner.'],
+                    },
+                    {
+                      name: 'Visual Planner',
+                      fullName: 'Visual Planner Agent',
+                      role: 'Gemini 1.5 Flash',
+                      image: '/agent-4.png',
+                      accent: '#06b6d4',
+                      tasks: ['Translates each script scene into a detailed visual prompt.', 'Applies cinematic language: lighting, mood, camera angle and motion.', 'Outputs an ordered list of scene prompts ready for the Media Generator.'],
+                    },
+                    {
+                      name: 'Media Gen',
+                      fullName: 'Media Generator Agent',
+                      role: 'Grok Aurora',
+                      image: '/agent-5.png',
+                      accent: '#f43f5e',
+                      tasks: ['Sends each visual prompt to the Grok Aurora image model.', 'Extends each scene into a short video clip via Grok Video API.', 'Handles retries and quality checks before passing assets to the Editor.'],
+                    },
+                    {
+                      name: 'Editor',
+                      fullName: 'Editor & Reviewer Agent',
+                      role: 'Gemini 1.5 Flash',
+                      image: '/agent-6.png',
+                      accent: '#f59e0b',
+                      tasks: ['Stitches all video clips into a seamless sequence using FFmpeg.', 'Overlays AI-generated voiceover audio aligned to scene timing.', 'Applies final quality review and outputs the completed video file.'],
+                    },
+                  ].map((agentItem) => {
+                    const step = agentSteps.find(s => s.agent === agentItem.fullName);
+                    const status = step?.status || 'idle';
+                    return (
+                      <div key={agentItem.name} className="relative group shrink-0 z-30">
+                        {/* Horizontal Card */}
+                        <motion.div
+                          animate={status === 'working' ? { boxShadow: [`0 0 0px ${agentItem.accent}00`, `0 0 10px ${agentItem.accent}33`, `0 0 0px ${agentItem.accent}00`] } : {}}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="flex flex-row items-center gap-2.5 px-3 py-1.5 rounded-xl border cursor-default select-none transition-all duration-300"
+                          style={{
+                            background: status === 'working' ? `${agentItem.accent}0f` : status === 'success' ? `${agentItem.accent}07` : 'rgba(255,255,255,0.02)',
+                            borderColor: status === 'working' ? `${agentItem.accent}60` : status === 'success' ? `${agentItem.accent}30` : 'rgba(255,255,255,0.06)',
+                          }}
+                        >
+                          {/* PFP image */}
+                          <div className="w-7 h-7 rounded-lg border overflow-hidden flex items-center justify-center shrink-0 relative"
+                            style={{ borderColor: status !== 'idle' ? `${agentItem.accent}50` : 'rgba(255,255,255,0.12)', background: `${agentItem.accent}15` }}>
+                            {agentItem.image ? (
+                              <img src={agentItem.image} alt={agentItem.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] font-mono font-bold" style={{ color: agentItem.accent }}>{agentItem.name.charAt(0)}</span>
+                            )}
+                            {status === 'working' && (
+                              <span className="absolute inset-0 rounded-full border animate-spin"
+                                style={{ borderColor: `${agentItem.accent}40 transparent transparent transparent` }} />
+                            )}
+                          </div>
+
+                          {/* Name and Status */}
+                          <div className="flex flex-col min-w-0 pr-1.5">
+                            <span className="text-[9.5px] font-mono font-semibold tracking-wider text-white/80 truncate leading-none mb-0.5">{agentItem.name}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full shrink-0"
+                                style={{
+                                  background: status === 'working' ? agentItem.accent : status === 'success' ? '#10b981' : 'rgba(255,255,255,0.2)',
+                                  boxShadow: status === 'working' ? `0 0 4px ${agentItem.accent}` : status === 'success' ? '0 0 4px #10b981' : 'none'
+                                }}
+                              />
+                              <span className="text-[6.5px] font-mono uppercase tracking-widest leading-none font-bold"
+                                style={{
+                                  color: status === 'working' ? '#fff' : status === 'success' ? '#10b981' : 'rgba(255,255,255,0.3)',
+                                }}>
+                                {status === 'working' ? 'active' : status === 'success' ? 'ready' : 'standby'}
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* Hover Tooltip */}
+                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-52 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 scale-95 group-hover:scale-100 shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
+                          <div className="rounded-2xl border p-3 backdrop-blur-xl"
+                            style={{ background: 'rgba(8,8,16,0.98)', borderColor: `${agentItem.accent}30` }}>
+                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.07]">
+                              {/* Larger PFP in tooltip */}
+                              <div className="w-9 h-9 rounded-lg border overflow-hidden flex items-center justify-center shrink-0"
+                                style={{ borderColor: `${agentItem.accent}50`, background: `${agentItem.accent}18` }}>
+                                {agentItem.image ? (
+                                  <img src={agentItem.image} alt={agentItem.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-[11px] font-mono font-bold" style={{ color: agentItem.accent }}>{agentItem.name.charAt(0)}</span>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-mono font-bold text-white tracking-wider leading-none">{agentItem.fullName}</p>
+                              </div>
+                            </div>
+                            <ul className="flex flex-col gap-2">
+                              {agentItem.tasks.map((t, i) => (
+                                <li key={i} className="flex items-start gap-2 text-[9px] font-mono text-white/50 leading-relaxed">
+                                  <span className="w-1 h-1 rounded-full shrink-0 mt-1.5" style={{ background: agentItem.accent }} />
+                                  {t}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-1.5 overflow-hidden">
+                            <div className="w-3 h-3 rotate-45 border-l border-t mx-auto -mt-1.5" style={{ background: 'rgba(8,8,16,0.98)', borderColor: `${agentItem.accent}30` }} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Mobile tabs for results/log */}
+              {agentStatus !== 'idle' && (
+                <div className="flex lg:hidden border-b border-white/[0.06] bg-black/40 shrink-0 select-none">
+                  <button
+                    onClick={() => setActiveMobileTab('log')}
+                    className={cn(
+                      "flex-1 py-3 text-[9px] font-mono tracking-widest uppercase transition-all border-b-2 text-center",
+                      activeMobileTab === 'log'
+                        ? "border-white text-white font-bold bg-white/[0.02]"
+                        : "border-transparent text-white/40"
+                    )}
+                  >
+                    Activity Log
+                  </button>
+                  {agentStatus === 'completed' && finalVideoUrl && (
+                    <>
+                      <button
+                        onClick={() => setActiveMobileTab('script')}
+                        className={cn(
+                          "flex-1 py-3 text-[9px] font-mono tracking-widest uppercase transition-all border-b-2 text-center",
+                          activeMobileTab === 'script'
+                            ? "border-white text-white font-bold bg-white/[0.02]"
+                            : "border-transparent text-white/40"
+                        )}
+                      >
+                        Screenplay
+                      </button>
+                      <button
+                        onClick={() => setActiveMobileTab('video')}
+                        className={cn(
+                          "flex-1 py-3 text-[9px] font-mono tracking-widest uppercase transition-all border-b-2 text-center",
+                          activeMobileTab === 'video'
+                            ? "border-white text-white font-bold bg-white/[0.02]"
+                            : "border-transparent text-white/40"
+                        )}
+                      >
+                        Video
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* ── BOTTOM: Two-pane work area ───────────────────────────── */}
+              <div className="flex-1 flex flex-col lg:flex-row gap-0 overflow-hidden min-h-0">
+
+                {/* LEFT 40% — Activity Log */}
+                <div className={cn("w-full lg:w-[40%] flex-col h-full lg:border-r border-white/[0.06] overflow-hidden min-h-0", activeMobileTab === 'log' ? 'flex' : 'hidden lg:flex')}>
+                  {agentStatus === 'idle' ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-5">
+                      <motion.div
+                        animate={{ scale: [1, 1.04, 1], opacity: [0.6, 1, 0.6] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                        className="w-14 h-14 rounded-full border border-white/40 flex items-center justify-center bg-white/[0.02]"
+                      >
+                        <Bot className="w-6 h-6 text-white/60" />
+                      </motion.div>
+                      <div className="max-w-xs">
+                        <h3 className="text-[11px] font-mono font-bold text-white/80 uppercase tracking-[0.3em] mb-2">iPulse Agent Console</h3>
+                        <p className="text-[9px] font-mono text-white/40 tracking-wider leading-relaxed">
+                          Describe a video topic and the crew will brainstorm, research, script, plan, generate and edit — fully autonomously.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+                      {/* Chat header */}
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06] shrink-0">
+                        <div className="flex items-center gap-2">
+                          <Terminal className="w-3.5 h-3.5 text-white/25" />
+                          <span className="text-[8px] font-mono tracking-[0.22em] text-white/45 uppercase select-none">Activity Log</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isDemoMode && (
+                            <span className="text-[6.5px] font-mono font-bold uppercase tracking-widest text-amber-900 bg-amber-400 px-2 py-px rounded-full">Demo</span>
+                          )}
+                          {agentStatus === 'running' && (
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.9)] animate-pulse" />
+                              <span className="text-[7.5px] font-mono text-emerald-400/60 tracking-widest uppercase">Live</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Messages */}
+                      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col px-4 py-3 gap-0">
+                        <AnimatePresence initial={false}>
+                          {activityLogs.map((step, idx) => {
+                            const isSystem = step.agent === 'System';
+                            const isLast = idx === activityLogs.length - 1;
+                            const bodyText = step.reasoning ? step.reasoning : step.message;
+                            const initials = isSystem ? '!!' : step.agent.split(' ').map((w: string) => w[0]).slice(0, 2).join('');
+                            return (
+                              <motion.div
+                                key={step.agent + idx}
+                                initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                className="flex items-start gap-2.5 py-2.5 border-b border-white/[0.04] last:border-b-0"
+                              >
+                                <div className={cn(
+                                  'w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[8px] font-mono font-bold uppercase border mt-0.5',
+                                  isSystem ? 'bg-amber-500/15 border-amber-500/25 text-amber-400' : 'bg-white/[0.04] border-white/10 text-white/35'
+                                )}>
+                                  {initials}
+                                </div>
+                                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={cn('text-[8.5px] font-mono font-semibold tracking-wider', isSystem ? 'text-amber-400' : 'text-white/40')}>
+                                      {isSystem ? 'System' : step.agent}
+                                    </span>
+                                    <span className={cn(
+                                      'text-[6.5px] font-mono uppercase tracking-widest px-1.5 py-px rounded-full border',
+                                      step.status === 'working' ? 'text-white/35 border-white/10 bg-white/[0.03]' :
+                                        step.status === 'success' ? 'text-emerald-400/60 border-emerald-500/20 bg-emerald-500/[0.04]' :
+                                          'text-amber-400/60 border-amber-500/20'
+                                    )}>
+                                      {step.status === 'working' ? 'working' : step.status === 'success' ? 'done' : step.message}
+                                    </span>
+                                  </div>
+                                  <p className={cn('text-[10.5px] leading-[1.85] font-sans whitespace-pre-line select-text', isSystem ? 'text-amber-200/65' : 'text-white/72')}>
+                                    {isLast ? <TypewriterText text={bodyText} speed={10} /> : bodyText}
+                                  </p>
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </AnimatePresence>
+
+                        {agentStatus === 'running' && agentSteps.filter(s => s.status === 'working').length > 0 && (
+                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 pl-8 py-2.5">
+                            <span className="flex gap-1">
+                              {[0, 0.18, 0.36].map((d, i) => (
+                                <motion.span key={i} className="w-1 h-1 rounded-full bg-white/20"
+                                  animate={{ opacity: [0.2, 0.7, 0.2] }}
+                                  transition={{ duration: 1.1, delay: d, repeat: Infinity }} />
+                              ))}
+                            </span>
+                            <span className="text-[8px] font-mono text-white/18 tracking-wider">
+                              {agentSteps.find(s => s.status === 'working')?.agent} is thinking…
+                            </span>
+                          </motion.div>
+                        )}
+
+                        <div ref={logEndRef} className="h-2 shrink-0" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT 60% — Output: video + screenplay */}
+                <div className={cn("flex-1 flex-col h-full overflow-hidden min-h-0", activeMobileTab !== 'log' ? 'flex' : 'hidden lg:flex')}>
+                  {(agentStatus === 'idle' || agentStatus === 'running') ? (
+                    <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
+                      {agentStatus === 'running' ? (
+                        <motion.div className="flex flex-col items-center gap-4 text-center">
+                          <div className="relative w-16 h-16">
+                            <motion.div className="absolute inset-0 rounded-full border border-white/8"
+                              animate={{ scale: [1, 1.6], opacity: [0.4, 0] }} transition={{ duration: 2.2, repeat: Infinity }} />
+                            <motion.div className="absolute inset-0 rounded-full border border-white/8"
+                              animate={{ scale: [1, 1.6], opacity: [0.4, 0] }} transition={{ duration: 2.2, delay: 0.7, repeat: Infinity }} />
+                            <div className="absolute inset-0 rounded-full border border-white/8 flex items-center justify-center bg-white/[0.02]">
+                              <Cpu className="w-5 h-5 text-white/25" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[9.5px] font-mono text-white/35 tracking-[0.25em] uppercase mb-1">Processing…</p>
+                            <p className="text-[8px] font-mono text-white/15 tracking-wider">Output will appear here when the pipeline completes</p>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <p className="text-[8.5px] font-mono text-white/12 tracking-[0.28em] uppercase">Script & Video Output</p>
+                      )}
+                    </div>
+                  ) : agentStatus === 'completed' && finalVideoUrl ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col h-full overflow-hidden min-h-0">
+
+                      {isDemoMode && (
+                        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                          className="flex items-start gap-3 border-b border-amber-500/15 px-5 py-3 shrink-0" style={{ background: 'rgba(245,158,11,0.05)' }}>
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-400/80 shrink-0 mt-px" />
+                          <p className="text-[8.5px] font-mono text-amber-300/55 leading-relaxed tracking-wider">
+                            Demo Mode — Grok quota exhausted. Video below is a placeholder.
+                          </p>
+                        </motion.div>
+                      )}
+
+                      {/* Screenplay on left, Video on right (side by side on lg) */}
+                      <div className="flex-1 flex flex-col lg:flex-row gap-0 overflow-hidden min-h-0">
+
+                        {/* Screenplay panel */}
+                        <div className={cn("w-full lg:w-[50%] flex-col lg:border-r border-white/[0.06] overflow-hidden min-h-0", activeMobileTab === 'script' ? 'flex' : 'hidden lg:flex')}>
+                          <div className="px-4 py-2.5 border-b border-white/[0.06] shrink-0">
+                            <span className="text-[7.5px] font-mono tracking-[0.25em] text-white/45 uppercase">Screenplay Script</span>
+                          </div>
+                          <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 flex flex-col gap-5">
+                            {finalScript && (
+                              <pre className="text-[10px] font-mono text-white/70 whitespace-pre-line leading-[2] tracking-wide select-all">{finalScript}</pre>
+                            )}
+                            {finalPrompts.length > 0 && (
+                              <div>
+                                <p className="text-[7px] font-mono font-bold text-white/40 uppercase tracking-[0.3em] mb-3">Scene Prompts</p>
+                                <div className="flex flex-col gap-2">
+                                  {finalPrompts.map((p, idx) => (
+                                    <div key={idx} className="rounded-xl border border-white/[0.05] p-3" style={{ background: 'rgba(255,255,255,0.015)' }}>
+                                      <span className="text-[7px] font-mono font-bold uppercase tracking-widest text-white/40 block mb-1.5">Scene {idx + 1}</span>
+                                      <p className="text-[9.5px] font-mono text-white/70 leading-relaxed select-all">"{p}"</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Video panel */}
+                        <div className={cn("flex-1 flex-col overflow-hidden min-h-0", activeMobileTab === 'video' ? 'flex' : 'hidden lg:flex')} style={{ background: 'rgba(0,0,0,0.35)' }}>
+                          <div className="px-4 py-2.5 border-b border-white/[0.06] shrink-0 flex items-center justify-between">
+                            <span className="text-[7.5px] font-mono tracking-[0.25em] text-white/45 uppercase">Video Output</span>
+                            <div className="flex gap-1.5">
+                              <button onClick={handleShare} title="Copy URL"
+                                className="p-1.5 rounded-lg border border-white/20 hover:bg-white/8 text-white/45 hover:text-white/70 transition-all">
+                                <Upload className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => { window.location.href = `/api/visual/download?url=${encodeURIComponent(finalVideoUrl)}`; }}
+                                title="Download" className="p-1.5 rounded-lg border border-white/20 hover:bg-white/8 text-white/45 hover:text-white/70 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex-1 flex items-center justify-center p-5 overflow-hidden min-h-0">
+                            <video src={finalVideoUrl} controls autoPlay loop className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" />
+                          </div>
+                        </div>
+
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-6 gap-3">
+                      <AlertCircle className="w-7 h-7 text-red-500/50" />
+                      <h3 className="text-[9.5px] font-mono font-bold text-white/40 uppercase tracking-[0.25em]">Pipeline Failed</h3>
+                      <p className="text-[8px] font-mono text-white/20 max-w-xs tracking-wider leading-relaxed">
+                        Something went wrong during agent orchestration. Verify API credentials and local setup.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
               </div>
             </div>
           ) : (
@@ -898,6 +1533,31 @@ export default function VisualWorkspace({
             </div>
           )}
 
+          {/* Prompt Validation Error Toast — shown before API call */}
+          <AnimatePresence>
+            {promptError && (
+              <div className="absolute top-4 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-full bg-amber-950/90 border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.25)] backdrop-blur-md max-w-full text-center"
+                >
+                  <div className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+                  <span className="text-[10px] md:text-[11px] font-mono text-amber-200 tracking-wider uppercase font-semibold">
+                    {promptError}
+                  </span>
+                  <button
+                    onClick={() => setPromptError(null)}
+                    className="text-amber-400 hover:text-white transition-colors ml-2 shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+
           {/* Synthesis Error Notification Toast */}
           <AnimatePresence>
             {synthesisError && (
@@ -912,7 +1572,7 @@ export default function VisualWorkspace({
                   <span className="text-[10px] md:text-[11px] font-mono text-red-200 tracking-wider uppercase font-semibold">
                     {synthesisError}
                   </span>
-                  <button 
+                  <button
                     onClick={() => setSynthesisError(null)}
                     className="text-red-400 hover:text-white transition-colors ml-2 shrink-0"
                   >
@@ -922,6 +1582,7 @@ export default function VisualWorkspace({
               </div>
             )}
           </AnimatePresence>
+
         </div>
 
         {/* Input Bar & Parameters Controls */}
@@ -939,7 +1600,7 @@ export default function VisualWorkspace({
                 {/* Mode Toggles Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-2.5 shrink-0">
                   <div className="flex items-center gap-1 md:gap-1.5 p-1 bg-white/5 rounded-full border border-white/10 w-fit">
-                    {(['image', 'video', 'flow'] as const).map(mode => (
+                    {(['image', 'video', 'flow', 'agent'] as const).map(mode => (
                       <button
                         key={mode}
                         onClick={() => setMainMode(mode)}
@@ -953,6 +1614,7 @@ export default function VisualWorkspace({
                         {mode === 'image' && <ImageIcon className="w-2.5 h-2.5 md:w-3 h-3" />}
                         {mode === 'video' && <Video className="w-2.5 h-2.5 md:w-3 h-3" />}
                         {mode === 'flow' && <Wand2 className="w-2.5 h-2.5 md:w-3 h-3" />}
+                        {mode === 'agent' && <Bot className="w-2.5 h-2.5 md:w-3 h-3" />}
                         {mode}
                       </button>
                     ))}
@@ -962,86 +1624,108 @@ export default function VisualWorkspace({
                   </h3>
                 </div>
 
-                {/* Sub Settings Fields */}
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pt-2 md:pt-3 overflow-y-auto custom-scrollbar">
-                  {/* Aspect Ratio */}
-                  {mainMode !== 'flow' && (
-                    <div>
-                      <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Aspect Ratio</p>
-                      <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
-                        {ASPECT_RATIOS.map(ratio => {
-                          let boxClass = "w-2.5 h-2.5";
-                          if (ratio.id === '16:9') boxClass = "w-4 h-2.5";
-                          if (ratio.id === '9:16') boxClass = "w-2.5 h-4";
-                          if (ratio.id === '4:3') boxClass = "w-3.5 h-2.5";
-
-                          return (
-                            <button
-                              key={ratio.id}
-                              onClick={() => setSelectedAspectRatio(ratio.id)}
-                              className={cn(
-                                "flex-1 py-1 md:py-1.5 px-1 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
-                                selectedAspectRatio === ratio.id
-                                  ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                  : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                              )}
-                            >
-                              <div className={cn("border-[1px] rounded-[1px] mb-1 opacity-80 transition-colors md:border-[1.5px] md:rounded-[1px] md:mb-1.5", selectedAspectRatio === ratio.id ? "border-white" : "border-zinc-600", boxClass)} />
-                              <span className="text-[8px] md:text-[9px] font-mono font-bold tracking-widest">{ratio.id}</span>
-                            </button>
-                          );
-                        })}
+                  {mainMode === 'agent' ? (
+                    <div className="col-span-full flex flex-col md:flex-row gap-4">
+                      <div className="flex-1 p-4 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-center">
+                        <span className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-400 mb-1.5 font-bold block">Reasoning Engine</span>
+                        <div className="flex items-center gap-2">
+                          <Cpu className="w-4 h-4 text-purple-400" />
+                          <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Gemini Multi-Agent System</span>
+                        </div>
+                        <p className="text-[8px] font-mono text-zinc-500 mt-1 uppercase tracking-wider leading-relaxed">Manages planning, outlines, scripts, storyboard cues & assembly.</p>
+                      </div>
+                      <div className="flex-1 p-4 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-center">
+                        <span className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-400 mb-1.5 font-bold block">Media Engine</span>
+                        <div className="flex items-center gap-2">
+                          <Video className="w-4 h-4 text-rose-400" />
+                          <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Grok Imagine Video API</span>
+                        </div>
+                        <p className="text-[8px] font-mono text-zinc-500 mt-1 uppercase tracking-wider leading-relaxed">Generates start frame clips & extends sequences up to 60+ seconds.</p>
                       </div>
                     </div>
-                  )}
+                  ) : (
+                    <>
+                      {/* Aspect Ratio */}
+                      {mainMode !== 'flow' && (
+                        <div>
+                          <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Aspect Ratio</p>
+                          <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
+                            {ASPECT_RATIOS.map(ratio => {
+                              let boxClass = "w-2.5 h-2.5";
+                              if (ratio.id === '16:9') boxClass = "w-4 h-2.5";
+                              if (ratio.id === '9:16') boxClass = "w-2.5 h-4";
+                              if (ratio.id === '4:3') boxClass = "w-3.5 h-2.5";
 
-                  {/* Resolution Quality */}
-                  {mainMode !== 'flow' && (
-                    <div>
-                      <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Resolution Quality</p>
-                      <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
-                        {QUALITY_OPTIONS.map(quality => (
-                          <button
-                            key={quality.id}
-                            onClick={() => setSelectedQuality(quality.id)}
-                            className={cn(
-                              "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-row md:flex-col items-baseline md:items-center justify-center gap-1 md:gap-0.5 transition-all duration-300",
-                              selectedQuality === quality.id
-                                ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                            )}
-                          >
-                            <span className="text-[8px] md:text-[10px] font-mono font-bold">{quality.id}</span>
-                            <span className="text-[5.5px] md:text-[7px] font-mono uppercase tracking-wider opacity-60 font-medium">
-                              {quality.id === '480p' ? '(SD)' : quality.id === '720p' ? '(HD)' : quality.id === '1080p' ? '(FHD)' : '(UHD)'}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                              return (
+                                <button
+                                  key={ratio.id}
+                                  onClick={() => setSelectedAspectRatio(ratio.id)}
+                                  className={cn(
+                                    "flex-1 py-1 md:py-1.5 px-1 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
+                                    selectedAspectRatio === ratio.id
+                                      ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                      : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
+                                  )}
+                                >
+                                  <div className={cn("border-[2px] rounded-[1px] mb-1 opacity-80 transition-colors md:border-[1.5px] md:rounded-[2px] md:mb-1.5", selectedAspectRatio === ratio.id ? "border-white" : "border-zinc-400", boxClass)} />
+                                  <span className="text-[8px] md:text-[9px] font-mono font-bold tracking-widest">{ratio.id}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
 
-                  {/* Duration Controls */}
-                  {mainMode !== 'image' && (
-                    <div>
-                      <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Temporal Duration</p>
-                      <div className="grid grid-cols-3 gap-1 md:gap-2">
-                        {(mainMode === 'flow' ? FLOW_DURATION_OPTIONS : VIDEO_DURATION_OPTIONS).map(duration => (
-                          <button
-                            key={duration.id}
-                            onClick={() => mainMode === 'flow' ? setSelectedFlowDuration(duration.id) : setSelectedVideoDuration(duration.id)}
-                            className={cn(
-                              "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
-                              (mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration) === duration.id
-                                ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                            )}
-                          >
-                            <span className="text-[8px] md:text-[10px] font-mono font-bold">{duration.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                      {/* Resolution Quality */}
+                      {mainMode !== 'flow' && (
+                        <div>
+                          <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Resolution Quality</p>
+                          <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
+                            {QUALITY_OPTIONS.map(quality => (
+                              <button
+                                key={quality.id}
+                                onClick={() => setSelectedQuality(quality.id)}
+                                className={cn(
+                                  "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-row md:flex-col items-baseline md:items-center justify-center gap-1 md:gap-0.5 transition-all duration-300",
+                                  selectedQuality === quality.id
+                                    ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                    : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
+                                )}
+                              >
+                                <span className="text-[8px] md:text-[10px] font-mono font-bold">{quality.id}</span>
+                                <span className="text-[5.5px] md:text-[7px] font-mono uppercase tracking-wider opacity-60 font-medium">
+                                  {quality.id === '480p' ? '(SD)' : quality.id === '720p' ? '(HD)' : quality.id === '1080p' ? '(FHD)' : '(UHD)'}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Duration Controls */}
+                      {mainMode !== 'image' && (
+                        <div>
+                          <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Temporal Duration</p>
+                          <div className="grid grid-cols-3 gap-1 md:gap-2">
+                            {(mainMode === 'flow' ? FLOW_DURATION_OPTIONS : VIDEO_DURATION_OPTIONS).map(duration => (
+                              <button
+                                key={duration.id}
+                                onClick={() => mainMode === 'flow' ? setSelectedFlowDuration(duration.id) : setSelectedVideoDuration(duration.id)}
+                                className={cn(
+                                  "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
+                                  (mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration) === duration.id
+                                    ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                    : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
+                                )}
+                              >
+                                <span className="text-[8px] md:text-[10px] font-mono font-bold">{duration.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -1059,14 +1743,14 @@ export default function VisualWorkspace({
           </AnimatePresence>
 
           {/* Synthesis Input Bar Panel */}
-          <div className="glass border border-white/10 rounded-full md:rounded-[2.2rem] p-1.5 md:p-2 flex flex-row items-center gap-1.5 md:gap-2 relative z-40 shadow-[0_0_35px_rgba(0,0,0,0.6)]">
+          <div className="rounded-full md:rounded-[2.2rem] p-1.5 md:p-2 flex flex-row items-center gap-1.5 md:gap-2 relative z-40 shadow-[0_0_35px_rgba(0,0,0,0.6)]">
 
             {/* Popover Controls & Reference Upload */}
-            <div className="flex items-center gap-1.5 md:gap-2 px-1 md:px-2 shrink-0 border-r border-white/10 pr-2 md:pr-4">
+            <div className="flex items-center gap-1.5 md:gap-2 px-1 md:px-2 shrink-0 border-r border-white/30 pr-2 md:pr-4">
               <button
                 onClick={() => setShowSettings(!showSettings)}
                 className={cn(
-                  "p-2 md:p-3.5 rounded-full transition-all border duration-300",
+                  "p-2 md:p-3.5 rounded-2xl transition-all border duration-300",
                   showSettings
                     ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                     : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15"
@@ -1075,12 +1759,13 @@ export default function VisualWorkspace({
                 {mainMode === 'image' && <ImageIcon className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
                 {mainMode === 'video' && <Video className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
                 {mainMode === 'flow' && <Wand2 className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
+                {mainMode === 'agent' && <Bot className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
               </button>
 
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  "rounded-full transition-all border duration-300 flex items-center justify-center",
+                  "rounded-2xl transition-all border duration-300 flex items-center justify-center",
                   referenceImage
                     ? "p-0 bg-transparent border-transparent"
                     : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15 p-2 md:p-3.5"
@@ -1106,7 +1791,7 @@ export default function VisualWorkspace({
                 type="file"
                 ref={fileInputRef}
                 className="hidden"
-                accept={mainMode === 'flow' ? 'video/mp4,video/x-m4v,video/*' : 'image/*'}
+                accept={mainMode === 'flow' ? 'video/mp4,video/x-m4v,video/*' : 'image/png,image/jpeg,image/webp,image/gif'}
                 onChange={handleImageUpload}
               />
 
@@ -1122,12 +1807,10 @@ export default function VisualWorkspace({
 
             {/* Prompt Form & Textarea */}
             <div className="flex-1 flex flex-col relative">
-
-
               <textarea
                 value={mainMode === 'flow' ? flowPrompt : prompt}
                 onChange={(e) => mainMode === 'flow' ? setFlowPrompt(e.target.value) : setPrompt(e.target.value)}
-                placeholder={mainMode === 'flow' ? "Describe what happens next...." : "Imagine..."}
+                placeholder={mainMode === 'flow' ? "Describe what happens next...." : "Enter your creative ideas."}
                 className="w-full bg-transparent text-white font-mono text-xs placeholder:text-zinc-600 outline-none resize-none px-2 md:px-4 py-1.5 md:py-3 min-h-[28px] md:min-h-[46px] max-h-32 custom-scrollbar"
                 rows={1}
                 onKeyDown={(e) => {
@@ -1143,10 +1826,10 @@ export default function VisualWorkspace({
             <div className="shrink-0 flex items-center pr-1 md:pr-1.5">
               <button
                 onClick={handleGenerate}
-                disabled={isGenerating || (!prompt && !referenceImage)}
-                className="h-8 w-8 md:h-12 md:px-7 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed text-[10px] font-bold font-mono uppercase tracking-[0.2em] rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2 active:scale-95"
+                disabled={isGenerating || (mainMode !== 'flow' && !prompt && !referenceImage)}
+                className="h-8 w-8 md:h-12 md:w-12 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center active:scale-95"
               >
-                {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {isGenerating ? <Loader2 className="w-3.5 h-3.5 md:w-4.5 md:h-4.5 animate-spin" /> : <Send className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
               </button>
             </div>
 
@@ -1173,7 +1856,7 @@ export default function VisualWorkspace({
         animate={{ width: isGalleryOpen ? 320 : 0 }}
         className={cn(
           "glass-dark border-white/10 flex flex-col shrink-0 transition-all duration-500 z-40 lg:relative right-0 shadow-[0_0_50px_rgba(0,0,0,0.8)] lg:shadow-none bg-zinc-950/95 backdrop-blur-md",
-          "fixed lg:translate-x-0 border-l top-14 lg:top-0 h-[calc(100dvh-3.5rem)] lg:h-full",
+          "fixed lg:translate-x-0 border-l top-0 h-full",
           isGalleryOpen
             ? "translate-x-0 w-full sm:w-80 lg:w-80"
             : "translate-x-full lg:translate-x-0 w-0 border-l-0"
@@ -1201,7 +1884,7 @@ export default function VisualWorkspace({
           ) : history.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 p-6 text-center">
               <ImageIcon className="w-10 h-10 mb-3 opacity-50" />
-              <p className="text-[9px] font-mono tracking-[0.18em] leading-relaxed">
+              <p className="text-[10px] font-mono tracking-[0.18em] leading-relaxed">
                 No canvas records.<br />Enter prompt to synthesize.
               </p>
             </div>

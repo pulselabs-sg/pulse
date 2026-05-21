@@ -55,7 +55,7 @@ export default function SidebarVisual({
         )}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className={cn("p-2 hover:bg-white/5 text-zinc-400 hover:text-white rounded-full transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}
+          className={cn("p-2 hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}
         >
           {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4 hidden md:block" />}
         </button>
@@ -68,8 +68,8 @@ export default function SidebarVisual({
           <button
             onClick={() => handleTabClick('imagine')}
             className={cn(
-              "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-full",
-              isSidebarOpen ? "py-3 px-5 justify-start w-full" : "w-10 h-10 justify-center mx-auto",
+              "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-xl",
+              isSidebarOpen ? "py-2.5 px-5 justify-start w-full" : "w-10 h-10 justify-center mx-auto",
               activeTab === 'imagine'
                 ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.08)] border-white/10"
                 : "text-zinc-400 hover:bg-white/[0.03] hover:text-white border-transparent"
@@ -78,7 +78,7 @@ export default function SidebarVisual({
             {activeTab === 'imagine' && (
               <div className="absolute inset-0 bg-white/5 blur-md rounded-full opacity-40" />
             )}
-            <LayoutDashboard className={cn("w-6 h-6 shrink-0 transition-transform group-hover:scale-110", activeTab === 'imagine' ? "text-white" : "text-zinc-400")} />
+            <LayoutDashboard className={cn("w-6 h-6 ml-0.5 shrink-0 transition-transform", activeTab === 'imagine' ? "text-white" : "text-zinc-400")} />
             {isSidebarOpen && (
               <span className="font-bold tracking-[0.15em] transition-colors uppercase text-[10px]">
                 Dashboard
@@ -90,8 +90,8 @@ export default function SidebarVisual({
           <button
             onClick={() => handleTabClick('profile')}
             className={cn(
-              "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-full",
-              isSidebarOpen ? "py-3 px-5 justify-start w-full" : "w-12 h-12 justify-center mx-auto",
+              "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-xl",
+              isSidebarOpen ? "py-2.5 px-5 justify-start w-full" : "w-12 h-12 justify-center mx-auto",
               activeTab === 'profile'
                 ? "bg-white/10 text-white border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.08)]"
                 : "text-zinc-400 hover:bg-white/[0.02] hover:text-zinc-300 border-transparent"
@@ -101,7 +101,7 @@ export default function SidebarVisual({
               <div className="absolute inset-0 bg-white/5 blur-md rounded-full opacity-40" />
             )}
             {session?.user?.image ? (
-              <img src={session.user.image} alt="" className="w-10 h-10 rounded-full object-cover opacity-80 group-hover:opacity-100 transition-opacity shrink-0" />
+              <img src={session.user.image} alt="" className="w-8 h-8 rounded-full object-cover opacity-80 group-hover:opacity-100 transition-opacity shrink-0" />
             ) : (
               <User className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === 'profile' ? "text-white" : "text-zinc-400")} />
             )}
@@ -137,7 +137,7 @@ export default function SidebarVisual({
                 </div>
                 <button
                   onClick={() => setShowPlanModal(true)}
-                  className="w-full py-2.5 hover:bg-white text-zinc-300 hover:text-black text-[9px] font-bold uppercase tracking-[0.2em] rounded-full flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.03)] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                  className="w-full py-2.5 bg-white/15 hover:bg-white text-zinc-300 hover:text-black text-[11px] font-bold tracking-[0.2em] rounded-full flex items-center justify-center gap-2 transition-all border border-white/15 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.03)] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
                 >
                   Manage Plan
                 </button>

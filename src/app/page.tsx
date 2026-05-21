@@ -257,7 +257,7 @@ const StatsStrip = () => {
           {stats.map((s, i) => (
             <div key={i} className="flex flex-col items-center text-center gap-1">
               <span className="text-2xl font-bold font-mono text-white">{s.value}</span>
-              <span className="text-[9px] uppercase font-mono tracking-widest text-zinc-600">{s.label}</span>
+              <span className="text-[9px] uppercase font-mono tracking-widest text-zinc-500">{s.label}</span>
             </div>
           ))}
         </div>
@@ -275,16 +275,22 @@ const FeatureVisualVideo = () => (
 
     <div className="flex items-center justify-between gap-3 mb-4">
       {/* Box 1: Video Placeholder */}
-      <div className="flex-1 aspect-[4/3] rounded-lg border border-white/10 bg-black/40 flex flex-col items-center justify-center p-3 relative group hover:border-cyan-500/20 transition-all duration-300">
-        <Film className="w-5 h-5 text-zinc-600 mb-1" />
-        <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">Video Placeholder</span>
+      <div className="flex-1 aspect-[4/3] rounded-xl border border-white/10 bg-black/40 flex flex-col items-center justify-center relative">
+        <video
+          src="/0521.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover rounded-xl"
+        />
       </div>
 
       {/* Arrow Icon pointing to the right */}
       <ArrowRight className="w-5 h-5 text-zinc-600 shrink-0" />
 
       {/* Box 2: Empty description block */}
-      <div className="flex-1 aspect-[4/3] rounded-lg border border-dashed border-white/10 bg-white/[0.01] flex items-center justify-center p-4 text-center">
+      <div className="flex-1 aspect-[4/3] rounded-lg border border-dashed border-white/10 bg-white/[0.01] flex items-center justify-center text-center">
         <span className="text-[9px] font-mono text-zinc-500 leading-normal italic">
           "Describe what happens next..."
         </span>
@@ -358,7 +364,7 @@ const FeaturesAlternating = () => (
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4">{f.tag}</p>
               <h3 className="text-3xl md:text-4xl text-white tracking-tight mb-6 whitespace-pre-line">{f.title}</h3>
               <p className="text-sm font-mono text-zinc-400 leading-relaxed max-w-md mb-8">{f.desc}</p>
-              <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white border-b border-white/20 pb-0.5 hover:border-white/60 transition-colors group">
+              <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-mono tracking-widest text-white border-b border-white/20 pb-0.5 hover:border-white/60 transition-colors group">
                 Explore module <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
@@ -479,7 +485,7 @@ const StudioPanel = () => {
                 disabled={isGenerating}
                 className="flex items-center justify-center gap-2 py-3 bg-white text-black rounded-lg text-xs font-mono uppercase tracking-widest font-bold hover:bg-zinc-100 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5" /> {isGenerating ? `Generating (${progress}%)` : "Synthesize Scene"}
+                <Sparkles className="w-3.5 h-3.5" /> {isGenerating ? `Generating (${progress}%)` : "Generate"}
               </button>
             </div>
 
@@ -578,8 +584,8 @@ const PricingSection = () => (
         <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className={cn('rounded-xl p-8 flex flex-col relative transition-all duration-300 border', plan.recommended ? 'glass-mid border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.04)] lg:-translate-y-3' : 'glass-dark border-white/6 hover:border-white/15')}>
           {plan.recommended && (<div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black text-[9px] font-mono uppercase tracking-widest px-3 py-1 rounded-full font-bold">Most Popular</div>)}
           <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-3">{plan.name}</div>
-          <div className="flex items-baseline gap-1 mb-2"><span className="text-4xl font-black text-white">${plan.price}</span><span className="text-[10px] font-mono text-zinc-600 uppercase">/mo</span></div>
-          <p className="text-xs text-zinc-600 font-mono mb-8 h-8">{plan.desc}</p>
+          <div className="flex items-baseline gap-1 mb-2"><span className="text-4xl font-black text-white">${plan.price}</span><span className="text-[10px] font-mono text-zinc-500 uppercase">/mo</span></div>
+          <p className="text-xs text-zinc-400 font-mono mb-8 h-8">{plan.desc}</p>
           <div className="flex-1 space-y-3 mb-8">
             <div className="flex items-center gap-2.5 text-sm text-white font-mono"><Zap className="w-3.5 h-3.5 text-zinc-400 shrink-0" />{plan.pulse} Pulse Credits</div>
             <div className="flex items-center gap-2.5 text-sm text-zinc-500"><Check className="w-3.5 h-3.5 shrink-0" />Full API Access</div>
@@ -599,7 +605,7 @@ const CtaBanner = () => (
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-full bg-gradient-to-b from-white/3 via-transparent to-transparent" style={{ filter: 'blur(40px)' }} />
     </div>
     <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-[10px] font-mono uppercase tracking-widest mb-10 border border-white/8">
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-[10px] font-mono tracking-widest mb-10 border border-white/8">
         <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
         <span className="text-zinc-400">Free plan - no credit card required</span>
       </div>
@@ -821,9 +827,10 @@ const InteractiveTypographyGrid = () => {
 const featureItems = [
   { icon: Video, tag: 'Video Generation', desc: 'Create cinematic videos from prompts or images. Flow technology extends existing shots seamlessly.' },
   { icon: Sparkles, tag: 'Image Synthesis', desc: 'Generate hyper-realistic art, design assets, and styles with extreme text adherence.' },
-  { icon: AudioLines, tag: 'Neural TTS & Cloning', desc: 'Synthesize voiceovers in 32+ languages or clone any voice from a 5-second sample.' },
+  { icon: Code, tag: 'Extension Video', desc: 'A tool for true creators, create a long, seamless video exactly as you want it.' },
   { icon: Film, tag: 'Style Transfer', desc: 'Map artistic styles onto videos or images dynamically, preserving structural consistency.' },
-  { icon: Code, tag: 'Creative API', desc: 'Deploy video rendering, image generation, and audio synthesis via REST or WebSockets.' },
+  { icon: AudioLines, tag: 'Neural TTS & Cloning', desc: 'Synthesize voiceovers in 32+ languages or clone any voice from a 5-second sample.' },
+
 ];
 
 const FeatureShowcase = () => {
@@ -865,7 +872,7 @@ const FeatureShowcase = () => {
               <p className="text-[10px] lg:text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-2 lg:mb-3">Platform Capabilities</p>
               <h2 className="text-2xl md:text-3xl lg:text-4xl text-white tracking-tight leading-[1.1]">
                 Everything you need.<br />
-                <span className="text-zinc-500">All in one API.</span>
+                <span className="text-zinc-500">All in one platform.</span>
               </h2>
             </div>
 

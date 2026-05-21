@@ -4,7 +4,7 @@ import { ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | iPulse AI',
-  description: 'Read the iPulse AI Privacy Policy. Learn how we collect, use, protect, and delete your personal, biometric, and voice data.',
+  description: 'Read the iPulse AI Privacy Policy. Learn how we collect, use, protect, and delete your personal, biometric, voice, image, and video data.',
   alternates: {
     canonical: 'https://ipulselabs.net/privacy-policy',
   },
@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
         <div className="prose prose-invert max-w-none font-light text-[15.2px] leading-relaxed space-y-10 text-zinc-300">
 
           <section>
-            <p>At iPulse Labs (&quot;iPulse&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), protecting your privacy and sensitive biometric data is our fundamental commitment. This Privacy Policy outlines our practices regarding the collection, use, disclosure, and safeguarding of your information when you use our website, APIs, and AI audio generation services (collectively, the &quot;Service&quot;). This Policy is incorporated by reference into our{' '}
+            <p>At iPulse Labs (&quot;iPulse&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), protecting your privacy and sensitive biometric data is our fundamental commitment. This Privacy Policy outlines our practices regarding the collection, use, disclosure, and safeguarding of your information when you use our website, APIs, and AI audio, image, and video generation services (collectively, the &quot;Service&quot;). This Policy is incorporated by reference into our{' '}
               <Link href="/terms-of-use" target="_blank" className="text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors">Terms of Use</Link>.
             </p>
           </section>
@@ -43,7 +43,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold text-white mb-4">1. Our Core Promise: AI Model Training Policy</h2>
             <div className="bg-white/5 border border-white/10 rounded-lg p-6">
               <p className="m-0"><strong>We do not use your personal data or user-generated content to train our foundational AI models.</strong></p>
-              <p className="mt-2 mb-0">We recognize the profound sensitivity of voice and audio data. Any text prompts you submit, audio files you upload, voice clones you create, and the resulting audio outputs are utilized <strong>strictly</strong> to provide the Service directly to you. Your data is isolated and never pooled into shared datasets to improve our base generative AI engines.</p>
+              <p className="mt-2 mb-0">We recognize the profound sensitivity of voice, audio, and visual data. Any text prompts you submit, audio/visual files you upload, voice or digital clones you create, and the resulting media outputs are utilized <strong>strictly</strong> to provide the Service directly to you. Your data is isolated and never pooled into shared datasets to improve our base generative AI engines.</p>
             </div>
           </section>
 
@@ -56,10 +56,10 @@ export default function PrivacyPolicy() {
                 <strong>Identifiers &amp; Account Data:</strong> Name, email address, username, account password (stored as a secure hash), and authentication tokens (e.g., Google OAuth tokens).
               </li>
               <li>
-                <strong>Biometric Information (Voice Data):</strong> When you use our voice cloning features, you may upload audio recordings of a voice. We process these recordings to extract acoustic and vocal characteristics (a &quot;voiceprint&quot;) solely to map and synthesize the requested audio output. This category of data is treated with the highest level of protection under this Policy.
+                <strong>Biometric Information (Voice and Facial Data):</strong> When you use our cloning features, you may upload audio recordings or images/videos of a person. We process these to extract acoustic characteristics (a &quot;voiceprint&quot;) or facial geometry (a &quot;digital likeness&quot;) solely to map and synthesize the requested media output. This category of data is treated with the highest level of protection under this Policy.
               </li>
               <li>
-                <strong>User Content:</strong> Text prompts, generated audio files, project settings, voice model names, and any customer support communications.
+                <strong>User Content:</strong> Text prompts, generated audio/image/video files, project settings, model names, and any customer support communications.
               </li>
               <li>
                 <strong>Commercial Information:</strong> Subscription tier, transaction history, and service usage metrics. (Note: Full payment card details are processed directly by Polar.sh, our Merchant of Record; we only retain billing status and limited transaction identifiers.)
@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
                 <strong>Internet &amp; Network Activity:</strong> IP addresses, browser types, device identifiers, operating systems, log data, session duration, and interaction metrics with our platform.
               </li>
               <li>
-                <strong>Inference and Usage Logs:</strong> API call timestamps, character counts, voice model IDs used, and generation parameters (e.g., language, speed, format). This data is used for billing accuracy, rate limit enforcement, and abuse detection.
+                <strong>Inference and Usage Logs:</strong> API call timestamps, generation parameters, models used, and technical metadata. This data is used for billing accuracy, rate limit enforcement, and abuse detection.
               </li>
             </ul>
           </section>
@@ -78,11 +78,11 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold text-white mb-4">3. Biometric Data Notice and Consent</h2>
             <p>Compliance with laws such as the Illinois Biometric Information Privacy Act (BIPA), the Texas Capture or Use of Biometric Identifier Act (CUBI), and equivalent regulations is a priority for iPulse.</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Purpose:</strong> Voiceprints are created and used <em>exclusively</em> to provide the voice synthesis and cloning features you explicitly request. They are never sold, licensed, or used for any other purpose.</li>
-              <li><strong>Consent:</strong> By uploading audio for cloning, you certify that: (a) if the voice is your own, you are the speaker; or (b) if the voice belongs to another person, you hold valid written authorization from that individual permitting the processing of their biometric data for this specific purpose.</li>
-              <li><strong>Retention &amp; Destruction:</strong> We retain your custom voice models only for as long as your account is active and you choose to keep the model. If you delete a voice model or your account, the associated voiceprints and biometric identifiers are permanently destroyed from our systems within 30 days. In no event will biometric data be kept for more than 3 years after your last interaction with the Service.</li>
-              <li><strong>No Disclosure:</strong> We do not sell, lease, trade, or otherwise profit from your biometric data. Biometric data is shared only with the subprocessors listed in §5, strictly as necessary to provide voice synthesis, and under equivalent data protection obligations.</li>
-              <li><strong>Security Standards:</strong> Voiceprints and associated acoustic features are stored in encrypted, access-controlled environments isolated from general-purpose data stores. Access is restricted to authorized engineering personnel on a need-to-know basis.</li>
+              <li><strong>Purpose:</strong> Voiceprints and facial geometry are created and used <em>exclusively</em> to provide the media synthesis and cloning features you explicitly request. They are never sold, licensed, or used for any other purpose.</li>
+              <li><strong>Consent:</strong> By uploading audio or visual data for cloning, you certify that: (a) if the voice/likeness is your own, you are the subject; or (b) if it belongs to another person, you hold valid written authorization from that individual permitting the processing of their biometric data for this specific purpose.</li>
+              <li><strong>Retention &amp; Destruction:</strong> We retain your custom models only for as long as your account is active and you choose to keep the model. If you delete a model or your account, the associated biometric identifiers are permanently destroyed from our systems within 30 days. In no event will biometric data be kept for more than 3 years after your last interaction with the Service.</li>
+              <li><strong>No Disclosure:</strong> We do not sell, lease, trade, or otherwise profit from your biometric data. Biometric data is shared only with the subprocessors listed in §5, strictly as necessary to provide generation services, and under equivalent data protection obligations.</li>
+              <li><strong>Security Standards:</strong> Biometric features are stored in encrypted, access-controlled environments isolated from general-purpose data stores. Access is restricted to authorized engineering personnel on a need-to-know basis.</li>
             </ul>
           </section>
 
@@ -91,10 +91,10 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold text-white mb-4">4. How We Use Your Information</h2>
             <p>We process your information for the following legitimate business purposes:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li>To provide, operate, and maintain the Service, including processing TTS requests and managing voice clone models.</li>
+              <li>To provide, operate, and maintain the Service, including processing synthesis requests and managing clone models.</li>
               <li>To process payments and manage your subscription via Polar.</li>
-              <li>To detect, investigate, and prevent fraud, abuse, policy violations, and unauthorized voice cloning activity (e.g., detecting deepfakes generated in violation of §2 of our Terms of Use).</li>
-              <li>To enforce our Terms of Use, including investigating reports of unauthorized voice cloning or misuse of Generated Content.</li>
+              <li>To detect, investigate, and prevent fraud, abuse, policy violations, and unauthorized cloning activity (e.g., detecting deepfakes generated in violation of §2 of our Terms of Use).</li>
+              <li>To enforce our Terms of Use, including investigating reports of unauthorized cloning or misuse of Generated Content.</li>
               <li>To communicate with you regarding service updates, security alerts, billing notices, and support.</li>
               <li>To generate anonymized, aggregated analytics about platform usage (e.g., average session length, popular language settings) that cannot be used to identify you.</li>
               <li>To comply with applicable legal obligations, court orders, and regulatory requirements.</li>
@@ -121,14 +121,14 @@ export default function PrivacyPolicy() {
                     <td className="py-2 text-zinc-400">Secure data hosting, GPU inference, storage</td>
                   </tr>
                   <tr>
-                    <td className="py-2 pr-4">Modal.com</td>
+                    <td className="py-2 pr-4">Modal.com / API Providers</td>
                     <td className="py-2 pr-4 text-zinc-400">AI Compute</td>
-                    <td className="py-2 text-zinc-400">Serverless voice cloning inference backend</td>
+                    <td className="py-2 text-zinc-400">Serverless cloning inference backend</td>
                   </tr>
                   <tr>
-                    <td className="py-2 pr-4">x.ai</td>
+                    <td className="py-2 pr-4">x.ai / OpenAI / Others</td>
                     <td className="py-2 pr-4 text-zinc-400">AI API</td>
-                    <td className="py-2 text-zinc-400">Text-to-speech synthesis engine</td>
+                    <td className="py-2 text-zinc-400">Media (audio, image, video) synthesis engines</td>
                   </tr>
                   <tr>
                     <td className="py-2 pr-4">Polar.sh</td>
@@ -138,7 +138,7 @@ export default function PrivacyPolicy() {
                   <tr>
                     <td className="py-2 pr-4">Supabase / PostgreSQL</td>
                     <td className="py-2 pr-4 text-zinc-400">Database</td>
-                    <td className="py-2 text-zinc-400">User accounts, voice model metadata</td>
+                    <td className="py-2 text-zinc-400">User accounts, model metadata</td>
                   </tr>
                 </tbody>
               </table>
@@ -157,7 +157,7 @@ export default function PrivacyPolicy() {
                 <strong>Essential / Functional Cookies:</strong> Required for the Service to operate. These include session authentication tokens (e.g., Supabase auth cookies) and CSRF protection tokens. These cannot be disabled without breaking core functionality.
               </li>
               <li>
-                <strong>Preference Cookies:</strong> Store your settings such as theme preference or last-used voice model. These are session-local and expire when you close your browser.
+                <strong>Preference Cookies:</strong> Store your settings such as theme preference or last-used models. These are session-local and expire when you close your browser.
               </li>
               <li>
                 <strong>Analytics Cookies (Optional):</strong> We may use privacy-respecting, cookie-free analytics tools (e.g., Plausible Analytics or equivalent) to understand aggregate usage patterns. These tools do not use persistent cross-site tracking cookies and do not collect personally identifiable information.
@@ -208,7 +208,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold text-white mb-4">8. Data Security and International Transfers</h2>
             <p>We implement robust, industry-standard security measures including:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
-              <li><strong>Encryption at Rest:</strong> AES-256 encryption for all stored user data and voice models.</li>
+              <li><strong>Encryption at Rest:</strong> AES-256 encryption for all stored user data and AI models.</li>
               <li><strong>Encryption in Transit:</strong> TLS 1.3 for all data transmitted between your browser, our servers, and our subprocessors.</li>
               <li><strong>Access Controls:</strong> Role-based access controls (RBAC) limit internal access to user data; biometric data is access-restricted to a minimal set of authorized engineers.</li>
               <li><strong>Incident Response:</strong> We maintain an incident response plan. In the event of a data breach affecting your personal data, we will notify you and relevant supervisory authorities as required by applicable law (e.g., within 72 hours under GDPR).</li>
@@ -222,8 +222,8 @@ export default function PrivacyPolicy() {
             <p>We retain different categories of data for different periods, based on operational necessity and legal requirements:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li><strong>Account Data:</strong> Retained for the life of your account, plus up to 90 days after account deletion to resolve disputes and comply with legal obligations.</li>
-              <li><strong>Biometric Data (Voiceprints):</strong> Deleted within 30 days of your deletion request or account closure, or after 3 years of inactivity — whichever comes first.</li>
-              <li><strong>Generated Audio Files:</strong> Stored per your dashboard settings. You can delete individual files at any time. Files are permanently removed within 30 days of deletion.</li>
+              <li><strong>Biometric Data (Voice/Face):</strong> Deleted within 30 days of your deletion request or account closure, or after 3 years of inactivity — whichever comes first.</li>
+              <li><strong>Generated Media Files:</strong> Stored per your dashboard settings. You can delete individual files at any time. Files are permanently removed within 30 days of deletion.</li>
               <li><strong>Billing and Transaction Records:</strong> Retained for 7 years as required by financial and tax regulations.</li>
               <li><strong>Security and Audit Logs:</strong> Retained for up to 12 months for fraud investigation and abuse prevention purposes.</li>
             </ul>
