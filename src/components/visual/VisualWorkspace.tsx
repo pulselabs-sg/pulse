@@ -5,7 +5,7 @@ import {
   X, Sparkles, Wand2, Upload, AlertCircle, Loader2, PlayCircle, Menu, Bot, Terminal, CheckCircle2, Cpu, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { GROK_FEATURES, GrokFeature, ASPECT_RATIOS, QUALITY_OPTIONS, VIDEO_DURATION_OPTIONS, FLOW_DURATION_OPTIONS } from '@/lib/visual-constants';
+import { GROK_FEATURES, GrokFeature, ASPECT_RATIOS, QUALITY_OPTIONS, VIDEO_DURATION_OPTIONS, FLOW_DURATION_OPTIONS, AGENT_DURATION_OPTIONS } from '@/lib/visual-constants';
 import RevealAnimation from './RevealAnimation';
 import { useRouter } from 'next/navigation';
 
@@ -91,6 +91,7 @@ export default function VisualWorkspace({
   const [selectedQuality, setSelectedQuality] = useState<string>(QUALITY_OPTIONS[0].id);
   const [selectedVideoDuration, setSelectedVideoDuration] = useState<number>(VIDEO_DURATION_OPTIONS[0].id);
   const [selectedFlowDuration, setSelectedFlowDuration] = useState<number>(FLOW_DURATION_OPTIONS[2].id);
+  const [selectedAgentDuration, setSelectedAgentDuration] = useState<number>(AGENT_DURATION_OPTIONS[0].id);
   const [flowPrompt, setFlowPrompt] = useState('');
 
   // Gallery Sidebar open/close state (default open on PC, closed on mobile)
@@ -101,6 +102,18 @@ export default function VisualWorkspace({
       setIsGalleryOpen(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (mainMode === 'image') {
+      if (selectedQuality === '480p' || selectedQuality === '720p') {
+        setSelectedQuality('1080p');
+      }
+    } else {
+      if (selectedQuality === '1080p' || selectedQuality === '2k') {
+        setSelectedQuality('720p');
+      }
+    }
+  }, [mainMode, selectedQuality]);
 
   // Generation State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -432,12 +445,12 @@ export default function VisualWorkspace({
 
       setAgentStatus('running');
       setAgentSteps([
-        { agent: 'Idea Generator Agent', status: 'idle', message: 'Waiting to start...' },
-        { agent: 'Research Agent', status: 'idle', message: 'Waiting to start...' },
-        { agent: 'Script Writer & Voiceover Agent', status: 'idle', message: 'Waiting to start...' },
-        { agent: 'Visual Planner Agent', status: 'idle', message: 'Waiting to start...' },
-        { agent: 'Media Generator Agent', status: 'idle', message: 'Waiting to start...' },
-        { agent: 'Editor & Reviewer Agent', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Bully', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Raffa', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Monker', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Intruder', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Tupac', status: 'idle', message: 'Waiting to start...' },
+        { agent: 'Sam', status: 'idle', message: 'Waiting to start...' },
       ]);
       setActivityLogs([]);
       setActiveMobileTab('log');
@@ -464,6 +477,9 @@ export default function VisualWorkspace({
             prompt,
             referenceImageBase64: agentReferenceImageBase64,
             intent: promptIntent,
+            aspectRatio: selectedAspectRatio,
+            quality: selectedQuality,
+            duration: selectedAgentDuration,
           }),
         });
 
@@ -635,7 +651,8 @@ export default function VisualWorkspace({
             duration: durSec,
             referenceImageBase64,
             mode: mainMode,
-            quality: selectedQuality
+            quality: selectedQuality,
+            aspectRatio: selectedAspectRatio
           })
         });
 
@@ -1094,51 +1111,51 @@ export default function VisualWorkspace({
                   <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
                   <span className="text-[9px] font-mono tracking-[0.28em] text-white/40 uppercase select-none">Agent Crew Matrix</span>
                 </div>
-                <div className="flex items-center gap-3 overflow-visible pb-1 flex-wrap md:flex-nowrap">
+                <div className="grid grid-cols-3 md:flex md:items-center gap-1.5 md:gap-3 overflow-visible pb-1 md:flex-nowrap">
                   {[
                     {
-                      name: 'Idea Generator',
-                      fullName: 'Idea Generator Agent',
+                      name: 'Bully',
+                      fullName: 'Bully',
                       role: 'Gemini 1.5 Flash',
                       image: '/agent-1.png',
                       accent: '#a855f7',
                       tasks: ['Receives the user topic and generates 3–5 unique video concept angles.', 'Selects the most viral-friendly hook and defines tone, audience & style.', 'Outputs a structured concept brief passed to the Research Agent.'],
                     },
                     {
-                      name: 'Researcher',
-                      fullName: 'Research Agent',
+                      name: 'Raffa',
+                      fullName: 'Raffa',
                       role: 'Gemini 1.5 Flash',
                       image: '/agent-2.png',
                       accent: '#3b82f6',
                       tasks: ['Queries current trends, statistics and social proof for the chosen concept.', 'Validates accuracy of facts and suggests credible data points.', 'Enriches the concept brief before handing off to the Script Writer.'],
                     },
                     {
-                      name: 'Script Writer',
-                      fullName: 'Script Writer & Voiceover Agent',
+                      name: 'Monker',
+                      fullName: 'Monker',
                       role: 'Gemini 1.5 Flash',
                       image: '/agent-3.png',
                       accent: '#10b981',
                       tasks: ['Writes a full narration script divided into timed scenes.', 'Optimises pacing for vertical short-form video (15–60 s).', 'Generates voiceover cue text and passes scene breakdown to the Visual Planner.'],
                     },
                     {
-                      name: 'Visual Planner',
-                      fullName: 'Visual Planner Agent',
+                      name: 'Intruder',
+                      fullName: 'Intruder',
                       role: 'Gemini 1.5 Flash',
                       image: '/agent-4.png',
                       accent: '#06b6d4',
                       tasks: ['Translates each script scene into a detailed visual prompt.', 'Applies cinematic language: lighting, mood, camera angle and motion.', 'Outputs an ordered list of scene prompts ready for the Media Generator.'],
                     },
                     {
-                      name: 'Media Gen',
-                      fullName: 'Media Generator Agent',
+                      name: 'Tupac',
+                      fullName: 'Tupac',
                       role: 'Grok Aurora',
                       image: '/agent-5.png',
                       accent: '#f43f5e',
                       tasks: ['Sends each visual prompt to the Grok Aurora image model.', 'Extends each scene into a short video clip via Grok Video API.', 'Handles retries and quality checks before passing assets to the Editor.'],
                     },
                     {
-                      name: 'Editor',
-                      fullName: 'Editor & Reviewer Agent',
+                      name: 'Sam',
+                      fullName: 'Sam',
                       role: 'Gemini 1.5 Flash',
                       image: '/agent-6.png',
                       accent: '#f59e0b',
@@ -1148,19 +1165,19 @@ export default function VisualWorkspace({
                     const step = agentSteps.find(s => s.agent === agentItem.fullName);
                     const status = step?.status || 'idle';
                     return (
-                      <div key={agentItem.name} className="relative group shrink-0 z-30">
+                      <div key={agentItem.name} className="relative group md:shrink-0 z-30">
                         {/* Horizontal Card */}
                         <motion.div
                           animate={status === 'working' ? { boxShadow: [`0 0 0px ${agentItem.accent}00`, `0 0 10px ${agentItem.accent}33`, `0 0 0px ${agentItem.accent}00`] } : {}}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="flex flex-row items-center gap-2.5 px-3 py-1.5 rounded-xl border cursor-default select-none transition-all duration-300"
+                          className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-2.5 px-1 md:px-3 py-1.5 rounded-xl border cursor-default select-none transition-all duration-300"
                           style={{
                             background: status === 'working' ? `${agentItem.accent}0f` : status === 'success' ? `${agentItem.accent}07` : 'rgba(255,255,255,0.02)',
                             borderColor: status === 'working' ? `${agentItem.accent}60` : status === 'success' ? `${agentItem.accent}30` : 'rgba(255,255,255,0.06)',
                           }}
                         >
                           {/* PFP image */}
-                          <div className="w-7 h-7 rounded-lg border overflow-hidden flex items-center justify-center shrink-0 relative"
+                          <div className="w-5 h-5 md:w-7 md:h-7 rounded-md md:rounded-lg border overflow-hidden flex items-center justify-center shrink-0 relative"
                             style={{ borderColor: status !== 'idle' ? `${agentItem.accent}50` : 'rgba(255,255,255,0.12)', background: `${agentItem.accent}15` }}>
                             {agentItem.image ? (
                               <img src={agentItem.image} alt={agentItem.name} className="w-full h-full object-cover" />
@@ -1174,20 +1191,20 @@ export default function VisualWorkspace({
                           </div>
 
                           {/* Name and Status */}
-                          <div className="flex flex-col min-w-0 pr-1.5">
-                            <span className="text-[9.5px] font-mono font-semibold tracking-wider text-white/80 truncate leading-none mb-0.5">{agentItem.name}</span>
-                            <div className="flex items-center gap-1">
+                          <div className="flex flex-col items-center md:items-start min-w-0 md:pr-1.5 w-full">
+                            <span className="text-[7px] md:text-[9.5px] font-mono font-semibold tracking-widest md:tracking-wider text-white/80 truncate w-full text-center md:text-left leading-none mb-0.5">{agentItem.name}</span>
+                            <div className="flex items-center justify-center md:justify-start gap-1 w-full">
                               <span className="w-1 h-1 rounded-full shrink-0"
                                 style={{
                                   background: status === 'working' ? agentItem.accent : status === 'success' ? '#10b981' : 'rgba(255,255,255,0.2)',
                                   boxShadow: status === 'working' ? `0 0 4px ${agentItem.accent}` : status === 'success' ? '0 0 4px #10b981' : 'none'
                                 }}
                               />
-                              <span className="text-[6.5px] font-mono uppercase tracking-widest leading-none font-bold"
+                              <span className="text-[6.5px] font-mono tracking-widest leading-none font-bold"
                                 style={{
                                   color: status === 'working' ? '#fff' : status === 'success' ? '#10b981' : 'rgba(255,255,255,0.3)',
                                 }}>
-                                {status === 'working' ? 'active' : status === 'success' ? 'ready' : 'standby'}
+                                {status === 'working' ? 'Active' : status === 'success' ? 'Ready' : 'Sleeping'}
                               </span>
                             </div>
                           </div>
@@ -1288,8 +1305,8 @@ export default function VisualWorkspace({
                         <Bot className="w-6 h-6 text-white/60" />
                       </motion.div>
                       <div className="max-w-xs">
-                        <h3 className="text-[11px] font-mono font-bold text-white/80 uppercase tracking-[0.3em] mb-2">iPulse Agent Console</h3>
-                        <p className="text-[9px] font-mono text-white/40 tracking-wider leading-relaxed">
+                        <h3 className="text-[11px] font-mono font-bold text-white/30 uppercase tracking-[0.3em] mb-2">iPulse Agent Console</h3>
+                        <p className="text-[9px] font-mono text-white/30 tracking-wider leading-relaxed">
                           Describe a video topic and the crew will brainstorm, research, script, plan, generate and edit — fully autonomously.
                         </p>
                       </div>
@@ -1317,46 +1334,138 @@ export default function VisualWorkspace({
                       {/* Messages */}
                       <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col px-4 py-3 gap-0">
                         <AnimatePresence initial={false}>
-                          {activityLogs.map((step, idx) => {
-                            const isSystem = step.agent === 'System';
-                            const isLast = idx === activityLogs.length - 1;
-                            const bodyText = step.reasoning ? step.reasoning : step.message;
-                            const initials = isSystem ? '!!' : step.agent.split(' ').map((w: string) => w[0]).slice(0, 2).join('');
-                            return (
-                              <motion.div
-                                key={step.agent + idx}
-                                initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                                className="flex items-start gap-2.5 py-2.5 border-b border-white/[0.04] last:border-b-0"
-                              >
-                                <div className={cn(
-                                  'w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[8px] font-mono font-bold uppercase border mt-0.5',
-                                  isSystem ? 'bg-amber-500/15 border-amber-500/25 text-amber-400' : 'bg-white/[0.04] border-white/10 text-white/35'
-                                )}>
-                                  {initials}
-                                </div>
-                                <div className="flex flex-col gap-1 flex-1 min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className={cn('text-[8.5px] font-mono font-semibold tracking-wider', isSystem ? 'text-amber-400' : 'text-white/40')}>
-                                      {isSystem ? 'System' : step.agent}
-                                    </span>
-                                    <span className={cn(
-                                      'text-[6.5px] font-mono uppercase tracking-widest px-1.5 py-px rounded-full border',
-                                      step.status === 'working' ? 'text-white/35 border-white/10 bg-white/[0.03]' :
-                                        step.status === 'success' ? 'text-emerald-400/60 border-emerald-500/20 bg-emerald-500/[0.04]' :
-                                          'text-amber-400/60 border-amber-500/20'
-                                    )}>
-                                      {step.status === 'working' ? 'working' : step.status === 'success' ? 'done' : step.message}
-                                    </span>
+                          {(() => {
+                            const groups: any[] = [];
+                            const AGENT_PROFILES = {
+                              'Bully': { image: '/agent-1.png', accent: '#a855f7' },
+                              'Raffa': { image: '/agent-2.png', accent: '#3b82f6' },
+                              'Monker': { image: '/agent-3.png', accent: '#10b981' },
+                              'Intruder': { image: '/agent-4.png', accent: '#06b6d4' },
+                              'Tupac': { image: '/agent-5.png', accent: '#f43f5e' },
+                              'Sam': { image: '/agent-6.png', accent: '#f59e0b' },
+                            };
+
+                            const filteredLogs = activityLogs.filter(step => {
+                              const bodyText = step.reasoning || step.message || '';
+                              if (!bodyText) return false;
+                              const t = bodyText.toLowerCase();
+                              return !(
+                                t.includes('task queued') ||
+                                t.includes('polling status') ||
+                                t.includes('non-200 polling') ||
+                                t.includes('tool execution completed') ||
+                                t.includes('tools completed') ||
+                                t.startsWith('tool:') ||
+                                t.includes('output: error') ||
+                                t.includes('[finalize]') ||
+                                t.includes('agent final answer') ||
+                                t.includes('frame_index:') ||
+                                t.includes('moviepy -') ||
+                                t === 'working. working' ||
+                                t === 'working.' ||
+                                t.startsWith('agent:')
+                              );
+                            });
+
+                            filteredLogs.forEach(step => {
+                              const isSystem = step.agent === 'System';
+                              const profile = (AGENT_PROFILES as any)[step.agent];
+                              const pfpUrl = profile?.image || '';
+                              const accent = profile?.accent || (isSystem ? '#fbbf24' : '#9ca3af');
+
+                              if (groups.length > 0 && groups[groups.length - 1].agent === step.agent) {
+                                groups[groups.length - 1].messages.push(step);
+                              } else {
+                                groups.push({
+                                  agent: step.agent,
+                                  isSystem,
+                                  pfpUrl,
+                                  accent,
+                                  messages: [step]
+                                });
+                              }
+                            });
+
+                            return groups.map((group, groupIdx) => {
+                              const initials = group.isSystem ? '!!' : group.agent.split(' ').map((w: string) => w[0]).slice(0, 2).join('');
+                              return (
+                                <motion.div
+                                  key={group.agent + groupIdx}
+                                  initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                  className="flex items-start gap-3 py-3 border-b border-white/[0.04] last:border-b-0"
+                                >
+                                  {/* PFP Panel */}
+                                  <div className={cn(
+                                    'w-7 h-7 rounded-lg shrink-0 flex items-center justify-center text-[9px] font-mono font-bold uppercase border overflow-hidden mt-0.5',
+                                    group.isSystem ? 'bg-amber-500/15 border-amber-500/25 text-amber-400' : 'bg-white/[0.04] border-white/10 text-white/35'
+                                  )} style={{ borderColor: !group.isSystem ? `${group.accent}40` : undefined }}>
+                                    {group.pfpUrl ? (
+                                      <img src={group.pfpUrl} alt={group.agent} className="w-full h-full object-cover" />
+                                    ) : (
+                                      initials
+                                    )}
                                   </div>
-                                  <p className={cn('text-[10.5px] leading-[1.85] font-sans whitespace-pre-line select-text', isSystem ? 'text-amber-200/65' : 'text-white/72')}>
-                                    {isLast ? <TypewriterText text={bodyText} speed={10} /> : bodyText}
-                                  </p>
-                                </div>
-                              </motion.div>
-                            );
-                          })}
+
+                                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className={cn('text-[9.5px] font-mono font-bold tracking-wider', group.isSystem ? 'text-amber-400' : 'text-white/80')}
+                                        style={{ color: !group.isSystem ? group.accent : undefined }}>
+                                        {group.isSystem ? 'System' : group.agent}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2.5 mt-1">
+                                      {group.messages.map((step: any, msgIdx: number) => {
+                                        const isLastOverall = groupIdx === groups.length - 1 && msgIdx === group.messages.length - 1;
+                                        const bodyText = step.reasoning ? step.reasoning : step.message;
+
+                                        let statusBadgeText = step.message;
+                                        if (statusBadgeText === 'working' || statusBadgeText === 'working. working') statusBadgeText = 'thinking...';
+                                        if (statusBadgeText === 'success') statusBadgeText = 'completed';
+
+                                        let showBadge = false;
+                                        if (statusBadgeText && statusBadgeText.toLowerCase() !== bodyText.toLowerCase()) {
+                                          if (msgIdx === 0) {
+                                            showBadge = true;
+                                          } else {
+                                            const prevStep = group.messages[msgIdx - 1];
+                                            let prevBadgeText = prevStep.message;
+                                            if (prevBadgeText === 'working' || prevBadgeText === 'working. working') prevBadgeText = 'thinking...';
+                                            if (prevBadgeText === 'success') prevBadgeText = 'completed';
+                                            if (statusBadgeText !== prevBadgeText) {
+                                              showBadge = true;
+                                            }
+                                          }
+                                        }
+
+                                        return (
+                                          <div key={msgIdx} className="flex flex-col gap-1.5">
+                                            {showBadge && (
+                                              <div className="flex items-center gap-1.5">
+                                                <span className={cn(
+                                                  'text-[7px] font-mono uppercase tracking-widest px-1.5 py-px rounded-full border',
+                                                  step.status === 'working' ? 'text-white/40 border-white/10 bg-white/[0.03]' :
+                                                    step.status === 'success' ? 'text-emerald-400/70 border-emerald-500/20 bg-emerald-500/[0.04]' :
+                                                      'text-amber-400/70 border-amber-500/20'
+                                                )}>
+                                                  {statusBadgeText}
+                                                </span>
+                                              </div>
+                                            )}
+                                            <p className={cn('text-[10.5px] leading-[1.75] font-sans whitespace-pre-line select-text', group.isSystem ? 'text-amber-200/70' : 'text-white/75')}>
+                                              {isLastOverall ? <TypewriterText text={bodyText} speed={10} /> : bodyText}
+                                            </p>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            });
+                          })()}
                         </AnimatePresence>
 
                         {agentStatus === 'running' && agentSteps.filter(s => s.status === 'working').length > 0 && (
@@ -1625,108 +1734,86 @@ export default function VisualWorkspace({
                 </div>
 
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pt-2 md:pt-3 overflow-y-auto custom-scrollbar">
-                  {mainMode === 'agent' ? (
-                    <div className="col-span-full flex flex-col md:flex-row gap-4">
-                      <div className="flex-1 p-4 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-center">
-                        <span className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-400 mb-1.5 font-bold block">Reasoning Engine</span>
-                        <div className="flex items-center gap-2">
-                          <Cpu className="w-4 h-4 text-purple-400" />
-                          <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Gemini Multi-Agent System</span>
-                        </div>
-                        <p className="text-[8px] font-mono text-zinc-500 mt-1 uppercase tracking-wider leading-relaxed">Manages planning, outlines, scripts, storyboard cues & assembly.</p>
-                      </div>
-                      <div className="flex-1 p-4 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col justify-center">
-                        <span className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-400 mb-1.5 font-bold block">Media Engine</span>
-                        <div className="flex items-center gap-2">
-                          <Video className="w-4 h-4 text-rose-400" />
-                          <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">Grok Imagine Video API</span>
-                        </div>
-                        <p className="text-[8px] font-mono text-zinc-500 mt-1 uppercase tracking-wider leading-relaxed">Generates start frame clips & extends sequences up to 60+ seconds.</p>
+                  {mainMode === 'agent' ? null : null}
+                  <>
+                    {/* Aspect Ratio */}
+                    <div>
+                      <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Aspect Ratio</p>
+                      <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
+                        {ASPECT_RATIOS.map(ratio => {
+                          let boxClass = "w-2.5 h-2.5";
+                          if (ratio.id === '16:9') boxClass = "w-4 h-2.5";
+                          if (ratio.id === '9:16') boxClass = "w-2.5 h-4";
+                          if (ratio.id === '4:3') boxClass = "w-3.5 h-2.5";
+
+                          return (
+                            <button
+                              key={ratio.id}
+                              onClick={() => setSelectedAspectRatio(ratio.id)}
+                              className={cn(
+                                "flex-1 py-1 md:py-1.5 px-1 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
+                                selectedAspectRatio === ratio.id
+                                  ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                  : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
+                              )}
+                            >
+                              <div className={cn("border-[2px] rounded-[1px] mb-1 opacity-80 transition-colors md:border-[1.5px] md:rounded-[2px] md:mb-1.5", selectedAspectRatio === ratio.id ? "border-white" : "border-zinc-400", boxClass)} />
+                              <span className="text-[8px] md:text-[9px] font-mono font-bold tracking-widest">{ratio.id}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      {/* Aspect Ratio */}
-                      {mainMode !== 'flow' && (
-                        <div>
-                          <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Aspect Ratio</p>
-                          <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
-                            {ASPECT_RATIOS.map(ratio => {
-                              let boxClass = "w-2.5 h-2.5";
-                              if (ratio.id === '16:9') boxClass = "w-4 h-2.5";
-                              if (ratio.id === '9:16') boxClass = "w-2.5 h-4";
-                              if (ratio.id === '4:3') boxClass = "w-3.5 h-2.5";
 
-                              return (
-                                <button
-                                  key={ratio.id}
-                                  onClick={() => setSelectedAspectRatio(ratio.id)}
-                                  className={cn(
-                                    "flex-1 py-1 md:py-1.5 px-1 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
-                                    selectedAspectRatio === ratio.id
-                                      ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                      : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                                  )}
-                                >
-                                  <div className={cn("border-[2px] rounded-[1px] mb-1 opacity-80 transition-colors md:border-[1.5px] md:rounded-[2px] md:mb-1.5", selectedAspectRatio === ratio.id ? "border-white" : "border-zinc-400", boxClass)} />
-                                  <span className="text-[8px] md:text-[9px] font-mono font-bold tracking-widest">{ratio.id}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
+                    {/* Resolution Quality */}
+                    <div>
+                      <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Resolution Quality</p>
+                      <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
+                        {QUALITY_OPTIONS.filter(q => mainMode === 'image' ? ['1080p', '2k'].includes(q.id) : ['480p', '720p'].includes(q.id)).map(quality => (
+                          <button
+                            key={quality.id}
+                            onClick={() => setSelectedQuality(quality.id)}
+                            className={cn(
+                              "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-row md:flex-col items-baseline md:items-center justify-center gap-1 md:gap-0.5 transition-all duration-300",
+                              selectedQuality === quality.id
+                                ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
+                            )}
+                          >
+                            <span className="text-[8px] md:text-[10px] font-mono font-bold">{quality.id}</span>
+                            <span className="text-[5.5px] md:text-[7px] font-mono uppercase tracking-wider opacity-60 font-medium">
+                              {quality.id === '480p' ? '(SD)' : quality.id === '720p' ? '(HD)' : quality.id === '1080p' ? '(FHD)' : '(UHD)'}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {mainMode !== 'image' && (
+                      <div>
+                        <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Temporal Duration</p>
+                        <div className="grid grid-cols-3 gap-1 md:gap-2">
+                          {(mainMode === 'agent' ? AGENT_DURATION_OPTIONS : mainMode === 'flow' ? FLOW_DURATION_OPTIONS : VIDEO_DURATION_OPTIONS).map(duration => (
+                            <button
+                              key={duration.id}
+                              onClick={() => {
+                                if (mainMode === 'agent') setSelectedAgentDuration(duration.id);
+                                else if (mainMode === 'flow') setSelectedFlowDuration(duration.id);
+                                else setSelectedVideoDuration(duration.id);
+                              }}
+                              className={cn(
+                                "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
+                                (mainMode === 'agent' ? selectedAgentDuration : mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration) === duration.id
+                                  ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                  : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
+                              )}
+                            >
+                              <span className="text-[8px] md:text-[10px] font-mono font-bold">{duration.label}</span>
+                            </button>
+                          ))}
                         </div>
-                      )}
-
-                      {/* Resolution Quality */}
-                      {mainMode !== 'flow' && (
-                        <div>
-                          <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Resolution Quality</p>
-                          <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
-                            {QUALITY_OPTIONS.map(quality => (
-                              <button
-                                key={quality.id}
-                                onClick={() => setSelectedQuality(quality.id)}
-                                className={cn(
-                                  "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-row md:flex-col items-baseline md:items-center justify-center gap-1 md:gap-0.5 transition-all duration-300",
-                                  selectedQuality === quality.id
-                                    ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                    : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                                )}
-                              >
-                                <span className="text-[8px] md:text-[10px] font-mono font-bold">{quality.id}</span>
-                                <span className="text-[5.5px] md:text-[7px] font-mono uppercase tracking-wider opacity-60 font-medium">
-                                  {quality.id === '480p' ? '(SD)' : quality.id === '720p' ? '(HD)' : quality.id === '1080p' ? '(FHD)' : '(UHD)'}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Duration Controls */}
-                      {mainMode !== 'image' && (
-                        <div>
-                          <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Temporal Duration</p>
-                          <div className="grid grid-cols-3 gap-1 md:gap-2">
-                            {(mainMode === 'flow' ? FLOW_DURATION_OPTIONS : VIDEO_DURATION_OPTIONS).map(duration => (
-                              <button
-                                key={duration.id}
-                                onClick={() => mainMode === 'flow' ? setSelectedFlowDuration(duration.id) : setSelectedVideoDuration(duration.id)}
-                                className={cn(
-                                  "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-col items-center justify-center transition-all duration-300",
-                                  (mainMode === 'flow' ? selectedFlowDuration : selectedVideoDuration) === duration.id
-                                    ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                    : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                                )}
-                              >
-                                <span className="text-[8px] md:text-[10px] font-mono font-bold">{duration.label}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    )}
+                  </>
                 </div>
 
                 {/* Popover Action Footer */}
@@ -1750,7 +1837,7 @@ export default function VisualWorkspace({
               <button
                 onClick={() => setShowSettings(!showSettings)}
                 className={cn(
-                  "p-2 md:p-3.5 rounded-2xl transition-all border duration-300",
+                  "p-2 md:p-3.5 rounded-xl md:rounded-2xl transition-all border duration-300",
                   showSettings
                     ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                     : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15"
@@ -1765,7 +1852,7 @@ export default function VisualWorkspace({
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
-                  "rounded-2xl transition-all border duration-300 flex items-center justify-center",
+                  "rounded-xl md:rounded-2xl transition-all border duration-300 flex items-center justify-center",
                   referenceImage
                     ? "p-0 bg-transparent border-transparent"
                     : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15 p-2 md:p-3.5"
@@ -1827,7 +1914,7 @@ export default function VisualWorkspace({
               <button
                 onClick={handleGenerate}
                 disabled={isGenerating || (mainMode !== 'flow' && !prompt && !referenceImage)}
-                className="h-8 w-8 md:h-12 md:w-12 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center active:scale-95"
+                className="h-8 w-8 md:h-12 md:w-12 bg-white text-black hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl md:rounded-2xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center active:scale-95"
               >
                 {isGenerating ? <Loader2 className="w-3.5 h-3.5 md:w-4.5 md:h-4.5 animate-spin" /> : <Send className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
               </button>

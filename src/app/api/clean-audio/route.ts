@@ -15,10 +15,10 @@ import { ratelimit } from '@/lib/ratelimit';
 // ---------------------------------------------------------------------------
 
 const TIER_LIMITS = {
-  FREE:    { pulse: 20000,  maxAudioMins: 5,  maxFileMB: 50  },
-  BASIC:   { pulse: 60000,  maxAudioMins: 5,  maxFileMB: 300 },
+  FREE: { pulse: 20000, maxAudioMins: 5, maxFileMB: 50 },
+  BASIC: { pulse: 60000, maxAudioMins: 5, maxFileMB: 300 },
   PREMIUM: { pulse: 150000, maxAudioMins: 10, maxFileMB: 500 },
-  PRO:     { pulse: 800000, maxAudioMins: 15, maxFileMB: 500 },
+  PRO: { pulse: 800000, maxAudioMins: 15, maxFileMB: 500 },
 } as const;
 
 // Pulse cost: 1,000 pulse per minute of audio processed.
@@ -29,13 +29,13 @@ const PULSE_COST_PER_MIN = 1000;
 // ---------------------------------------------------------------------------
 
 function getModalHeaders(): Record<string, string> {
-  const tokenId     = process.env.MODAL_TOKEN_ID;
+  const tokenId = process.env.MODAL_TOKEN_ID;
   const tokenSecret = process.env.MODAL_TOKEN_SECRET;
   if (!tokenId || !tokenSecret) {
     throw new Error("Modal credentials not configured (MODAL_TOKEN_ID / MODAL_TOKEN_SECRET).");
   }
   return {
-    'Modal-Key':    tokenId,
+    'Modal-Key': tokenId,
     'Modal-Secret': tokenSecret,
   };
 }

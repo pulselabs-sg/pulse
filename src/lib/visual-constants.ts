@@ -47,3 +47,9 @@ export const FLOW_DURATION_OPTIONS = [
   { id: 8, label: '8s', desc: 'Medium' },
   { id: 10, label: '10s', desc: 'Long' },
 ] as const;
+
+export const AGENT_DURATION_OPTIONS = [
+  { id: 30, label: '30s', desc: 'Short' },
+  { id: 40, label: '40s', desc: 'Medium' },
+  { id: 50, label: '50s', desc: 'Long' },
+] as const;

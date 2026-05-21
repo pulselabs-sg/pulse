@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { prompt, duration, referenceImageBase64, mode, quality } = await req.json();
+    const { prompt, duration, referenceImageBase64, mode, quality, aspectRatio } = await req.json();
     const apiKey = process.env.XAI_API_KEY;
 
     if (!apiKey) {
@@ -57,6 +57,9 @@ export async function POST(req: NextRequest) {
       prompt: prompt || 'Generate a video',
       duration: durSec,
     };
+    if (aspectRatio) {
+      payload.aspect_ratio = aspectRatio;
+    }
 
     if (referenceImageBase64) {
       if (mode === 'flow') {

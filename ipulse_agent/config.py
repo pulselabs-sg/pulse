@@ -24,7 +24,7 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini/gemini-3.5-flash")
 GROK_MODEL = os.getenv("GROK_MODEL", "xai/grok-4.3")
 
 # Force Mock Data Mode (Set True for local frontend UI testing without calling real APIs)
-FORCE_MOCK = os.getenv("FORCE_MOCK", "True").lower() == "true"
+FORCE_MOCK = os.getenv("FORCE_MOCK", "False").lower() == "true"
 
 # Video settings
 DEFAULT_VIDEO_DURATION = 5  # default duration per clip in seconds

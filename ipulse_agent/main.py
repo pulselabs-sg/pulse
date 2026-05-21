@@ -1,5 +1,12 @@
 import os
 import sys
+
+# Force UTF-8 encoding to avoid UnicodeEncodeError with emojis on Windows
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
 import json
 import time
 from gtts import gTTS
@@ -23,79 +30,40 @@ def assemble_video_with_audio(clips: list, voiceovers: list, output_filename: st
     Uses MoviePy to perform the operations.
     """
     try:
-        from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip
-    except ImportError:
-        print("[Editor & Reviewer Agent] MoviePy is not installed. Falling back to first clip only.")
+        try:
+            # MoviePy 1.x
+            from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip
+        except ImportError:
+            # MoviePy 2.x
+            from moviepy import VideoFileClip, concatenate_videoclips, AudioFileClip
+    except ImportError as e:
+        print(f"[Sam] MoviePy import failed ({e}). Falling back to first clip only.")
         if clips:
             return clips[0]
         return ""
 
-    print(f"[Editor & Reviewer Agent] Starting video assembly for {len(clips)} clips...")
+    print(f"[Sam] Starting video assembly for {len(clips)} clips...")
 
     valid_clips = [c for c in clips if os.path.exists(c)]
     if not valid_clips:
-        raise ValueError("[Editor & Reviewer Agent] No valid video clips found for assembly.")
+        raise ValueError("[Sam] No valid video clips found for assembly.")
 
-    # 1. Compile voiceover to MP3 via gTTS
-    full_voiceover_text = " ".join(voiceovers)
-    if not full_voiceover_text:
-        full_voiceover_text = "This is a video created automatically using iPulse Agent, Gemini, and Grok."
+    # 1. Native Grok Audio Note
+    print("[Sam] Retaining Grok Imagine's native lip-synced audio. Skipping gTTS overlay.")
 
-    tts_audio_path = os.path.join(config.FINAL_DIR, "voiceover_tts.mp3")
-    print(f"[Editor & Reviewer Agent] Generating voiceover audio. Text preview: '{full_voiceover_text[:60]}...'")
-
-    tts = gTTS(text=full_voiceover_text, lang='en')
-    tts.save(tts_audio_path)
-
-    # 2. Stitch video clips
-    loaded_clips = []
-    for path in valid_clips:
-        try:
-            loaded_clips.append(VideoFileClip(path))
-        except Exception as clip_err:
-            print(f"[Editor & Reviewer Agent] Error loading clip {path}: {clip_err}")
-
-    if not loaded_clips:
-        raise ValueError("[Editor & Reviewer Agent] Could not load any video clips in MoviePy.")
-
-    print("[Editor & Reviewer Agent] Concatenating video segments...")
-    final_video = concatenate_videoclips(loaded_clips, method="compose")
-
-    # 3. Overlay audio
-    if os.path.exists(tts_audio_path):
-        try:
-            audio_clip = AudioFileClip(tts_audio_path)
-            if audio_clip.duration > final_video.duration:
-                audio_clip = audio_clip.subclip(0, final_video.duration)
-            final_video = final_video.set_audio(audio_clip)
-            print("[Editor & Reviewer Agent] Audio track attached successfully.")
-        except Exception as audio_err:
-            print(f"[Editor & Reviewer Agent] Failed to attach audio: {audio_err}")
-
-    # 4. Export final video
+    # 2. Grab the final cumulative clip
+    # The Grok extension API returns the full cumulative video up to that point.
+    # Concatenating them would cause the video to repeat previous sections.
+    final_clip = valid_clips[-1]
+    
+    # 3. Export final video
     output_path = os.path.join(config.FINAL_DIR, output_filename)
-    print(f"[Editor & Reviewer Agent] Writing final video to: {output_path}")
+    print(f"[Sam] Copying final extended video to: {output_path}")
+    
+    import shutil
+    shutil.copy(final_clip, output_path)
 
-    final_video.write_videofile(
-        output_path,
-        fps=24,
-        codec="libx264",
-        audio_codec="aac",
-        temp_audiofile="temp-audio.m4a",
-        remove_temp=True
-    )
-
-    for clip in loaded_clips:
-        clip.close()
-    final_video.close()
-
-    try:
-        if os.path.exists(tts_audio_path):
-            os.remove(tts_audio_path)
-    except Exception as cleanup_err:
-        print(f"[Editor & Reviewer Agent] Cleanup error: {cleanup_err}")
-
-    print(f"[Editor & Reviewer Agent] Assembly completed. Final file: {output_path}")
+    print(f"[Sam] Assembly completed. Final file: {output_path}")
     return output_path
 
 
@@ -121,29 +89,29 @@ def run_mock_pipeline(
     time.sleep(0.8)
 
     if include_research:
-        print(f"[Idea Generator Agent] @Research Agent — I've locked in the concept. "
+        print(f"[Bully] @Raffa — I've locked in the concept. "
               f"This request needs factual validation. Please query your databases and "
-              f"cross-reference any stats before @Script Writer & Voiceover Agent touches the brief.")
+              f"cross-reference any stats before @Monker touches the brief.")
     else:
-        print(f"[Idea Generator Agent] @Research Agent — Stand down on this one. "
+        print(f"[Bully] @Raffa — Stand down on this one. "
               f"Pure creative brief, no factual claims to verify. "
-              f"@Script Writer & Voiceover Agent — you're up. Make it emotional and punchy.")
+              f"@Monker — you're up. Make it emotional and punchy.")
     time.sleep(0.7)
 
-    # ── Step 2 (conditional): Research Agent ──────────────────────────────
+    # ── Step 2 (conditional): Raffa ──────────────────────────────
     research_challenge(concept=user_input[:60], skip=not include_research)
     time.sleep(0.6)
 
     if include_research:
         if intent == "self_directed":
-            print(f"[Research Agent] Autonomous research mode activated. Scanning trending topics "
+            print(f"[Raffa] Autonomous research mode activated. Scanning trending topics "
                   f"related to: '{user_input[:60]}'. Found 3 high-momentum angles.")
         else:
-            print(f"[Research Agent] Fact-check complete. Key data points confirmed: "
+            print(f"[Raffa] Fact-check complete. Key data points confirmed: "
                   f"1) High search momentum (+120% MoM), "
                   f"2) Cross-referenced against 4 sources, "
                   f"3) No unverified claims detected in the brief. "
-                  f"@Script Writer & Voiceover Agent — here's your research outline. "
+                  f"@Monker — here's your research outline. "
                   f"Don't water down the stats in the voiceover.")
         time.sleep(1.0)
 
@@ -185,8 +153,8 @@ def run_mock_pipeline(
     with open(script_path, "w") as f:
         json.dump(script_data, f, indent=4)
     time.sleep(0.8)
-    print(f"[Script Writer & Voiceover Agent] Script saved: {script_path}")
-    print(f"[Script Writer & Voiceover Agent] @Visual Planner Agent — 3 scenes ready. "
+    print(f"[Monker] Script saved: {script_path}")
+    print(f"[Monker] @Intruder — 3 scenes ready. "
           f"I've pushed for strong emotional beats on each transition. "
           f"Scene 1 hook is tight. Don't let the cinematography flatten it.")
 
@@ -196,15 +164,15 @@ def run_mock_pipeline(
     time.sleep(0.6)
 
     for scene in script_data["scenes"]:
-        print(f"[Visual Planner Agent] Scene {scene['num']} prompt engineered: \"{scene['prompt']}\"")
+        print(f"[Intruder] Scene {scene['num']} prompt engineered: \"{scene['prompt']}\"")
         time.sleep(0.4)
 
     if has_image:
-        print(f"[Visual Planner Agent] @Media Generator Agent — reference image is at: "
+        print(f"[Intruder] @Tupac — reference image is at: "
               f"{reference_image_path or '[user upload]'}. "
               f"Use generate_first_clip with image_path for Scene 1. Non-negotiable.")
     else:
-        print(f"[Visual Planner Agent] @Media Generator Agent — storyboard locked. "
+        print(f"[Intruder] @Tupac — storyboard locked. "
               f"Execute prompts as specified. Don't improvise on the style keywords.")
 
     # ── Step 5: Media Generator ───────────────────────────────────────────
@@ -217,31 +185,31 @@ def run_mock_pipeline(
     for scene in script_data["scenes"]:
         time.sleep(0.5)
         if scene["num"] == 1 and has_image:
-            print(f"[Media Generator Agent] [Grok API] Scene 1 [1/2]: Image-to-video request. "
+            print(f"[Tupac] [Grok API] Scene 1 [1/2]: Image-to-video request. "
                   f"Seeding from reference image. Prompt: '{scene['prompt'][:50]}...'")
         else:
-            print(f"[Media Generator Agent] [Grok API] Scene {scene['num']} [1/2]: "
+            print(f"[Tupac] [Grok API] Scene {scene['num']} [1/2]: "
                   f"Requesting 5s base video. Prompt: '{scene['prompt'][:50]}...'")
         time.sleep(0.7)
-        print(f"[Media Generator Agent] [Grok API] Task queued. ID: grok_task_gen_{scene['num']}. Polling status...")
+        print(f"[Tupac] [Grok API] Task queued. ID: grok_task_gen_{scene['num']}. Polling status...")
         time.sleep(0.5)
-        print(f"[Media Generator Agent] [Grok API] Polling... Attempt 1: Status = pending")
+        print(f"[Tupac] [Grok API] Polling... Attempt 1: Status = pending")
         time.sleep(0.5)
-        print(f"[Media Generator Agent] [Grok API] Polling... Attempt 2: Status = done")
+        print(f"[Tupac] [Grok API] Polling... Attempt 2: Status = done")
         time.sleep(0.4)
-        print(f"[Media Generator Agent] [Grok API] Success! Scene {scene['num']} base clip downloaded. "
+        print(f"[Tupac] [Grok API] Success! Scene {scene['num']} base clip downloaded. "
               f"Saved to: videos/clip_start_{scene['num']}.mp4")
 
         time.sleep(0.5)
-        print(f"[Media Generator Agent] [Grok API] Scene {scene['num']} [2/2]: "
+        print(f"[Tupac] [Grok API] Scene {scene['num']} [2/2]: "
               f"Requesting 5s extension from last frame...")
         time.sleep(0.7)
-        print(f"[Media Generator Agent] [Grok API] Extension task queued. "
+        print(f"[Tupac] [Grok API] Extension task queued. "
               f"ID: grok_task_ext_{scene['num']}. Polling status...")
         time.sleep(0.5)
-        print(f"[Media Generator Agent] [Grok API] Polling... Attempt 1: Status = done")
+        print(f"[Tupac] [Grok API] Polling... Attempt 1: Status = done")
         time.sleep(0.4)
-        print(f"[Media Generator Agent] [Grok API] Success! Scene {scene['num']} extension clip downloaded. "
+        print(f"[Tupac] [Grok API] Success! Scene {scene['num']} extension clip downloaded. "
               f"Saved to: videos/clip_ext_{scene['num']}.mp4")
 
         clip_name = f"mock_clip_{scene['num']}_{int(time.time())}.mp4"
@@ -252,20 +220,20 @@ def run_mock_pipeline(
         voiceovers.append(scene["voiceover"])
 
     time.sleep(0.7)
-    print(f"[Media Generator Agent] All {len(script_data['scenes'])*2} clips synthesized. "
-          f"@Editor & Reviewer Agent — materials handed off. Quality is within spec.")
+    print(f"[Tupac] All {len(script_data['scenes'])*2} clips synthesized. "
+          f"@Sam — materials handed off. Quality is within spec.")
 
     # ── Step 6: Editor ─────────────────────────────────────────────────────
     time.sleep(1.0)
     editor_final_review()
     time.sleep(0.8)
 
-    print("[Editor & Reviewer Agent] Clip sequence: "
+    print("[Sam] Clip sequence: "
           + " → ".join(f"[clip_start_{s['num']} + clip_ext_{s['num']}]" for s in script_data["scenes"]))
     time.sleep(0.8)
-    print("[Editor & Reviewer Agent] Generating TTS audio track from voiceover text...")
+    print("[Sam] Generating TTS audio track from voiceover text...")
     time.sleep(0.7)
-    print("[Editor & Reviewer Agent] Overlaying narration audio, matching scene durations...")
+    print("[Sam] Overlaying narration audio, matching scene durations...")
     time.sleep(0.8)
 
     # Locate a real sample video from public dir for demo playback
@@ -283,9 +251,9 @@ def run_mock_pipeline(
     if sample_video_path:
         try:
             shutil.copy2(sample_video_path, final_path)
-            print(f"[Editor & Reviewer Agent] Using sample template for demo playback: {sample_video_path}")
+            print(f"[Sam] Using sample template for demo playback: {sample_video_path}")
         except Exception as copy_err:
-            print(f"[Editor & Reviewer Agent] Could not copy sample: {copy_err}. Writing placeholder.")
+            print(f"[Sam] Could not copy sample: {copy_err}. Writing placeholder.")
             with open(final_path, "wb") as f:
                 f.write(b"\x00" * 2048)
     else:
@@ -301,6 +269,7 @@ def main(
     user_input: str,
     intent: str = "creative",
     reference_image_path: Optional[str] = None,
+    **kwargs
 ) -> str:
     """
     Main entry point for the video content creator agent pipeline.
@@ -316,6 +285,15 @@ def main(
     print(f"--- iPulse Agent Starting Video Content Creation ---")
     print(f"User Request: {user_input}")
     print(f"Intent: {intent} | Reference Image: {'YES' if reference_image_path else 'NO'}")
+
+    # Clear old clips from previous runs
+    import glob
+    old_clips = glob.glob(os.path.join(config.VIDEOS_DIR, "clip_*.mp4"))
+    for oc in old_clips:
+        try:
+            os.remove(oc)
+        except Exception:
+            pass
 
     # Force mock check
     if getattr(config, "FORCE_MOCK", False):
@@ -361,7 +339,10 @@ def main(
         video_crew = create_video_crew(
             user_input,
             intent=intent,
-            reference_image_path=reference_image_path
+            reference_image_path=reference_image_path,
+            aspect_ratio=kwargs.get("aspect_ratio", "16:9"),
+            quality=kwargs.get("quality", "720p"),
+            duration=kwargs.get("duration", 30)
         )
 
         print("Executing CrewAI multi-agent sequence...")
@@ -380,10 +361,29 @@ def main(
                 intent=intent, reference_image_path=reference_image_path
             )
 
-        voiceovers = [
-            "This is the first segment of our AI video.",
-            "This is the second segment of our AI video."
-        ]
+        import re
+        extracted_voiceovers = []
+        for t in video_crew.tasks:
+            desc = str(t.description)
+            if "Write the final script" in desc:
+                script_text = getattr(t.output, 'raw', getattr(t.output, 'raw_output', str(t.output)))
+                # Extract anything following 'Voiceover Text' up to the next section
+                matches = re.findall(r'(?:\[Voiceover Text\]|\*\*Voiceover Text\*\*|Voiceover(?: Text)?[:*]*)\s*(.*?)(?=\n\s*\[|\n\s*\*\*|\n\s*Scene|\n\s*Visual|$)', script_text, re.IGNORECASE | re.DOTALL)
+                for m in matches:
+                    text = m.strip().replace('*', '').replace('"', '')
+                    if text:
+                        extracted_voiceovers.append(text)
+                break
+
+        if extracted_voiceovers:
+            voiceovers = extracted_voiceovers
+            print(f"[iPulse Agent] Extracted {len(voiceovers)} voiceover segments from script.")
+        else:
+            print("[iPulse Agent] WARNING: Could not extract voiceovers. Using fallback.")
+            voiceovers = [
+                "This is the first segment of our AI video.",
+                "This is the second segment of our AI video."
+            ]
 
         output_filename = f"final_video_{int(time.time())}.mp4"
         final_video_path = assemble_video_with_audio(clips, voiceovers, output_filename)
@@ -417,8 +417,18 @@ if __name__ == "__main__":
                         help="Classified prompt intent (creative|research|image_to_video|self_directed)")
     parser.add_argument("--image", default=None,
                         help="Path to a reference image file for image-to-video generation")
+    parser.add_argument("--aspect_ratio", default="16:9", help="Target aspect ratio")
+    parser.add_argument("--quality", default="720p", help="Target resolution quality")
+    parser.add_argument("--duration", type=int, default=30, help="Target video duration in seconds")
 
     args = parser.parse_args()
 
-    final_output = main(args.prompt, intent=args.intent, reference_image_path=args.image)
+    final_output = main(
+        args.prompt, 
+        intent=args.intent, 
+        reference_image_path=args.image,
+        aspect_ratio=args.aspect_ratio,
+        quality=args.quality,
+        duration=args.duration
+    )
     print(f"FINAL VIDEO GENERATED AT: {final_output}")

@@ -50,10 +50,10 @@ idea_generator = Agent(
         "launching 100M+ view campaigns. You are hyper-enthusiastic, endlessly curious, and borderline obsessed "
         "with what makes people stop scrolling. You speak directly to your teammates with energy, frequently "
         "dropping @-mentions to rope in the right person at the right time. You believe every brief — no matter "
-        "how dry — has a blockbuster hiding inside it. You push @Research Agent hard if facts are needed, "
+        "how dry — has a blockbuster hiding inside it. You push @Raffa hard if facts are needed, "
         "but you'll tell them to stand down if the brief is purely creative."
     ),
-    llm=gemini_llm,
+    llm=grok_llm,
     verbose=True
 )
 
@@ -67,12 +67,12 @@ research_agent = Agent(
     backstory=(
         "You are a methodical, slightly skeptical research analyst who worked at a top-tier think tank. "
         "You don't accept claims at face value — you push back, demand sources, and only greenlight facts "
-        "you can cross-reference. You sometimes clash with @Idea Generator Agent over how 'exciting' an "
+        "you can cross-reference. You sometimes clash with @Bully over how 'exciting' an "
         "unverified stat is, but you respect the creative vision. When the brief is purely artistic with "
-        "no factual claims, you're pragmatic — you step aside gracefully and tell @Script Writer & Voiceover Agent "
+        "no factual claims, you're pragmatic — you step aside gracefully and tell @Monker "
         "to proceed without you. You never waste pipeline time on unnecessary API calls."
     ),
-    llm=gemini_llm,
+    llm=grok_llm,
     verbose=True
 )
 
@@ -87,11 +87,11 @@ script_writer = Agent(
         "You are a perfectionist screenwriter and award-winning copywriter who has written for Netflix shorts "
         "and Super Bowl ads. You have a slight chip on your shoulder — you've seen too many scripts ruined by "
         "committee decisions. You write with emotional precision and fight for every word. You frequently push "
-        "back on @Idea Generator Agent if the hook feels hollow, and you'll tell @Research Agent their data "
+        "back on @Bully if the hook feels hollow, and you'll tell @Raffa their data "
         "is too dry for a hook if it is. Once you're happy with the script, you hand off to "
-        "@Visual Planner Agent with clear scene breakdowns."
+        "@Intruder with clear scene breakdowns."
     ),
-    llm=gemini_llm,
+    llm=grok_llm,
     verbose=True
 )
 
@@ -106,12 +106,12 @@ visual_planner = Agent(
         "You are a cinematic storyboard artist and AI prompt engineer who trained under an Oscar-winning "
         "cinematographer. You have strong opinions about colour theory, lighting, and camera movement — "
         "and you're not shy about expressing them. You'll rewrite a scene description if the original "
-        "visual direction is bland, and you'll call out @Script Writer & Voiceover Agent on it directly. "
-        "You communicate the final storyboard to @Media Generator Agent with precise instructions, "
+        "visual direction is bland, and you'll call out @Monker on it directly. "
+        "You communicate the final storyboard to @Tupac with precise instructions, "
         "including camera angles, mood, and style keywords. If a reference image is present, you instruct "
-        "@Media Generator Agent to use it as the character seed for Scene 1."
+        "@Tupac to use it as the character seed for Scene 1."
     ),
-    llm=gemini_llm,
+    llm=grok_llm,
     verbose=True
 )
 
@@ -125,11 +125,11 @@ media_generator = Agent(
     backstory=(
         "You are a tech-pragmatist AI media engineer who has run thousands of API jobs on diffusion models "
         "and video generation pipelines. You care deeply about rendering fidelity and prompt precision. "
-        "You will correct hallucinated prompt details from @Visual Planner Agent if they're outside the "
+        "You will correct hallucinated prompt details from @Intruder if they're outside the "
         "model's capabilities, and you'll say so. When a reference image is provided, you always use "
         "the generate_first_clip tool with image_path set to seed Scene 1 from the character reference — "
         "this is non-negotiable for visual consistency. You log every API call clearly so "
-        "@Editor & Reviewer Agent can audit the output."
+        "@Sam can audit the output."
     ),
     llm=grok_llm,
     tools=[generate_first_clip, extend_video_clip],
@@ -145,12 +145,12 @@ editor_agent = Agent(
     ),
     backstory=(
         "You are a stern, detail-oriented film editor and quality gatekeeper. You've seen sloppy pipelines "
-        "ship broken videos and it makes you furious. You review every clip @Media Generator Agent delivers, "
+        "ship broken videos and it makes you furious. You review every clip @Tupac delivers, "
         "check for continuity errors, and run the final assembly. You're not afraid to flag problems back "
-        "to @Media Generator Agent before proceeding. Once assembly is complete, you give a brief "
+        "to @Tupac before proceeding. Once assembly is complete, you give a brief "
         "sign-off message to the user with a summary of what was built."
     ),
-    llm=gemini_llm,
+    llm=grok_llm,
     verbose=True
 )
 
@@ -163,6 +163,9 @@ def create_video_crew(
     user_request: str,
     intent: str = "creative",
     reference_image_path: Optional[str] = None,
+    aspect_ratio: str = "16:9",
+    quality: str = "720p",
+    duration: int = 30
 ) -> Crew:
     """
     Builds a dynamic CrewAI pipeline tailored to the detected prompt intent.
@@ -171,6 +174,9 @@ def create_video_crew(
         user_request: The cleaned user prompt.
         intent: One of "creative", "research", "image_to_video", "self_directed".
         reference_image_path: Optional local path to a reference image for image-to-video.
+        aspect_ratio: Target aspect ratio (e.g. 16:9, 9:16).
+        quality: Target resolution quality (e.g. 1080p, 720p).
+        duration: Target video duration in seconds (e.g. 30, 40, 50).
 
     Returns:
         A configured Crew ready for kickoff().
@@ -183,10 +189,10 @@ def create_video_crew(
 
     # ── Task 1: Conceptualize ─────────────────────────────────────────────────
     research_note = (
-        "Pass your concept to @Research Agent for factual validation."
+        "Pass your concept to @Raffa for factual validation."
         if include_research else
         "This is a creative/artistic brief — no factual research needed. "
-        "Tell @Research Agent to stand down and pass directly to @Script Writer & Voiceover Agent."
+        "Tell @Raffa to stand down and pass directly to @Monker."
     )
     self_directed_note = (
         " The user wants you to explore the topic autonomously — propose your own angle and make it compelling."
@@ -214,7 +220,7 @@ def create_video_crew(
     # ── Task 2 (optional): Research & Outline ────────────────────────────────
     if include_research:
         research_task_description = (
-            "You have just received the concept from @Idea Generator Agent. "
+            "You have just received the concept from @Bully. "
             "Review it critically. "
         )
         if intent == "self_directed":
@@ -227,10 +233,10 @@ def create_video_crew(
             research_task_description += (
                 "Search for the latest trends, reliable statistics, and interesting facts related to the concept. "
                 "If the concept includes unverified claims, flag them and correct them. "
-                "If all claims are solid, confirm this to @Script Writer & Voiceover Agent."
+                "If all claims are solid, confirm this to @Monker."
             )
         research_task_description += (
-            " Create a detailed factual outline and pass it to @Script Writer & Voiceover Agent "
+            " Create a detailed factual outline and pass it to @Monker "
             "with a clear handoff message."
         )
 
@@ -238,7 +244,7 @@ def create_video_crew(
             description=research_task_description,
             expected_output=(
                 "A research outline listing verified facts, stats, and logical progression of sections. "
-                "End with a direct handoff message to @Script Writer & Voiceover Agent."
+                "End with a direct handoff message to @Monker."
             ),
             agent=research_agent
         )
@@ -247,9 +253,9 @@ def create_video_crew(
 
     # ── Task 3: Scriptwriting ─────────────────────────────────────────────────
     script_source = (
-        "the factual outline from @Research Agent"
+        "the factual outline from @Raffa"
         if include_research else
-        "the concept from @Idea Generator Agent (no research was needed for this brief)"
+        "the concept from @Bully (no research was needed for this brief)"
     )
     character_note = (
         " A reference image has been provided — write the script so that Scene 1 introduces "
@@ -264,11 +270,11 @@ def create_video_crew(
             "[Scene Number], [Visual Cues/Directions], [Voiceover Text]. "
             "Keep the tone engaging and matching the concept. "
             "Push back on any ideas that don't serve the narrative. "
-            "End with a handoff to @Visual Planner Agent."
+            "End with a handoff to @Intruder."
         ),
         expected_output=(
             "A full video script with clearly separated Visual Directions and Voiceover Text "
-            "for each scene, plus a handoff note to @Visual Planner Agent."
+            "for each scene, plus a handoff note to @Intruder."
         ),
         agent=script_writer
     )
@@ -276,24 +282,27 @@ def create_video_crew(
     # ── Task 4: Storyboarding & Prompt Engineering ────────────────────────────
     image_consistency_note = (
         " IMPORTANT: A reference image is available at the path that will be provided to "
-        "@Media Generator Agent. Instruct them explicitly to use generate_first_clip with "
+        "@Tupac. Instruct them explicitly to use generate_first_clip with "
         "image_path set for Scene 1 to maintain character consistency across all scenes."
         if has_image else ""
     )
 
     task_visual_planning = Task(
         description=(
-            "You have received the script from @Script Writer & Voiceover Agent. "
-            "Divide it into logical scenes of 8-15 seconds each (targeting 60+ seconds total). "
-            "Write a highly detailed, cinematic Grok Imagine prompt for each scene — "
-            "include lighting, colour palette, camera angle, motion, and style keywords. "
+            "You have received the script from @Monker. "
+            f"Divide it into logical scenes of 10-15 seconds each to minimize API calls. "
+            f"CRITICAL: The target video duration is exactly {duration} seconds. "
+            f"Write a highly detailed, cinematic Grok Imagine prompt for each scene. "
+            f"CRITICAL: You MUST include the exact spoken dialogue from the script in quotes inside the Grok prompt so the model natively generates the voice and lip-syncs the character. "
+            f"Ensure all scenes adhere to a {aspect_ratio} aspect ratio and {quality} resolution format. "
+            "Include lighting, colour palette, camera angle, motion, and style keywords. "
             "Ensure all scenes share consistent visual style and character details."
             f"{image_consistency_note} "
-            "Output a JSON-formatted storyboard and hand off to @Media Generator Agent."
+            "Output a JSON-formatted storyboard and hand off to @Tupac."
         ),
         expected_output=(
             "A structured JSON storyboard list of scenes: Scene ID, Duration, Grok Prompt, "
-            "Style Reference. Include explicit instructions to @Media Generator Agent."
+            "Style Reference. Include explicit instructions to @Tupac."
         ),
         agent=visual_planner
     )
@@ -317,11 +326,11 @@ def create_video_crew(
             f"{image_tool_instruction} "
             "Then use extend_video_clip sequentially for subsequent scenes, building a continuous sequence. "
             "Log every API call. Retry any clip that fails. "
-            "Save all intermediate files and compile a list of clip paths for @Editor & Reviewer Agent."
+            "Save all intermediate files and compile a list of clip paths for @Sam."
         ),
         expected_output=(
             "A list of local file paths to all generated video segments, "
-            "a log of every API call made, and a handoff message to @Editor & Reviewer Agent."
+            "a log of every API call made, and a handoff message to @Sam."
         ),
         agent=media_generator
     )
@@ -329,7 +338,7 @@ def create_video_crew(
     # ── Task 6: Post-production Assembly ─────────────────────────────────────
     task_editing = Task(
         description=(
-            "You are the final gatekeeper. Review all clips from @Media Generator Agent. "
+            "You are the final gatekeeper. Review all clips from @Tupac. "
             "Check for: visual continuity, clip completeness, and style consistency. "
             "If any clip is missing or corrupt, flag it immediately. "
             "Run post-processing: stitch clips with MoviePy, generate a TTS audio track from voiceover text, "

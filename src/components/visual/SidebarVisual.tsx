@@ -101,7 +101,7 @@ export default function SidebarVisual({
               <div className="absolute inset-0 bg-white/5 blur-md rounded-full opacity-40" />
             )}
             {session?.user?.image ? (
-              <img src={session.user.image} alt="" className="w-8 h-8 rounded-full object-cover opacity-80 group-hover:opacity-100 transition-opacity shrink-0" />
+              <img src={session.user.image} alt="" className="w-8 h-8 rounded-xl object-cover opacity-80 group-hover:opacity-100 transition-opacity shrink-0" />
             ) : (
               <User className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === 'profile' ? "text-white" : "text-zinc-400")} />
             )}
@@ -137,7 +137,7 @@ export default function SidebarVisual({
                 </div>
                 <button
                   onClick={() => setShowPlanModal(true)}
-                  className="w-full py-2.5 bg-white/15 hover:bg-white text-zinc-300 hover:text-black text-[11px] font-bold tracking-[0.2em] rounded-full flex items-center justify-center gap-2 transition-all border border-white/15 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.03)] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                  className="w-full py-2.5 bg-white/15 hover:bg-white text-zinc-300 hover:text-black text-[11px] font-bold tracking-[0.2em] rounded-xl flex items-center justify-center gap-2 transition-all border border-white/15 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.03)] hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
                 >
                   Manage Plan
                 </button>

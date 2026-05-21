@@ -80,7 +80,7 @@ def generate_first_clip(
     prompt: str,
     image_path: Optional[str] = None,
     reference_image_b64: Optional[str] = None,
-    duration: int = 5,
+    duration: int = 15,
 ) -> str:
     """
     Generates the first video clip using the Grok Imagine Video API.
@@ -159,7 +159,7 @@ def generate_first_clip(
 
 
 @tool("Grok Video Extension Tool")
-def extend_video_clip(prompt: str, input_video_path: str, duration: int = 5) -> str:
+def extend_video_clip(prompt: str, input_video_path: str, duration: int = 10) -> str:
     """
     Extends an existing video clip from its last frame using the Grok Imagine Video Extension API.
 

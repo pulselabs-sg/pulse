@@ -38,6 +38,9 @@ class VideoPromptRequest(BaseModel):
     prompt: str
     reference_image: Optional[str] = None   # base64 data-uri OR https:// URL
     intent: Optional[str] = None             # pre-classified intent from client (optional)
+    aspect_ratio: Optional[str] = "16:9"
+    quality: Optional[str] = "720p"
+    duration: Optional[int] = 30
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -162,8 +165,54 @@ def generate_video_stream(request: VideoPromptRequest):
         r"No module named 'botocore'",
         r"^\s*$",
         r"\x1b\[",
+        r"Polling status for video generation request",
+        r"Non-200 polling response",
+        r"Cleanup error:",
+        r"Final Answer:",
+        r"Task Started",
+        r"Agent Started",
+        r"Task Execution",
+        r"ERROR:root:",
+        r"ERROR:crewai",
+        r"LLM Call Failed",
+        r"Crew Execution Failed",
+        r"Crew Execution Completed",
+        r"Error executing listener",
+        r"Quota exceeded for metric",
+        r"Please retry in",
+        r"An unknown error occurred",
+        r"Error details:",
+        r"CrewAIEventsBus",
+        r"Warning: Event pairing mismatch",
+        r"Task Failed",
+        r"Crew Failure",
+        r"Tracing Status",
+        r"Info: Tracing is disabled",
+        r"To enable tracing",
+        r"Set tracing=True",
+        r"Run: crewai traces enable",
+        r"\[CrewAIEventsBus\]",
+        r"expected 'task_started'",
+        r"expected 'crew_kickoff_started'",
+        r"Name: crew",
+        r"^ID: ",
+        r"^\s*\{\s*$",
+        r"^\s*\}\s*$",
+        r"^\s*\[\s*$",
+        r"^\s*\]\s*$",
+        r"^\s*\}\,?\s*$",
+        r"^\s*\]\,?\s*$",
+        r"\"scene_id\":",
+        r"\"duration\":",
+        r"\"grok_prompt\":",
+        r"\"style_reference\":",
+        r"\"storyboard\":",
+        r"\"total_duration\":",
+        r"\"instructions_to_media_generator_agent\":",
+        r"Task:",
+        r"Args:",
     ]
-    noise_re = re.compile("|".join(NOISE_PATTERNS))
+    noise_re = re.compile("|".join(NOISE_PATTERNS), re.IGNORECASE)
     ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
     def is_noise(line: str) -> bool:
@@ -171,28 +220,89 @@ def generate_video_stream(request: VideoPromptRequest):
 
     def event_generator():
         # Build subprocess command with intent and optional image path args
-        cmd = [sys.executable, "-u", "main.py", clean_prompt, f"--intent={intent}"]
+        cmd = [
+            sys.executable, "-u", "main.py", 
+            clean_prompt, 
+            f"--intent={intent}",
+            f"--aspect_ratio={request.aspect_ratio}",
+            f"--quality={request.quality}",
+            f"--duration={request.duration}"
+        ]
         if reference_image_path:
             cmd.append(f"--image={reference_image_path}")
+
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
 
         process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             bufsize=1,
-            cwd=os.path.dirname(os.path.abspath(__file__))
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            env=env
         )
 
-        current_agent = "Idea Generator Agent"
+        current_agent = "Bully"
         last_payload_str = ""
         is_demo_mode = False
 
         for line in iter(process.stdout.readline, ""):
-            line_str = ansi_escape.sub("", line).strip()
+            raw_line_str = ansi_escape.sub("", line).strip()
 
-            if not line_str or is_noise(line_str):
+            if not raw_line_str or is_noise(raw_line_str):
                 continue
+
+            # ── Final video path interception ──────────────────────────────────
+            # We must intercept the REAL path before masking it
+            if "FINAL VIDEO GENERATED AT:" in raw_line_str:
+                parts = raw_line_str.split("FINAL VIDEO GENERATED AT:")
+                final_path = parts[1].strip()
+                filename = os.path.basename(final_path)
+
+                # Copy video to Next.js public folder for serving
+                public_dir = os.path.abspath(os.path.join(config.BASE_DIR, "..", "public"))
+                if os.path.exists(public_dir):
+                    import shutil
+                    try:
+                        dest_path = os.path.join(public_dir, filename)
+                        shutil.copy2(final_path, dest_path)
+                        print(f"Copied final video to Next.js public folder: {dest_path}")
+                    except Exception as copy_err:
+                        print(f"Could not copy final video to public directory: {copy_err}")
+
+                complete_payload = {
+                    "videoUrl": f"/{filename}",
+                    "script": f"Pipeline successful! Final video assembled: {filename}\nSaved locally at: [secure_media_asset]",
+                    "prompts": [clean_prompt],
+                    "demoMode": is_demo_mode
+                }
+                yield f"event: complete\ndata: {json.dumps(complete_payload)}\n\n"
+
+            # Apply UI masks for the frontend stream
+            line_str = raw_line_str
+            # Remove box drawing characters and formatting noise
+            line_str = re.sub(r"[│─┌└┐┘├┤┬┴┼]+", "", line_str).strip()
+            line_str = line_str.replace("print(\"[INFO]", "")
+            line_str = line_str.replace("[INFO]", "").strip()
+            
+            if not line_str:
+                continue
+
+            # Mask model names and API references
+            line_str = re.sub(r"(?i)\bGrok\b", "Neural", line_str)
+            line_str = re.sub(r"(?i)\bGemini\b", "Neural", line_str)
+            line_str = re.sub(r"(?i)\bAPI\b", "Engine", line_str)
+
+            # Mask paths
+            line_str = re.sub(r"(?i)(?:final|videos|temp)[\\/][\w_.-]+\.(?:mp4|mp3|m4a)", "[secure_media_asset]", line_str)
+            line_str = re.sub(r"(?i)[A-Z]:\\[\w\\_.-]+\.mp4", "[secure_media_asset]", line_str)
+            
+            # Mask UUIDs
+            line_str = re.sub(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "[ID_HIDDEN]", line_str)
 
             if "DEMO_MODE: true" in line_str:
                 is_demo_mode = True
@@ -213,18 +323,18 @@ def generate_video_stream(request: VideoPromptRequest):
                 continue
 
             # ── Agent detection (extended for @-mention style logs) ──────────
-            if any(k in line_str for k in ["Creative Video Idea Generator", "task_idea", "Idea Generator Agent", "[Idea Generator Agent]"]):
-                current_agent = "Idea Generator Agent"
-            elif any(k in line_str for k in ["Real-time Research Analyst", "task_research", "Research Agent", "[Research Agent]"]):
-                current_agent = "Research Agent"
-            elif any(k in line_str for k in ["Screenwriter", "task_script", "Script Writer", "[Script Writer"]):
-                current_agent = "Script Writer & Voiceover Agent"
-            elif any(k in line_str for k in ["Art Director", "task_visual_planning", "Visual Planner", "[Visual Planner"]):
-                current_agent = "Visual Planner Agent"
-            elif any(k in line_str for k in ["AI Video Director", "task_generation", "Media Generator", "[Media Generator"]):
-                current_agent = "Media Generator Agent"
-            elif any(k in line_str for k in ["Post-production Editor", "task_editing", "Editor", "[Editor"]):
-                current_agent = "Editor & Reviewer Agent"
+            if any(k in line_str for k in ["Creative Video Idea Generator", "task_idea", "Idea Generator Agent", "[Idea Generator Agent]", "[Bully]", "Bully"]):
+                current_agent = "Bully"
+            elif any(k in line_str for k in ["Real-time Research Analyst", "task_research", "Research Agent", "[Research Agent]", "[Raffa]", "Raffa"]):
+                current_agent = "Raffa"
+            elif any(k in line_str for k in ["Screenwriter", "task_script", "Script Writer", "[Script Writer", "[Monker]", "Monker"]):
+                current_agent = "Monker"
+            elif any(k in line_str for k in ["Art Director", "task_visual_planning", "Visual Planner", "[Visual Planner", "[Intruder]", "Intruder"]):
+                current_agent = "Intruder"
+            elif any(k in line_str for k in ["AI Video Director", "task_generation", "Media Generator", "[Media Generator", "[Tupac]", "Tupac"]):
+                current_agent = "Tupac"
+            elif any(k in line_str for k in ["Post-production Editor", "task_editing", "Editor", "[Editor", "[Sam]", "Sam"]):
+                current_agent = "Sam"
 
             # ── Status detection ──────────────────────────────────────────────
             is_agent_error = (
@@ -260,30 +370,7 @@ def generate_video_stream(request: VideoPromptRequest):
 
             yield f"event: agent_status\ndata: {payload_str}\n\n"
 
-            # ── Final video path interception ──────────────────────────────────
-            if "FINAL VIDEO GENERATED AT:" in line_str:
-                parts = line_str.split("FINAL VIDEO GENERATED AT:")
-                final_path = parts[1].strip()
-                filename = os.path.basename(final_path)
-
-                # Copy video to Next.js public folder for serving
-                public_dir = os.path.abspath(os.path.join(config.BASE_DIR, "..", "public"))
-                if os.path.exists(public_dir):
-                    import shutil
-                    try:
-                        dest_path = os.path.join(public_dir, filename)
-                        shutil.copy2(final_path, dest_path)
-                        print(f"Copied final video to Next.js public folder: {dest_path}")
-                    except Exception as copy_err:
-                        print(f"Could not copy final video to public directory: {copy_err}")
-
-                complete_payload = {
-                    "videoUrl": f"/{filename}",
-                    "script": f"Pipeline successful! Final video assembled: {filename}\nSaved locally at: {final_path}",
-                    "prompts": [clean_prompt],
-                    "demoMode": is_demo_mode
-                }
-                yield f"event: complete\ndata: {json.dumps(complete_payload)}\n\n"
+            # The "FINAL VIDEO GENERATED AT:" logic has been moved up before masking
 
         process.stdout.close()
         exit_code = process.wait()
