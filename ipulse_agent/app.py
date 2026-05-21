@@ -86,6 +86,52 @@ def save_reference_image(reference_image: str) -> Optional[str]:
     return None
 
 
+def upload_to_r2(file_path: str, filename: str) -> str:
+    """Uploads a file to Cloudflare R2 and returns its public URL."""
+    try:
+        import boto3
+        from botocore.client import Config
+        
+        account_id = os.getenv("R2_ACCOUNT_ID")
+        access_key = os.getenv("R2_ACCESS_KEY_ID")
+        secret_key = os.getenv("R2_SECRET_ACCESS_KEY")
+        bucket = os.getenv("R2_BUCKET_NAME", "ipulse")
+        public_url = os.getenv("R2_PUBLIC_URL", "https://cdn.ipulselabs.net").rstrip("/")
+        
+        if not all([account_id, access_key, secret_key]):
+            print("[iPulse Agent] R2 credentials missing. Skipping upload.")
+            return f"/{filename}"
+            
+        s3 = boto3.client('s3',
+            endpoint_url=f"https://{account_id}.r2.cloudflarestorage.com",
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            config=Config(signature_version='s3v4'),
+            region_name="auto"
+        )
+        
+        content_type = "video/mp4"
+        if filename.endswith(".mp3"): content_type = "audio/mpeg"
+        elif filename.endswith(".m4a"): content_type = "audio/mp4"
+        
+        object_name = f"videos/{filename}"
+        
+        print(f"[iPulse Agent] Uploading {filename} to R2 bucket {bucket} at {object_name}...")
+        s3.upload_file(
+            file_path,
+            bucket,
+            object_name,
+            ExtraArgs={'ContentType': content_type}
+        )
+        
+        final_url = f"{public_url}/{object_name}"
+        print(f"[iPulse Agent] Successfully uploaded to R2: {final_url}")
+        return final_url
+    except Exception as e:
+        print(f"[iPulse Agent] R2 Upload Error: {e}")
+        return f"/{filename}"
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Routes
 # ─────────────────────────────────────────────────────────────────────────────
@@ -123,11 +169,17 @@ def generate_video(request: VideoPromptRequest):
             raise HTTPException(status_code=500, detail="Video assembly failed. No file generated.")
 
         filename = os.path.basename(final_video_path)
+        video_url = f"/api/videos/{filename}"
+        try:
+            video_url = upload_to_r2(final_video_path, filename)
+        except Exception as e:
+            print(f"Failed to upload to R2: {e}")
+
         return {
             "status": "success",
             "video_filename": filename,
             "local_path": final_video_path,
-            "url": f"/api/videos/{filename}"
+            "url": video_url
         }
 
     except Exception as e:
@@ -263,20 +315,16 @@ def generate_video_stream(request: VideoPromptRequest):
                 final_path = parts[1].strip()
                 filename = os.path.basename(final_path)
 
-                # Copy video to Next.js public folder for serving
-                public_dir = os.path.abspath(os.path.join(config.BASE_DIR, "..", "public"))
-                if os.path.exists(public_dir):
-                    import shutil
-                    try:
-                        dest_path = os.path.join(public_dir, filename)
-                        shutil.copy2(final_path, dest_path)
-                        print(f"Copied final video to Next.js public folder: {dest_path}")
-                    except Exception as copy_err:
-                        print(f"Could not copy final video to public directory: {copy_err}")
+                # Upload to Cloudflare R2
+                video_url = f"/{filename}"
+                try:
+                    video_url = upload_to_r2(final_path, filename)
+                except Exception as upload_err:
+                    print(f"Failed to upload to R2: {upload_err}")
 
                 complete_payload = {
-                    "videoUrl": f"/{filename}",
-                    "script": f"Pipeline successful! Final video assembled: {filename}\nSaved locally at: [secure_media_asset]",
+                    "videoUrl": video_url,
+                    "script": f"Pipeline successful! Final video assembled: {filename}\nSaved remotely at: {video_url}",
                     "prompts": [clean_prompt],
                     "demoMode": is_demo_mode
                 }
