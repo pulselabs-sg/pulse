@@ -145,9 +145,9 @@ def generate_first_clip(
                             f"Saved to: videos/{local_filename}"
                         )
                         return local_path
-                    return f"Generated successfully but failed to download. Video URL: {video_url}"
+                    print(f"[Media Generator Agent] Generated successfully but failed to download. Video URL: {video_url}")
                 else:
-                    return "Error: Video generation finished but returned no URL or failed."
+                    print("[Media Generator Agent] Error: Video generation finished but returned no URL or failed.")
             else:
                 print(f"[Media Generator Agent] Error starting video generation (status {res.status_code}): {res.text}")
         except Exception as e:
@@ -189,7 +189,7 @@ def extend_video_clip(prompt: str, input_video_path: str, duration: int = 10) ->
     payload = {
         "model": "grok-imagine-video",
         "prompt": prompt,
-        "duration": min(duration, config.MAX_VIDEO_DURATION),
+        "duration": min(duration, 10),  # Grok extension API max duration is typically 10s
         "video": {"url": video_payload_url}
     }
 
@@ -218,9 +218,9 @@ def extend_video_clip(prompt: str, input_video_path: str, duration: int = 10) ->
                             f"Saved to: videos/{local_filename}"
                         )
                         return local_path
-                    return f"Extended successfully but failed to download. Video URL: {video_url}"
+                    print(f"[Media Generator Agent] Extended successfully but failed to download. Video URL: {video_url}")
                 else:
-                    return "Error: Video extension finished but returned no URL or failed."
+                    print("[Media Generator Agent] Error: Video extension finished but returned no URL or failed.")
             else:
                 print(f"[Media Generator Agent] Error starting video extension (status {res.status_code}): {res.text}")
         except Exception as e:

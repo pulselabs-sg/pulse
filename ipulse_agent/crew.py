@@ -12,6 +12,10 @@ import config
 import os
 from typing import Optional
 
+# Configure litellm to automatically retry on rate limits
+os.environ["LITELLM_NUM_RETRIES"] = "5"
+os.environ["LITELLM_ROUTING_RETRY_MODE"] = "exponential_backoff"
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LLM Setup
