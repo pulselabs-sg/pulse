@@ -1,4 +1,4 @@
-import { Menu, X, Crown, CreditCard, User, BookOpen } from 'lucide-react';
+import { Menu, X, Crown, CreditCard, User, BookOpen, PanelRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -29,11 +29,11 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
       initial={false}
       animate={{ width: isSidebarOpen ? 280 : 80 }}
       className={cn(
-        "glass-dark border-r border-white/10 flex flex-col shrink-0 transition-all duration-500 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0 shadow-[0_0_50px_rgba(0,0,0,1)]",
+        "backdrop-blur-md glass border-r border-white/10 flex flex-col shrink-0 transition-all duration-500 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}
     >
-      <div className="h-16 flex items-center border-b border-white/5 px-6">
+      <div className="h-16 flex items-center px-6">
         {isSidebarOpen && (
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
@@ -42,8 +42,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
             <span className="font-bold text-sm text-white tracking-[0.3em] uppercase">iPulse</span>
           </div>
         )}
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={cn("p-2 hover:bg-white/5 text-zinc-500 hover:text-white rounded-lg transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}>
-          {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4 hidden md:block" />}
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={cn("p-2 hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}>
+          {isSidebarOpen ? <X className="w-4 h-4" /> : <PanelRight className="w-5 h-5 hidden md:block" />}
         </button>
       </div>
 
@@ -55,17 +55,17 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
               key={tab.id}
               onClick={() => handleTabClick(tab.id as Tab)}
               className={cn(
-                "group relative flex items-center gap-2 p-2 rounded-xl text-sm transition-all duration-300",
+                "group relative flex items-center gap-2 p-3 rounded-xl text-sm transition-all duration-300",
                 activeTab === tab.id ? "bg-white/5 text-white shadow-[inset_0_0_20px_rgba(255,255,255,0.02)]" : "text-zinc-500 hover:bg-white/[0.02] hover:text-zinc-300"
               )}
             >
               {activeTab === tab.id && (
                 <>
-                  <motion.div layoutId="active-pill" className="absolute left-0 top-3 bottom-3 w-[3px] bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
+                  <motion.div layoutId="active-pill" className="absolute left-0 top-2.5 bottom-2.5 w-[3px] bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
                   <div className="absolute inset-0 bg-white/5 blur-xl rounded-full opacity-50" />
                 </>
               )}
-              <tab.icon className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-white" : "text-zinc-600")} />
+              <tab.icon className={cn("w-4 h-4 shrink-0 transition-transform group-hover:scale-110", activeTab === tab.id ? "text-white" : "text-zinc-400")} />
               {isSidebarOpen && (
                 <div className="flex flex-col min-w-0 text-left">
                   <span className={cn("font-bold tracking-wider text-[10px] md:text-[11px] transition-colors uppercase", activeTab === tab.id ? "text-white " : "text-zinc-400 group-hover:text-zinc-200")}>{tab.label}</span>
@@ -87,7 +87,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
               )}
             >
               {activeTab === tab.id && <motion.div layoutId="active-pill-bottom" className="absolute left-0 top-3 bottom-3 w-[3px] bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.3)]" />}
-              <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-white" : "text-zinc-600")} />
+              <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-white" : "text-zinc-400")} />
               {isSidebarOpen && <span className={cn("font-bold tracking-wider text-[11px]", activeTab === tab.id ? "text-white " : "text-zinc-400")}>{tab.label}</span>}
             </button>
           ))}
@@ -114,8 +114,8 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen, activeTab, se
                   className={cn("h-full rounded-full", isLimitReached ? "bg-red-500" : "bg-white")}
                 />
               </div>
-              <button onClick={() => setShowPlanModal(true)} className="w-full py-2 hover:bg-white text-zinc-400 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-                <CreditCard className="w-3.5 h-3.5" /> Manage
+              <button onClick={() => setShowPlanModal(true)} className="w-full py-2 hover:bg-white text-zinc-400 hover:text-black text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all border border-white/10 active:scale-95">
+                <CreditCard className="w-3.5 h-3.5" /> Manage Plan
               </button>
             </div>
           </div>

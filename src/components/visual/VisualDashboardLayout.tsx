@@ -216,7 +216,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
       <div className="flex h-[100dvh] items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-white opacity-75" />
-          <span className="text-[10px] font-mono tracking-widest text-zinc-400 uppercase">Synchronizing Portal Session</span>
+          <span className="text-[10px] font-mono tracking-widest text-zinc-400">Synchronizing Portal Session</span>
         </div>
       </div>
     );
@@ -426,7 +426,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
               </h2>
 
               {/* Profile details */}
-              <div className="glass-dark border border-white/10 rounded-3xl p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+              <div className="border border-white/10 rounded-3xl p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-3xl object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
@@ -437,7 +437,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
                     <div className="flex items-center gap-2 text-zinc-400 bg-white/5 px-4 py-2 rounded-full border border-white/5 text-[10px] font-mono tracking-wider">
                       <Mail className="w-3.5 h-3.5 text-white" /> {session?.user?.email}
                     </div>
-                    <div className="flex items-center gap-2 text-white bg-white/5 px-4 py-2 rounded-full border border-white/5 text-[10px] font-mono uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-white bg-white/5 px-4 py-2 rounded-full border border-white/5 text-[10px] font-mono tracking-wider">
                       <ShieldCheck className="w-3.5 h-3.5 text-white" /> Auth Valid
                     </div>
                   </div>
@@ -448,13 +448,13 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
               </div>
 
               {/* Subscription Details matching audio logic while keeping custom rounded visual tokens */}
-              <div className="glass-dark border border-white/10 rounded-3xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2 ">
+              <div className="rounded-3xl">
+                <h3 className="text-lg font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2 ">
                   <CreditCard className="w-4 h-4 text-white" /> Subscription & Billing
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Plan Card */}
-                  <div className="bg-black/60 border border-white/5 rounded-3xl p-5 flex flex-col justify-between group/plan transition-all hover:border-white/20">
+                  <div className="border border-white/10 rounded-3xl p-5 flex flex-col justify-between group/plan transition-all hover:border-white/20">
                     <div>
                       <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-1">Current Plan</p>
                       <div className="flex items-center gap-3 mb-6">
@@ -481,14 +481,14 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
                           <>
                             <button
                               onClick={() => setShowPlanModal(true)}
-                              className="w-full py-2.5 glass-mid hover:bg-white hover:text-black text-white text-xs font-mono uppercase tracking-[0.2em] font-bold rounded-full transition-all border border-white/10"
+                              className="w-full py-2.5 glass-mid hover:bg-white hover:text-black text-white text-xs font-mono tracking-[0.2em] font-bold rounded-full transition-all border border-white/10"
                             >
                               Change Plan
                             </button>
                             <button
                               onClick={handleCancelSubscription}
                               disabled={isCanceling}
-                              className="w-full py-2.5 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-[0.2em] font-bold rounded-full transition-all border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2 uppercase"
+                              className="w-full py-2.5 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-[0.2em] font-bold rounded-full transition-all border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2"
                             >
                               {isCanceling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <AlertTriangle className="w-3.5 h-3.5" />} Cancel Subscription
                             </button>
@@ -499,7 +499,7 @@ export default function VisualDashboardLayout({ projectId }: VisualDashboardLayo
                   </div>
 
                   {/* Usage Card */}
-                  <div className="bg-black/60 border border-white/5 rounded-3xl p-5 hover:border-white/10 transition-all flex flex-col justify-between">
+                  <div className="border border-white/10 rounded-3xl p-5 hover:border-white/10 transition-all flex flex-col justify-between">
                     <div>
                       <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-4">Usage this month</p>
                       <div className="flex justify-between items-end mb-3">

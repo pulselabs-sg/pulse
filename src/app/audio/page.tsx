@@ -7,7 +7,7 @@ import {
   Loader2, LogIn, ChevronRight, Settings2, Mail,
   LogOut, CheckCircle2, X, Sparkles, Check,
   ShieldCheck, CreditCard, AlertTriangle, Crown, Menu,
-  FileText, Scale, Lock
+  FileText, Scale, Lock, PanelRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -390,22 +390,22 @@ function DashboardContent() {
       />
 
       <main className="flex-1 flex flex-col relative bg-[url('/noise.png')] opacity-95 min-w-0 h-full">
-        <header className="h-14 border-b border-glass-border glass backdrop-blur-md flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-500 z-30 relative">
+        <header className="h-14 backdrop-blur-md flex items-center justify-between px-4 md:px-6 text-[10px] font-mono uppercase text-zinc-500 z-30 relative">
           <div className="flex items-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden mr-3 p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm border border-white/10 transition-colors shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+              className="md:hidden mr-3 p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-sm transition-colors"
             >
-              <Menu className="w-4 h-4" />
+              <PanelRight className="w-5 h-5" />
             </button>
-            Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white ">{TABS.find(t => t.id === activeTab)?.label}</span>
+            {/* Root <ChevronRight className="w-3 h-3 mx-2" /> <span className="text-white ">{TABS.find(t => t.id === activeTab)?.label}</span> */}
           </div>
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <span className="text-[8px] md:text-[10px] font-bold text-white tracking-widest px-3 py-1.5 rounded-sm border border-white/10">
               <span className="text-white mr-2 ">PULSE:</span>
               {Math.max(0, userState.limit - userState.usage).toLocaleString()} <span className="text-zinc-500 font-normal ml-1">REMAINING</span>
             </span>
-          </div>
+          </div> */}
         </header>
 
         {activeTab === 'history' ? (
@@ -418,7 +418,7 @@ function DashboardContent() {
               </h2>
 
               {/* Profile Card */}
-              <div className="glass-dark border border-white/10 rounded-xl p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+              <div className="border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <img src={session?.user?.image || ''} alt="Avatar" className="w-24 h-24 rounded-3xl object-cover border border-white/20 z-10 grayscale hover:grayscale-0 transition-all duration-500" />
                 <div className="flex-1 space-y-3 text-center md:text-left z-10">
@@ -435,21 +435,21 @@ function DashboardContent() {
                     </div>
                   </div>
                 </div>
-                <button onClick={() => signOut({ callbackUrl: '/audio' })} className="px-4 py-2 glass-mid hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 transition-all flex items-center gap-2 z-10 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                <button onClick={() => signOut({ callbackUrl: '/audio' })} className="px-4 py-2 hover:bg-white hover:text-black text-white text-[10px] font-mono uppercase tracking-widest rounded-sm border border-white/10 transition-all flex items-center gap-2 z-10 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                   <LogOut className="w-3 h-3" /> Sign Out
                 </button>
               </div>
 
               {/* Billing & Usage Section */}
-              <div className="glass-dark border border-white/10 rounded-xl p-6 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                <h3 className="text-xs font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2 ">
-                  <CreditCard className="w-4 h-4 text-white" /> Subscription & Billing
+              <div className="rounded-3xl">
+                <h3 className="text-lg font-mono uppercase tracking-widest text-white mb-6 flex items-center gap-2 ">
+                  <CreditCard className="w-5 h-5 text-white" /> Subscription & Billing
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Plan Card */}
-                  <div className="bg-black/60 border border-white/5 rounded-xl p-5 flex flex-col justify-between group/plan transition-all hover:border-white/20">
+                  <div className="border border-white/10 rounded-xl p-5 flex flex-col justify-between group/plan transition-all hover:border-white/20">
                     <div>
-                      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">Current Plan</p>
+                      <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-1">Current Plan</p>
                       <div className="flex items-center gap-3 mb-6">
                         <span className={cn("text-xl font-mono font-bold uppercase tracking-widest", userState.tier !== 'FREE' ? 'text-white ' : 'text-zinc-500')}>
                           {userState.tier}
@@ -464,13 +464,13 @@ function DashboardContent() {
                     ) : (
                       <div className="space-y-2">
                         {userState.cancelAtPeriodEnd ? (
-                          <div className="w-full py-2 bg-red-500/10 text-red-400 text-xs font-mono tracking-widest rounded-sm border border-red-500/20 text-center flex items-center justify-center gap-2">
+                          <div className="w-full py-2 bg-red-500/10 text-red-400 text-xs font-mono tracking-widest rounded-xl border border-red-500/20 text-center flex items-center justify-center gap-2">
                             <AlertTriangle className="w-3 h-3" /> Cancels at Period End
                           </div>
                         ) : (
                           <>
-                            <button onClick={() => setShowPlanModal(true)} className="w-full py-2 glass-mid hover:bg-white/20 text-white text-xs font-mono tracking-widest rounded-sm transition-colors border border-white/10">Change Plan</button>
-                            <button onClick={handleCancelSubscription} disabled={isCanceling} className="w-full py-2 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-widest rounded-sm transition-colors border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2">
+                            <button onClick={() => setShowPlanModal(true)} className="w-full py-2 hover:bg-white/20 text-white text-xs font-mono tracking-widest rounded-xl transition-colors border border-white/10">Change Plan</button>
+                            <button onClick={handleCancelSubscription} disabled={isCanceling} className="w-full py-2 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 text-xs font-mono tracking-widest rounded-xl transition-colors border border-red-500/50 hover:border-red-500/20 flex items-center justify-center gap-2">
                               {isCanceling ? <Loader2 className="w-3 h-3 animate-spin" /> : <AlertTriangle className="w-3 h-3" />} Cancel Subscription
                             </button>
                           </>
@@ -480,7 +480,7 @@ function DashboardContent() {
                   </div>
 
                   {/* Usage Card */}
-                  <div className="bg-black/60 border border-white/5 rounded-xl p-5 hover:border-white/10 transition-all">
+                  <div className="border border-white/10 rounded-xl p-5 hover:border-white/10 transition-all">
                     <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest mb-4">Usage this month</p>
                     <div className="flex justify-between items-end mb-3">
                       <span className="text-2xl font-mono text-white tracking-tighter ">
@@ -579,7 +579,7 @@ function DashboardContent() {
                         </div>
                         <div className="text-[9px] md:text-[10px] font-mono text-zinc-400 mb-3">{plan.limit}</div>
                         <p className="text-[9px] md:text-[10px] font-mono text-zinc-500 mb-6 leading-relaxed">{plan.desc}</p>
-                        
+
                         {plan.sections.map((section, sIdx) => (
                           <div key={sIdx} className="mb-4 text-left">
                             <h4 className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest mb-2">{section.title}</h4>

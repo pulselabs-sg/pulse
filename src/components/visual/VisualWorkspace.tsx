@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Settings, Image as ImageIcon, Video, Send,
+  Plus, Settings, Image as ImageIcon, Video, Send, PanelRight,
   X, Sparkles, Wand2, Upload, AlertCircle, Loader2, PlayCircle, Menu, Bot, Terminal, CheckCircle2, Cpu, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -906,9 +906,9 @@ export default function VisualWorkspace({
             {!isSidebarOpen && setIsSidebarOpen && (
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="md:hidden p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-full border border-white/10 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.05)] bg-white/5"
+                className="md:hidden p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-full transition-colors"
               >
-                <Menu className="w-4 h-4" />
+                <PanelRight className="w-5 h-5" />
               </button>
             )}
             <button
@@ -1211,8 +1211,8 @@ export default function VisualWorkspace({
                         </motion.div>
 
                         {/* Hover Tooltip */}
-                        <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 w-52 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 scale-95 group-hover:scale-100 shadow-[0_12px_40px_rgba(0,0,0,0.8)]">
-                          <div className="rounded-2xl border p-3 backdrop-blur-xl"
+                        <div className="absolute rounded-2xl left-1/2 top-full mt-2 -translate-x-1/2 w-52 z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 scale-95 group-hover:scale-100">
+                          <div className="rounded-2xl border p-4 backdrop-blur-md"
                             style={{ background: 'rgba(8,8,16,0.98)', borderColor: `${agentItem.accent}30` }}>
                             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.07]">
                               {/* Larger PFP in tooltip */}
@@ -1510,7 +1510,7 @@ export default function VisualWorkspace({
                           </div>
                         </motion.div>
                       ) : (
-                        <p className="text-[8.5px] font-mono text-white/12 tracking-[0.28em] uppercase">Script & Video Output</p>
+                        <p className="text-[8.5px] font-mono text-white/40 tracking-[0.28em] uppercase">Script & Video Output</p>
                       )}
                     </div>
                   ) : agentStatus === 'completed' && finalVideoUrl ? (
@@ -1704,7 +1704,7 @@ export default function VisualWorkspace({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 15 }}
-                className="absolute bottom-full left-0 mb-4 w-full glass-dark backdrop-blur-xl border border-white/20 rounded-3xl p-3 md:p-6 shadow-[0_15px_60px_rgba(0,0,0,0.9)] z-50 flex flex-col justify-between h-[290px] md:h-[280px]"
+                className="absolute bottom-full left-0 mb-4 w-full glass-dark backdrop-blur-sm border border-white/20 rounded-3xl p-3 md:p-6 shadow-[0_15px_60px_rgba(0,0,0,0.9)] z-50 flex flex-col justify-between h-[290px] md:h-[280px]"
               >
                 {/* Mode Toggles Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-2.5 shrink-0">
@@ -1942,7 +1942,7 @@ export default function VisualWorkspace({
         initial={false}
         animate={{ width: isGalleryOpen ? 320 : 0 }}
         className={cn(
-          "border-white/10 flex flex-col shrink-0 transition-all duration-500 z-40 lg:relative right-0 shadow-[0_0_50px_rgba(0,0,0,0.8)] lg:shadow-none backdrop-blur-md",
+          "border-white/10 flex flex-col shrink-0 transition-all duration-500 z-40 lg:relative right-0 backdrop-blur-sm",
           "fixed lg:translate-x-0 border-l top-0 h-full",
           isGalleryOpen
             ? "translate-x-0 w-full sm:w-80 lg:w-80"

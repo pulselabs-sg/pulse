@@ -350,15 +350,15 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
     return (
         <div className="flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 relative z-10 min-h-0 overflow-y-auto custom-scrollbar">
             <div className={cn("flex flex-col min-h-0 relative z-20", (activeTab === 'clone' || activeTab === 'tts') ? "flex-none lg:flex-1" : "flex-1 lg:max-w-2xl")}>
-                <div className={cn("glass border border-white/10 rounded-2xl flex flex-col relative group shadow-[0_0_50px_rgba(0,0,0,0.3)]",
+                <div className={cn("border border-white/10 rounded-2xl flex flex-col relative group shadow-[0_0_50px_rgba(0,0,0,0.3)]",
                     (activeTab === 'clone' || activeTab === 'tts') ? "h-auto lg:h-full p-4 md:p-8" : "h-full min-h-[300px] lg:min-h-0 p-4 md:p-8"
                 )}>
-                    <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none z-0">
+                    {/* <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none z-0">
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Settings2 className="w-32 h-32 text-white rotate-12" />
                         </div>
                         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-white/5 blur-[100px] rounded-full pointer-events-none" />
-                    </div>
+                    </div> */}
 
                     <h2 className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.3em] text-zinc-500 mb-6 flex items-center gap-3 relative z-10">
                         <div className="w-2.5 h-2.5 rounded-full bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
@@ -383,7 +383,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                     value={textInput}
                                     onChange={(e) => setTextInput(e.target.value)}
                                     placeholder="Enter your script for neural synthesis. Use tags for expressive control..."
-                                    className="flex-1 w-full min-h-[150px] bg-black/40 border border-white/5 rounded-xl p-5 text-white font-sans text-xs md:text-sm leading-relaxed resize-none outline-none focus:border-white/50 focus:ring-1 focus:ring-white/20 transition-all placeholder:text-zinc-700 custom-scrollbar shadow-inner"
+                                    className="flex-1 w-full min-h-[150px] border border-white/10 rounded-xl p-5 text-white font-sans text-xs md:text-sm leading-relaxed resize-none outline-none focus:border-white/50 focus:ring-1 focus:ring-white/20 transition-all placeholder:text-zinc-600 custom-scrollbar shadow-inner"
                                 />
                                 <div className="flex justify-between mt-2 px-1">
                                     <span className="text-[9px] font-mono uppercase text-zinc-600">Max Chars: {userState.maxChars.toLocaleString()}</span>
@@ -419,7 +419,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             <>
                                 <div {...getRootProps()} className={cn(
                                     "relative flex-1 min-h-[120px] max-h-[140px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-500 overflow-hidden group/drop",
-                                    isDragActive ? "border-white bg-white/5 shadow-[0_0_30px_rgba(255,255,255,0.1)]" : "border-white/10 bg-black/40 hover:border-white/30 hover:bg-white/[0.02]"
+                                    isDragActive ? "border-white bg-white/5 shadow-[0_0_30px_rgba(255,255,255,0.1)]" : "border-white/10 hover:border-white/30 hover:bg-white/[0.02]"
                                 )}>
                                     <input {...getInputProps()} />
                                     {file ? (
@@ -481,7 +481,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                             setVoiceGenderFilter('All');
                                             setVoiceCountryFilter('All');
                                         }}
-                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-white/30 rounded-xl text-left transition-all h-10 md:h-12 group/voice relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 border border-white/10 hover:border-white/30 rounded-xl text-left transition-all h-10 md:h-12 group/voice relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
                                     >
                                         <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0">
                                             <div
@@ -506,7 +506,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 <div className="flex-[2] md:flex-1 relative min-w-0" ref={languageMenuRef}>
                                     <button
                                         onClick={() => setShowLanguageList(!showLanguageList)}
-                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 bg-black/40 border border-white/5 hover:border-white/30 rounded-xl text-left transition-all h-10 md:h-12 group/lang relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                        className="w-full flex items-center justify-between px-2 md:px-4 py-2 border border-white/10 hover:border-white/30 rounded-xl text-left transition-all h-10 md:h-12 group/lang relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
                                     >
                                         <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0">
                                             <div className="w-6 h-6 md:w-7 md:h-7 shrink-0 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover/lang:border-white/50 transition-colors">
@@ -563,7 +563,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             {activeTab !== 'stt' && activeTab !== 'clone' && activeTab !== 'translate' && (
                                 <button
                                     onClick={cycleFormat}
-                                    className="w-14 md:w-20 shrink-0 h-10 md:h-12 px-2 bg-black/40 border border-white/5 hover:border-white/30 rounded-xl font-mono text-[9px] md:text-[10px] uppercase transition-all text-white font-bold tracking-widest active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                    className="w-14 md:w-20 shrink-0 h-10 md:h-12 px-2 border border-white/10 hover:border-white/30 rounded-xl font-mono text-[9px] md:text-[10px] uppercase transition-all text-white font-bold tracking-widest active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 relative z-20 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
                                 >
                                     <AudioLines className="w-3 h-3 hidden md:block" />
                                     {outputFormat}
@@ -611,9 +611,9 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
 
             {activeTab !== 'clone' && (
                 <div className="flex-none lg:flex-1 flex flex-col min-h-[200px] lg:min-h-0 relative z-10">
-                    <div className="glass border border-white/10 rounded-2xl flex flex-col h-full overflow-hidden relative">
+                    <div className="border border-white/10 rounded-2xl flex flex-col h-full overflow-hidden relative">
                         <div className="h-12 border-b border-white/5 px-6 flex items-center justify-between bg-white/[0.02]">
-                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                                 <Sparkles className="w-3.5 h-3.5 text-white " /> System Output
                             </span>
                             {result && (
@@ -623,7 +623,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                             )}
                         </div>
 
-                        <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative bg-black/20 overflow-y-auto custom-scrollbar">
+                        <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative overflow-y-auto custom-scrollbar">
                             <AnimatePresence mode="wait">
                                 {!result && !loading && (
                                     <motion.div
@@ -848,7 +848,7 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                     {showVoiceModal && (
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[9999] flex items-center justify-center p-5 md:p-8 bg-black/70 backdrop-blur-md"
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-5 md:p-8 bg-black/50 backdrop-blur-sm"
                             onClick={() => setShowVoiceModal(false)}
                         >
                             <motion.div
@@ -856,144 +856,144 @@ export default function WorkspacePanel({ activeTab, session, userState, setUserS
                                 className="w-[92vw] sm:w-full max-w-5xl glass-panel border border-white/10 rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden h-[75vh] sm:h-[80vh] max-h-[75vh] sm:max-h-[80vh]"
                                 onClick={e => e.stopPropagation()}
                             >
-                            {/* Header */}
-                            <div className="flex items-center justify-between px-5 md:px-7 py-4 border-b border-white/8">
-                                <div>
-                                    <h2 className="text-sm md:text-base font-mono font-bold uppercase text-white tracking-widest">Voice Library</h2>
-                                    <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
-                                        {filteredVoices.length} voice{filteredVoices.length !== 1 ? 's' : ''} • Powered by xAI Grok
-                                    </p>
-                                </div>
-                                <button onClick={() => setShowVoiceModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
-                                    <X className="w-4 h-4 text-zinc-400" />
-                                </button>
-                            </div>
-
-                            {/* Filters */}
-                            <div className="px-5 md:px-7 py-3 border-b border-white/5 flex flex-col sm:flex-row gap-3">
-                                {/* Search */}
-                                <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
-                                    <input
-                                        id="voice-search-input"
-                                        type="text"
-                                        value={voiceSearch}
-                                        onChange={e => setVoiceSearch(e.target.value)}
-                                        placeholder="Search by name, language, or tone..."
-                                        className="w-full pl-8 pr-3 py-2 bg-black/40 border border-white/8 hover:border-white/20 rounded-xl text-xs text-white placeholder:text-zinc-600 outline-none focus:border-white/30 transition-colors font-mono"
-                                    />
-                                </div>
-                                {/* Gender filter pills */}
-                                <div className="flex gap-1.5 items-center">
-                                    {(['All', 'Male', 'Female'] as const).map(g => (
-                                        <button
-                                            key={g}
-                                            onClick={() => setVoiceGenderFilter(g)}
-                                            className={cn(
-                                                'px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-widest transition-all border',
-                                                voiceGenderFilter === g
-                                                    ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
-                                                    : 'bg-black/40 text-zinc-400 border-white/8 hover:border-white/30 hover:text-white'
-                                            )}
-                                        >
-                                            {g}
-                                        </button>
-                                    ))}
-                                </div>
-                                {/* Country filter */}
-                                <div className="relative">
-                                    <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" />
-                                    <select
-                                        value={voiceCountryFilter}
-                                        onChange={e => setVoiceCountryFilter(e.target.value)}
-                                        className="pl-7 pr-6 py-2 bg-black/40 border border-white/8 hover:border-white/20 rounded-xl text-[10px] text-white outline-none focus:border-white/30 transition-colors font-mono uppercase tracking-widest appearance-none cursor-pointer min-w-[130px]"
-                                    >
-                                        {allCountries.map(c => (
-                                            <option key={c} value={c} className="bg-zinc-900 text-white normal-case tracking-normal">{c}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Voice Grid */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5">
-                                {filteredVoices.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                                        <Search className="w-8 h-8 text-zinc-700 mb-3" />
-                                        <p className="text-zinc-500 text-xs font-mono">No voices match your filters</p>
+                                {/* Header */}
+                                <div className="flex items-center justify-between px-5 md:px-7 py-4 border-b border-white/8">
+                                    <div>
+                                        <h2 className="text-sm md:text-base font-mono font-bold uppercase text-white tracking-widest">Voice Library</h2>
+                                        <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                                            {filteredVoices.length} voice{filteredVoices.length !== 1 ? 's' : ''} • Powered by iPulse
+                                        </p>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                                        {filteredVoices.map(voice => {
-                                            const isSelected = selectedVoice === voice.id;
-                                            const isPlaying = playingVoice === voice.id;
-                                            const countryFlag: Record<string, string> = {
-                                                'United States': '🇺🇸', 'United Kingdom': '🇬🇧', 'Australia': '🇦🇺',
-                                                'China': '🇨🇳', 'Japan': '🇯🇵', 'South Korea': '🇰🇷',
-                                                'Spain': '🇪🇸', 'France': '🇫🇷', 'Germany': '🇩🇪',
-                                                'Brazil': '🇧🇷', 'India': '🇮🇳', 'Vietnam': '🇻🇳',
-                                                'Russia': '🇷🇺', 'Saudi Arabia': '🇸🇦', 'Italy': '🇮🇹',
-                                            };
-                                            return (
-                                                <button
-                                                    key={voice.id}
-                                                    id={`voice-card-${voice.id}`}
-                                                    onClick={() => handleVoiceSelect(voice.id)}
-                                                    className={cn(
-                                                        'relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 group/card',
-                                                        isSelected
-                                                            ? 'bg-white/10 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.08)]'
-                                                            : 'bg-black/30 border-white/5 hover:bg-white/[0.04] hover:border-white/15'
-                                                    )}
-                                                >
-                                                    {/* Gradient avatar */}
-                                                    <div className={cn('w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br flex items-center justify-center border border-white/10 shadow-lg', voice.gradient)}>
-                                                        <span className="text-base font-bold text-white drop-shadow">{voice.name[0]}</span>
-                                                    </div>
-                                                    {/* Text info */}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-1.5 mb-0.5">
-                                                            <span className="font-bold text-white text-[11px] uppercase tracking-widest truncate">{voice.name}</span>
-                                                            {isSelected && <Check className="w-3 h-3 text-white shrink-0" />}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 flex-wrap">
-                                                            <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-tight">{voice.language}</span>
-                                                            <span className="text-zinc-700 text-[9px]">•</span>
-                                                            <span className={cn('text-[9px] font-mono uppercase tracking-tight', voice.gender === 'Female' ? 'text-pink-400/80' : 'text-sky-400/80')}>
-                                                                {voice.gender}
-                                                            </span>
-                                                            <span className="text-zinc-700 text-[9px]">•</span>
-                                                            <span className="text-[10px]" title={voice.country}>{countryFlag[voice.country] || '🌐'}</span>
-                                                        </div>
-                                                        <p className="text-[8px] font-mono text-zinc-600 mt-0.5 truncate">{voice.tone}</p>
-                                                    </div>
-                                                    {/* Play button */}
+                                    <button onClick={() => setShowVoiceModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                                        <X className="w-4 h-4 text-zinc-400" />
+                                    </button>
+                                </div>
+
+                                {/* Filters */}
+                                <div className="px-5 md:px-7 py-3 border-b border-white/5 flex flex-col sm:flex-row gap-3">
+                                    {/* Search */}
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500 pointer-events-none" />
+                                        <input
+                                            id="voice-search-input"
+                                            type="text"
+                                            value={voiceSearch}
+                                            onChange={e => setVoiceSearch(e.target.value)}
+                                            placeholder="Search by name, language, or tone..."
+                                            className="w-full pl-8 pr-3 py-2 border border-white/8 hover:border-white/20 rounded-xl text-xs text-white placeholder:text-zinc-600 outline-none focus:border-white/30 transition-colors font-mono"
+                                        />
+                                    </div>
+                                    {/* Gender filter pills */}
+                                    <div className="flex gap-1.5 items-center">
+                                        {(['All', 'Male', 'Female'] as const).map(g => (
+                                            <button
+                                                key={g}
+                                                onClick={() => setVoiceGenderFilter(g)}
+                                                className={cn(
+                                                    'px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold tracking-widest transition-all border',
+                                                    voiceGenderFilter === g
+                                                        ? 'bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]'
+                                                        : 'text-zinc-400 border-white/20 hover:border-white/30 hover:text-white'
+                                                )}
+                                            >
+                                                {g}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {/* Country filter */}
+                                    <div className="relative">
+                                        <Globe className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" />
+                                        <select
+                                            value={voiceCountryFilter}
+                                            onChange={e => setVoiceCountryFilter(e.target.value)}
+                                            className="pl-7 pr-6 py-2 border border-white/20 hover:border-white/20 rounded-xl text-[10px] text-white outline-none focus:border-white/30 transition-colors font-mono tracking-widest appearance-none cursor-pointer min-w-[130px]"
+                                        >
+                                            {allCountries.map(c => (
+                                                <option key={c} value={c} className="bg-zinc-900 text-white normal-case tracking-normal">{c}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Voice Grid */}
+                                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-5">
+                                    {filteredVoices.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-16 text-center">
+                                            <Search className="w-8 h-8 text-zinc-700 mb-3" />
+                                            <p className="text-zinc-500 text-xs font-mono">No voices match your filters</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                                            {filteredVoices.map(voice => {
+                                                const isSelected = selectedVoice === voice.id;
+                                                const isPlaying = playingVoice === voice.id;
+                                                const countryFlag: Record<string, string> = {
+                                                    'United States': '🇺🇸', 'United Kingdom': '🇬🇧', 'Australia': '🇦🇺',
+                                                    'China': '🇨🇳', 'Japan': '🇯🇵', 'South Korea': '🇰🇷',
+                                                    'Spain': '🇪🇸', 'France': '🇫🇷', 'Germany': '🇩🇪',
+                                                    'Brazil': '🇧🇷', 'India': '🇮🇳', 'Vietnam': '🇻🇳',
+                                                    'Russia': '🇷🇺', 'Saudi Arabia': '🇸🇦', 'Italy': '🇮🇹',
+                                                };
+                                                return (
                                                     <button
-                                                        onClick={e => togglePlay(e, voice.id)}
+                                                        key={voice.id}
+                                                        id={`voice-card-${voice.id}`}
+                                                        onClick={() => handleVoiceSelect(voice.id)}
                                                         className={cn(
-                                                            'w-7 h-7 shrink-0 rounded-lg flex items-center justify-center border transition-all',
-                                                            isPlaying
-                                                                ? 'bg-white text-black border-white'
-                                                                : 'bg-white/5 border-white/10 hover:bg-white/15 hover:border-white/30 text-zinc-400 hover:text-white opacity-0 group-hover/card:opacity-100'
+                                                            'relative flex items-center gap-3 p-2 rounded-xl border text-left transition-all duration-200 group/card',
+                                                            isSelected
+                                                                ? 'bg-white/10 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.08)]'
+                                                                : 'bg-black/30 border-white/5 hover:bg-white/[0.04] hover:border-white/15'
                                                         )}
                                                     >
-                                                        {isPlaying
-                                                            ? <Square className="w-2.5 h-2.5 fill-black text-black" />
-                                                            : <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
-                                                        }
+                                                        {/* Gradient avatar */}
+                                                        <div className={cn('w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br flex items-center justify-center border border-white/10 shadow-lg', voice.gradient)}>
+                                                            <span className="text-sm font-bold text-white drop-shadow">{voice.name[0]}</span>
+                                                        </div>
+                                                        {/* Text info */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                                <span className="font-bold text-white text-[10px] tracking-widest truncate">{voice.name}</span>
+                                                                {isSelected && <Check className="w-3 h-3 text-white shrink-0" />}
+                                                            </div>
+                                                            <div className="flex items-center gap-1 flex-wrap">
+                                                                <span className="text-[9px] font-mono text-zinc-500 tracking-tight">{voice.language}</span>
+                                                                <span className="text-zinc-700 text-[9px]">•</span>
+                                                                <span className={cn('text-[9px] font-mono tracking-tight', voice.gender === 'Female' ? 'text-pink-400/80' : 'text-sky-400/80')}>
+                                                                    {voice.gender}
+                                                                </span>
+                                                                <span className="text-zinc-700 text-[9px]">•</span>
+                                                                <span className="text-[10px]" title={voice.country}>{countryFlag[voice.country] || '🌐'}</span>
+                                                            </div>
+                                                            <p className="text-[8px] font-mono text-zinc-500 mt-0.5 truncate">{voice.tone}</p>
+                                                        </div>
+                                                        {/* Play button */}
+                                                        <button
+                                                            onClick={e => togglePlay(e, voice.id)}
+                                                            className={cn(
+                                                                'w-7 h-7 shrink-0 rounded-lg flex items-center justify-center border transition-all',
+                                                                isPlaying
+                                                                    ? 'bg-white text-black border-white'
+                                                                    : 'bg-white/5 border-white/10 hover:bg-white/15 hover:border-white/30 text-zinc-400 hover:text-white opacity-0 group-hover/card:opacity-100'
+                                                            )}
+                                                        >
+                                                            {isPlaying
+                                                                ? <Square className="w-2.5 h-2.5 fill-black text-black" />
+                                                                : <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
+                                                            }
+                                                        </button>
                                                     </button>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>,
-            document.body
-        )}
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* ── Custom Voice Terms Modal ──────────────────────────────────── */}
             <AnimatePresence>

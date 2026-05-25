@@ -57,7 +57,7 @@ export default function SidebarVisual({
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className={cn("hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}
         >
-          {isSidebarOpen ? <X className="w-4 h-4" /> : <PanelRight className="w-4 h-4 hidden md:block" />}
+          {isSidebarOpen ? <X className="w-4 h-4" /> : <PanelRight className="w-5 h-5 hidden md:block" />}
         </button>
       </div>
 
