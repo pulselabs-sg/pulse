@@ -7,7 +7,7 @@ import { Sparkles } from 'lucide-react';
 
 export default function VisualLoginPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-background text-white flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
       {/* Cinematic Ambient Effects */}
       <ModernBackground />
 

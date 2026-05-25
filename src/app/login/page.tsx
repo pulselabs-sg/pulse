@@ -6,7 +6,7 @@ import { ModernBackground } from '@/components/ui/VisualEffects';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-background text-white flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
       {/* Background Effects */}
       <ModernBackground />
 
@@ -22,24 +22,22 @@ export default function LoginPage() {
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-sm mb-6 group transition-colors"
+            className="inline-flex items-center justify-center w-16 h-16 rounded-sm mb-2 group transition-colors"
           >
-            <img src="/logo.webp" alt="iPulse" className="w-14 h-14 rounded-sm object-cover grayscale" />
+            <img src="/logo.webp" alt="iPulse" className="w-16 h-16 rounded-sm object-cover grayscale" />
           </motion.div>
-          <h1 className="text-3xl font-mono tracking-[0.2em] font-bold mb-3 text-white uppercase">iPulse</h1>
-          <p className="text-zinc-500 font-mono text-[10px] tracking-widest uppercase">Access Portal</p>
+          <h1 className="text-2xl font-mono tracking-[0.2em] mb-2 text-white font-bold">iPulse</h1>
         </div>
 
-        <div className="glass-dark border border-white/10 rounded-xl p-8 shadow-[0_0_50px_rgba(0,0,0,0.6)] relative overflow-hidden group">
-          <div className="space-y-6 relative z-10">
+        <div className="rounded-xl p-8">
+          <div className="space-y-4 relative z-10">
             <div className="text-center">
-              <h2 className="text-xl font-editorial italic text-white mb-2">Welcome back</h2>
-              <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest">Sign in to continue to the dashboard.</p>
+              <p className="text-zinc-500 text-[11px] font-mono tracking-widest">Sign in to continue to the dashboard.</p>
             </div>
 
             <button
-              onClick={() => signIn('google', { callbackUrl: '/audio' })}
-              className="w-full h-14 bg-white text-black hover:bg-zinc-200 transition-all rounded-xl font-mono text-xs uppercase font-bold flex items-center justify-center gap-4 group/btn relative overflow-hidden"
+              onClick={() => signIn('google', { callbackUrl: '/visual' })}
+              className="w-full h-14 bg-white text-black hover:bg-zinc-200 transition-all rounded-2xl font-mono text-xs uppercase font-bold flex items-center justify-center gap-4 group/btn relative overflow-hidden"
             >
               <div className="flex items-center justify-center w-6 h-6 bg-black rounded-sm transition-transform group-hover/btn:scale-110">
                 <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white">
@@ -55,7 +53,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-[10px] font-mono text-zinc-600 tracking-widest uppercase">
+          <p className="text-[10px] font-mono text-zinc-600 tracking-widest">
             By continuing, you agree to our <br />
             <a href="/terms-of-use" className="text-zinc-400 hover:text-white transition-colors">Terms</a> & <a href="/privacy-policy" className="text-zinc-400 hover:text-white transition-colors">Privacy Policy</a>
           </p>

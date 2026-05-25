@@ -122,7 +122,7 @@ def generate_first_clip(
         print(f"[Media Generator Agent] Image-to-video mode activated — seeding clip from reference image.")
 
     # Retry logic
-    retries = 3
+    retries = 5
     for attempt in range(retries):
         try:
             print(
@@ -194,7 +194,7 @@ def extend_video_clip(prompt: str, input_video_path: str, duration: int = 10) ->
     }
 
     # Retry logic
-    retries = 3
+    retries = 5
     for attempt in range(retries):
         try:
             print(

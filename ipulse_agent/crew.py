@@ -58,7 +58,7 @@ idea_generator = Agent(
         "but you'll tell them to stand down if the brief is purely creative."
     ),
     llm=grok_llm,
-    verbose=True
+    verbose=False
 )
 
 research_agent = Agent(
@@ -77,7 +77,7 @@ research_agent = Agent(
         "to proceed without you. You never waste pipeline time on unnecessary API calls."
     ),
     llm=grok_llm,
-    verbose=True
+    verbose=False
 )
 
 script_writer = Agent(
@@ -96,7 +96,7 @@ script_writer = Agent(
         "@Intruder with clear scene breakdowns."
     ),
     llm=grok_llm,
-    verbose=True
+    verbose=False
 )
 
 visual_planner = Agent(
@@ -116,7 +116,7 @@ visual_planner = Agent(
         "@Tupac to use it as the character seed for Scene 1."
     ),
     llm=grok_llm,
-    verbose=True
+    verbose=False
 )
 
 media_generator = Agent(
@@ -137,7 +137,7 @@ media_generator = Agent(
     ),
     llm=grok_llm,
     tools=[generate_first_clip, extend_video_clip],
-    verbose=True
+    verbose=False
 )
 
 editor_agent = Agent(
@@ -155,7 +155,7 @@ editor_agent = Agent(
         "sign-off message to the user with a summary of what was built."
     ),
     llm=grok_llm,
-    verbose=True
+    verbose=False
 )
 
 
@@ -208,12 +208,21 @@ def create_video_crew(
         if has_image else ""
     )
 
-    task_idea = Task(
-        description=(
+    if intent == "verbatim":
+        idea_description = (
+            f"The user wants the following text or speech converted into a video: '{user_request}'. "
+            f"Do NOT rewrite their text. Keep the text exactly as provided. Just determine the visual format, tone, and audience. "
+            f"{image_note} Pass directly to @Monker."
+        )
+    else:
+        idea_description = (
             f"Conceptualize a short viral video based on this user request: '{user_request}'. "
             f"Determine hook, target audience, format, and tone.{self_directed_note}{image_note} "
             f"{research_note}"
-        ),
+        )
+
+    task_idea = Task(
+        description=idea_description,
         expected_output=(
             "A structured concept report detailing: Target Audience, Format, Tone, Key Hook, "
             "Core Concept, and a clear instruction to the next agent in the chain."
@@ -267,15 +276,26 @@ def create_video_crew(
         if has_image else ""
     )
 
-    task_script = Task(
-        description=(
+    if intent == "verbatim":
+        script_description = (
+            f"Write the final script based on {script_source}.{character_note} "
+            "CRITICAL: The user provided exact text to be spoken. You MUST use the EXACT text provided by the user for the Voiceover Text. DO NOT rewrite or summarize it. "
+            "Format it with distinct sections for each scene: "
+            "[Scene Number], [Visual Cues/Directions], [Voiceover Text]. "
+            "End with a handoff to @Intruder."
+        )
+    else:
+        script_description = (
             f"Write the final script based on {script_source}.{character_note} "
             "Format it with distinct sections for each scene: "
             "[Scene Number], [Visual Cues/Directions], [Voiceover Text]. "
             "Keep the tone engaging and matching the concept. "
             "Push back on any ideas that don't serve the narrative. "
             "End with a handoff to @Intruder."
-        ),
+        )
+
+    task_script = Task(
+        description=script_description,
         expected_output=(
             "A full video script with clearly separated Visual Directions and Voiceover Text "
             "for each scene, plus a handoff note to @Intruder."
@@ -294,10 +314,11 @@ def create_video_crew(
     task_visual_planning = Task(
         description=(
             "You have received the script from @Monker. "
-            f"Divide it into logical scenes of 10-15 seconds each to minimize API calls. "
+            f"Divide it into logical scenes of 5-10 seconds each to minimize API calls and fit extension limits. "
             f"CRITICAL: The target video duration is exactly {duration} seconds. "
             f"Write a highly detailed, cinematic Grok Imagine prompt for each scene. "
             f"CRITICAL: You MUST include the exact spoken dialogue from the script in quotes inside the Grok prompt so the model natively generates the voice and lip-syncs the character. "
+            f"CRITICAL: You MUST preserve exact character names, actor names, or specific physical descriptions from the user prompt into your scene prompts (e.g. 'Superman played by Henry Cavill'). DO NOT generalize them to 'two caped figures'. "
             f"Ensure all scenes adhere to a {aspect_ratio} aspect ratio and {quality} resolution format. "
             "Include lighting, colour palette, camera angle, motion, and style keywords. "
             "Ensure all scenes share consistent visual style and character details."
@@ -371,5 +392,5 @@ def create_video_crew(
         agents=agents,
         tasks=tasks,
         process=Process.sequential,
-        verbose=True
+        verbose=False
     )

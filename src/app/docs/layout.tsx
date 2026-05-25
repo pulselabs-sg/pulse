@@ -2,13 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, BookOpen, CreditCard, HelpCircle, FileText, Code, Zap, Sparkles, Image as ImageIcon, Video, Wand2, Mic } from 'lucide-react';
+import {
+  ArrowLeft, BookOpen, CreditCard, HelpCircle, FileText, Code,
+  Zap, Sparkles, Image as ImageIcon, Video, Wand2, Mic, Bot
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Tab = 'introduce' | 'image' | 'video' | 'flow' | 'audio' | 'pricing' | 'tutorials' | 'faqs' | 'terms' | 'api';
+type Tab = 'introduce' | 'agent' | 'image' | 'video' | 'flow' | 'audio' | 'pricing' | 'tutorials' | 'faqs' | 'terms' | 'api';
 
 const TABS: { id: Tab; label: string; icon: any; disabled?: boolean; badge?: string }[] = [
   { id: 'introduce', label: 'Overview', icon: BookOpen },
+  { id: 'agent', label: 'Multi-Agent', icon: Bot },
   { id: 'image', label: 'Image', icon: ImageIcon },
   { id: 'video', label: 'Video', icon: Video },
   { id: 'flow', label: 'Flow Extension', icon: Wand2 },
@@ -17,42 +21,50 @@ const TABS: { id: Tab; label: string; icon: any; disabled?: boolean; badge?: str
   { id: 'tutorials', label: 'Tutorials', icon: Zap },
   { id: 'faqs', label: 'FAQs', icon: HelpCircle },
   { id: 'terms', label: 'Terms & Policy', icon: FileText },
-  { id: 'api', label: 'API Reference', icon: Code, disabled: true, badge: 'Soon' },
+  { id: 'api', label: 'API Reference', icon: Code },
 ];
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Example pathname: /docs/pricing -> activeTab = 'pricing'
   const activeTab = pathname.split('/').pop() as Tab || 'introduce';
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 font-sans relative selection:bg-white/20">
+    <div className="min-h-screen bg-background text-zinc-300 font-sans relative selection:bg-white/20 overflow-x-hidden">
+      {/* Premium ambient glows */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse-glow" />
+      <div className="absolute top-[20vh] right-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+
       <div className="fixed inset-0 bg-[url('/noise.png')] bg-repeat opacity-40 mix-blend-overlay z-0 pointer-events-none"></div>
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-all duration-300">
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
+
+          {/* Left Brand */}
           <Link href="/" className="flex items-center gap-2 md:gap-3 group cursor-pointer">
-            <div className="relative w-6 h-6 md:w-7 md:h-7 flex items-center justify-center overflow-hidden">
+            <div className="relative w-6 h-6 md:w-7 md:h-7 flex items-center justify-center overflow-hidden rounded-md group-hover:border-cyan-500/30 transition-all duration-300">
               <img src="/logo.webp" alt="iPulse Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="font-mono text-xs md:text-sm text-white tracking-widest">iPulse</span>
+            <span className="font-mono text-xs md:text-sm text-white tracking-[0.2em] uppercase font-bold text-glow-white">iPulse</span>
           </Link>
-          <div className="flex items-center gap-4 md:gap-8 text-[10px] font-mono uppercase tracking-widest">
+
+          {/* Right Links */}
+          <div className="flex items-center gap-4 text-[10px] font-mono tracking-widest">
             <Link href="/" className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
               <ArrowLeft className="w-3 h-3" /> <span className="hidden md:inline">Home Page</span>
             </Link>
-            <Link href="/dashboard" className="px-3 py-1.5 bg-white text-black font-bold rounded-sm hover:bg-cyan-300 transition-colors">
-              Dashboard
+            <Link href="/visual" className="px-3 py-1.5 bg-white text-black font-bold rounded-md hover:bg-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all">
+              Try iPulse
             </Link>
           </div>
         </div>
       </nav>
 
+      {/* Main Container */}
       <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto pt-14 min-h-screen relative z-10">
 
         {/* Sidebar Navigation */}
-        <aside className="w-full md:w-64 shrink-0 border-b md:border-b-0 md:border-r border-white/5 bg-black/40 backdrop-blur-md sticky top-14 self-start h-[calc(100vh-3.5rem)] flex flex-col">
+        <aside className="w-full md:w-64 shrink-0 border-b md:border-b-0 md:border-r backdrop-blur-md sticky top-14 self-start h-[calc(100vh-3.5rem)] flex flex-col">
           <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
             <h2 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4 px-3">Documentation</h2>
             <nav className="space-y-1">
@@ -83,7 +95,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2.5 rounded-sm text-[11px] font-mono tracking-widest transition-all text-left",
                       isActive
-                        ? "bg-white/10 text-white font-bold"
+                        ? "bg-white/10 text-white font-bold border-l-2 border-cyan-400 pl-2.5"
                         : "text-zinc-400 hover:bg-white/5 hover:text-white"
                     )}
                   >
@@ -101,7 +113,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* Social Footer */}
-          <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md shrink-0">
+          <div className="p-6">
             <h3 className="text-[9px] font-mono uppercase tracking-widest text-zinc-600 mb-3 text-center">Join Community</h3>
             <div className="flex items-center justify-center gap-4">
               <Link href="#" className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all">
@@ -118,7 +130,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-6 md:p-12 lg:p-16 max-w-5xl bg-[#050505] shadow-[inset_1px_0_0_rgba(255,255,255,0.02)]">
+        <main className="flex-1 p-6 md:p-12 lg:p-16 max-w-7xl bg-zinc-950/20 backdrop-blur-sm border-l border-white/5 relative z-10">
           {children}
         </main>
       </div>

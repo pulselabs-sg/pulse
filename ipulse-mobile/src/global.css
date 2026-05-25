@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: GoogleSans-Regular;
+  --font-mono: GoogleSans-Regular;
+  --font-rounded: GoogleSans-Regular;
+  --font-serif: GoogleSans-Regular;
+}

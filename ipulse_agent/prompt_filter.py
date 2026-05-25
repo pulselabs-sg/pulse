@@ -61,6 +61,13 @@ _SELF_DIRECTED_KEYWORDS = {
     "pick a topic", "create something original", "be creative", "freestyle",
 }
 
+_VERBATIM_KEYWORDS = {
+    "read this text", "say this", "speaking video", "read news", "direct text",
+    "exact words", "use this text", "say exactly", "read this", "read exactly",
+    "talk like", "talking video", "say the following", "read the following",
+    "repeat after me", "speak this"
+}
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Return type
@@ -69,7 +76,7 @@ _SELF_DIRECTED_KEYWORDS = {
 class FilterResult(TypedDict):
     allowed: bool
     reason: str
-    intent: str           # "creative" | "research" | "image_to_video" | "self_directed"
+    intent: str           # "creative" | "research" | "image_to_video" | "self_directed" | "verbatim"
     clean_prompt: str
 
 
@@ -125,6 +132,9 @@ def _classify_intent(text: str, has_reference_image: bool = False) -> str:
 
     if has_reference_image or any(kw in lower for kw in _IMAGE_TO_VIDEO_KEYWORDS):
         return "image_to_video"
+
+    if any(kw in lower for kw in _VERBATIM_KEYWORDS):
+        return "verbatim"
 
     if any(kw in lower for kw in _RESEARCH_KEYWORDS):
         return "research"

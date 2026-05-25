@@ -828,11 +828,11 @@ export default function VisualWorkspace({
         {/* Recent Projects Section */}
         <div className="w-full max-w-5xl mt-8">
           <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6">
-            <h3 className="text-[10px] font-mono text-zinc-400 font-bold tracking-[0.3em]">
+            <h3 className="text-[10px] font-mono text-zinc-500 font-bold tracking-[0.3em] uppercase">
               Active Projects Matrix
             </h3>
             <span className="text-[9px] font-mono text-zinc-400 bg-white/5 px-2.5 py-1 rounded-full border border-white/5">
-              {projects.length} Total Canvases
+              {projects.length} Total Projects
             </span>
           </div>
 
@@ -851,7 +851,7 @@ export default function VisualWorkspace({
                 <div
                   key={project.id}
                   onClick={() => router.push(getCleanPath(`/visual/${project.id}`))}
-                  className="glass border border-white/10 rounded-3xl p-6 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 cursor-pointer relative group flex flex-col justify-between h-44 overflow-hidden shadow-lg"
+                  className="border border-white/20 rounded-3xl p-6 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 cursor-pointer relative group flex flex-col justify-between h-44 overflow-hidden shadow-lg"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -936,11 +936,11 @@ export default function VisualWorkspace({
         )}
 
         {/* Interactive Synthesis Display Screen */}
-        <div className="flex-1 bg-black rounded-4xl mb-5 relative overflow-hidden flex">
+        <div className="flex-1 rounded-4xl mb-5 relative overflow-hidden flex">
           {mainMode === 'flow' ? (
             <div className="flex w-full h-full">
               {/* Left 20% */}
-              <div className="w-2/6 md:w-[20%] border-r border-white/20 bg-black/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10 gap-1">
+              <div className="w-2/6 md:w-[20%] border-r border-white/20 p-3 md:p-4 flex flex-col items-center overflow-y-auto custom-scrollbar relative z-10 gap-1">
                 <p className="text-[8px] md:text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-4 shrink-0 text-center">Sequence</p>
 
                 {flowSequence.map((item, index) => {
@@ -1049,7 +1049,7 @@ export default function VisualWorkspace({
               </div>
 
               {/* Right 80% */}
-              <div className="w-4/5 md:w-[80%] p-4 flex items-center justify-center relative bg-black/40">
+              <div className="w-4/5 md:w-[80%] p-4 flex items-center justify-center relative">
                 {isGenerating ? (
                   <RevealAnimation isVideo={true} />
                 ) : activeFlowVideo ? (
@@ -1704,7 +1704,7 @@ export default function VisualWorkspace({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 15 }}
-                className="absolute bottom-full left-0 mb-4 w-full glass-dark border border-white/20 rounded-3xl p-3 md:p-6 shadow-[0_15px_60px_rgba(0,0,0,0.9)] z-50 flex flex-col justify-between h-[290px] md:h-[280px]"
+                className="absolute bottom-full left-0 mb-4 w-full glass-dark backdrop-blur-xl border border-white/20 rounded-3xl p-3 md:p-6 shadow-[0_15px_60px_rgba(0,0,0,0.9)] z-50 flex flex-col justify-between h-[290px] md:h-[280px]"
               >
                 {/* Mode Toggles Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-2.5 shrink-0">
@@ -1830,7 +1830,7 @@ export default function VisualWorkspace({
           </AnimatePresence>
 
           {/* Synthesis Input Bar Panel */}
-          <div className="rounded-full md:rounded-[2.2rem] p-1.5 md:p-2 flex flex-row items-center gap-1.5 md:gap-2 relative z-40 shadow-[0_0_35px_rgba(0,0,0,0.6)]">
+          <div className="rounded-full md:rounded-[2.2rem] p-1.5 md:p-2 flex flex-row items-center gap-1.5 md:gap-2 relative z-40">
 
             {/* Popover Controls & Reference Upload */}
             <div className="flex items-center gap-1.5 md:gap-2 px-1 md:px-2 shrink-0 border-r border-white/30 pr-2 md:pr-4">
@@ -1840,7 +1840,7 @@ export default function VisualWorkspace({
                   "p-2 md:p-3.5 rounded-xl md:rounded-2xl transition-all border duration-300",
                   showSettings
                     ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-                    : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15"
+                    : "text-white hover:bg-white/10 border-white/15 hover:border-white/15"
                 )}
               >
                 {mainMode === 'image' && <ImageIcon className="w-3.5 h-3.5 md:w-4.5 md:h-4.5" />}
@@ -1855,7 +1855,7 @@ export default function VisualWorkspace({
                   "rounded-xl md:rounded-2xl transition-all border duration-300 flex items-center justify-center",
                   referenceImage
                     ? "p-0 bg-transparent border-transparent"
-                    : "glass text-white hover:bg-white/10 border-transparent hover:border-white/15 p-2 md:p-3.5"
+                    : "text-white hover:bg-white/10 border-white/15 hover:border-white/15 p-2 md:p-3.5"
                 )}
               >
                 {!referenceImage ? (
@@ -1942,7 +1942,7 @@ export default function VisualWorkspace({
         initial={false}
         animate={{ width: isGalleryOpen ? 320 : 0 }}
         className={cn(
-          "glass-dark border-white/10 flex flex-col shrink-0 transition-all duration-500 z-40 lg:relative right-0 shadow-[0_0_50px_rgba(0,0,0,0.8)] lg:shadow-none bg-zinc-950/95 backdrop-blur-md",
+          "border-white/10 flex flex-col shrink-0 transition-all duration-500 z-40 lg:relative right-0 shadow-[0_0_50px_rgba(0,0,0,0.8)] lg:shadow-none backdrop-blur-md",
           "fixed lg:translate-x-0 border-l top-0 h-full",
           isGalleryOpen
             ? "translate-x-0 w-full sm:w-80 lg:w-80"

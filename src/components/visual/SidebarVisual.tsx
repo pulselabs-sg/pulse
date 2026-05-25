@@ -1,4 +1,4 @@
-import { Menu, X, Crown, CreditCard, User, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Crown, CreditCard, User, LayoutDashboard, PanelRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VISUAL_TABS, VisualTab } from '@/lib/visual-constants';
@@ -37,9 +37,9 @@ export default function SidebarVisual({
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isSidebarOpen ? 280 : 80 }}
+      animate={{ width: isSidebarOpen ? 260 : 60 }}
       className={cn(
-        "glass-dark border-r border-white/10 flex flex-col shrink-0 transition-all duration-500 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-zinc-950/95 backdrop-blur-md",
+        "border-r border-white/10 flex flex-col shrink-0 transition-all duration-500 z-50 fixed md:relative h-[100dvh] md:h-full top-0 left-0 backdrop-blur-sm",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}
     >
@@ -55,9 +55,9 @@ export default function SidebarVisual({
         )}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className={cn("p-2 hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}
+          className={cn("hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition-all", isSidebarOpen ? "ml-auto" : "mx-auto")}
         >
-          {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4 hidden md:block" />}
+          {isSidebarOpen ? <X className="w-4 h-4" /> : <PanelRight className="w-4 h-4 hidden md:block" />}
         </button>
       </div>
 
@@ -68,8 +68,8 @@ export default function SidebarVisual({
           <button
             onClick={() => handleTabClick('imagine')}
             className={cn(
-              "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-xl",
-              isSidebarOpen ? "py-2.5 px-5 justify-start w-full" : "w-10 h-10 justify-center mx-auto",
+              "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-lg",
+              isSidebarOpen ? "py-2.5 px-5 justify-start w-full" : "w-9 h-9 justify-center mx-auto",
               activeTab === 'imagine'
                 ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.08)] border-white/10"
                 : "text-zinc-400 hover:bg-white/[0.03] hover:text-white border-transparent"
@@ -78,7 +78,7 @@ export default function SidebarVisual({
             {activeTab === 'imagine' && (
               <div className="absolute inset-0 bg-white/5 blur-md rounded-full opacity-40" />
             )}
-            <LayoutDashboard className={cn("w-6 h-6 ml-0.5 shrink-0 transition-transform", activeTab === 'imagine' ? "text-white" : "text-zinc-400")} />
+            <LayoutDashboard className={cn("w-5 h-5 ml-0.5 shrink-0 transition-transform", activeTab === 'imagine' ? "text-white" : "text-zinc-400")} />
             {isSidebarOpen && (
               <span className="font-bold tracking-[0.15em] transition-colors uppercase text-[10px]">
                 Dashboard
@@ -91,7 +91,7 @@ export default function SidebarVisual({
             onClick={() => handleTabClick('profile')}
             className={cn(
               "group relative flex items-center justify-center gap-3 transition-all duration-300 border font-mono text-xs rounded-xl",
-              isSidebarOpen ? "py-2.5 px-5 justify-start w-full" : "w-12 h-12 justify-center mx-auto",
+              isSidebarOpen ? "py-2.5 px-5 justify-start w-full" : "w-9 h-9 justify-center mx-auto",
               activeTab === 'profile'
                 ? "bg-white/10 text-white border-white/10 shadow-[0_0_20px_rgba(255,255,255,0.08)]"
                 : "text-zinc-400 hover:bg-white/[0.02] hover:text-zinc-300 border-transparent"
@@ -116,7 +116,7 @@ export default function SidebarVisual({
         {/* Sidebar Usage Card */}
         <div className="mt-auto">
           {isSidebarOpen && (
-            <div className="mx-4 mb-6 p-5 rounded-3xl glass border border-white/5 hover:border-white/10 transition-all group/usage relative overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+            <div className="mx-4 mb-6 p-5 rounded-3xl border border-white/5 hover:border-white/10 transition-all group/usage relative overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.5)]">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover/usage:opacity-100 transition-opacity duration-500" />
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-3">

@@ -18,7 +18,7 @@ const Navbar = () => {
   }, [scrollY]);
 
   return (
-    <nav className={cn('fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-500 flex items-center px-6 md:px-12', isScrolled ? 'border-b border-white/5 bg-black/60 backdrop-blur-xl' : '')}>
+    <nav className={cn('fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-500 flex items-center px-6 md:px-12', isScrolled ? 'backdrop-blur-xl' : '')}>
       <div className="flex-1 flex items-center gap-3">
         <img src="/logo.webp" alt="iPulse" className="w-7 h-7 rounded-sm object-cover" />
         <span className="font-mono text-sm tracking-[0.2em] text-white uppercase">iPulse</span>
@@ -39,7 +39,7 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[640px] bg-black/95 border border-white/10 rounded-2xl p-6 grid grid-cols-3 gap-0 divide-x divide-white/10 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[640px] bg-black/60 backdrop-blur-sm border border-white/10 rounded-2xl p-6 grid grid-cols-3 gap-0 divide-x divide-white/10 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
               >
                 <div className="pr-6">
                   <h4 className="text-[10px] font-bold text-white mb-4 tracking-widest flex items-center gap-1.5 uppercase font-mono"><Video className="w-3.5 h-3.5 text-white" /> Video</h4>
@@ -196,7 +196,7 @@ const HeroSection = () => (
       >
         <div className="relative inline-flex overflow-hidden rounded-full p-[1px] mb-6">
           <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_50%,rgba(255,255,255,0.3)_75%,rgba(255,255,255,0.9)_100%)]" />
-          <div className="inline-flex h-full w-full items-center gap-2 rounded-full bg-zinc-950 px-3 py-1.5 text-[10px] font-mono tracking-widest backdrop-blur-3xl cursor-default">
+          <div className="inline-flex h-full w-full items-center gap-2 rounded-full bg-zinc-950/50 px-3 py-1.5 text-[10px] font-mono tracking-widest backdrop-blur-xl cursor-default">
             <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
             <span className="text-zinc-300">Neural Creative Engine v3.0 - Live</span>
           </div>
@@ -208,15 +208,15 @@ const HeroSection = () => (
           <span className="text-white">Intelligence.</span>
         </h1>
 
-        <p className="text-xs md:text-xs font-mono text-zinc-400 max-w-sm leading-relaxed">
+        <p className="text-xs md:text-sm font-mono text-zinc-400 max-w-sm leading-relaxed">
           Synthesize cinematic video, generate stunning imagery, and orchestrate neural audio through a single unified creative API.
         </p>
 
         <div className="mt-6 flex flex-col sm:flex-row items-start gap-3">
           <Link href="/dashboard" target='_blank' className="px-5 py-2.5 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-2 group">
-            Start Building <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            Try iPulse <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
           </Link>
-          <Link href="/docs" target='_blank' className="px-5 py-2.5 glass-mid text-white rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
+          <Link href="/docs" target='_blank' className="px-5 py-2.5 text-white rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
             <Code className="w-3 h-3" /> Read the Docs
           </Link>
         </div>
@@ -251,7 +251,7 @@ const StatsStrip = () => {
     { label: 'Image Presets', value: '150+' }, { label: 'Avg. Render', value: '<1.2s' },
   ];
   return (
-    <div className="relative z-10 border-y border-white/5 py-8">
+    <div className="relative z-10 bg-black/10 backdrop-blur-xl border-y border-white/5 py-8">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {stats.map((s, i) => (
@@ -267,7 +267,7 @@ const StatsStrip = () => {
 };
 
 const FeatureVisualVideo = () => (
-  <div className="glass-dark rounded-2xl p-6 border border-white/8 overflow-hidden relative">
+  <div className="glass-mid rounded-2xl p-6 border border-white/8 overflow-hidden relative">
     <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest mb-4 flex items-center justify-between">
       <span>Video Flow Pipeline</span>
       <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />Active</span>
@@ -567,10 +567,58 @@ const CinematicQuote = () => {
 };
 
 const pricingPlans = [
-  { name: 'Free', price: '0', pulse: '40,000', desc: 'Test the creative engine at no cost.' },
-  { name: 'Basic', price: '10', pulse: '120,000', desc: 'For regular content creators.', recommended: true },
-  { name: 'Premium', price: '20', pulse: '300,000', desc: 'For studio-grade production.' },
-  { name: 'Pro', price: '100', pulse: '1,500,000', desc: 'Enterprise volume and dedicated H100s.' },
+  {
+    name: 'Free',
+    price: '0',
+    pulse: '40,000',
+    desc: 'Test the creative engine at no cost.',
+    features: [
+      '40k Pulse Credits',
+      'Image Gen (Standard)',
+      'Video Gen (480p)',
+      'No Flow / Agent features'
+    ]
+  },
+  {
+    name: 'Basic',
+    price: '10',
+    pulse: '120,000',
+    desc: 'For regular content creators.',
+    recommended: true,
+    features: [
+      '120k Pulse Credits',
+      'Flow & Agent Access',
+      'Image Gen (2K Quality)',
+      'Video/Flow/Agent (720p)',
+      'API Ingress Key (Standard)'
+    ]
+  },
+  {
+    name: 'Premium',
+    price: '20',
+    pulse: '300,000',
+    desc: 'For studio-grade production.',
+    features: [
+      '300k Pulse Credits',
+      'Flow & Agent Access',
+      'Image Gen (2K Quality)',
+      'Video/Flow/Agent (720p)',
+      'API Ingress Key (High)'
+    ]
+  },
+  {
+    name: 'Pro',
+    price: '100',
+    pulse: '1,500,000',
+    desc: 'Enterprise volume and dedicated H100s.',
+    features: [
+      '1.5M Pulse Credits',
+      'Flow & Agent Access',
+      'Image Gen (2K Quality)',
+      'Video/Flow/Agent (720p)',
+      'API Ingress Key (Dedicated)'
+    ]
+  },
 ];
 
 const PricingSection = () => (
@@ -581,15 +629,25 @@ const PricingSection = () => (
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {pricingPlans.map((plan, i) => (
-        <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className={cn('rounded-xl p-8 flex flex-col relative transition-all duration-300 border', plan.recommended ? 'glass-mid border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.04)] lg:-translate-y-3' : 'glass-dark border-white/6 hover:border-white/15')}>
+        <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className={cn('rounded-xl p-8 flex flex-col relative transition-all duration-300 border', plan.recommended ? 'glass-mid border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.04)] lg:-translate-y-3' : 'border-white/6 hover:border-white/15')}>
           {plan.recommended && (<div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black text-[9px] font-mono uppercase tracking-widest px-3 py-1 rounded-full font-bold">Most Popular</div>)}
           <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-3">{plan.name}</div>
           <div className="flex items-baseline gap-1 mb-2"><span className="text-4xl font-black text-white">${plan.price}</span><span className="text-[10px] font-mono text-zinc-500 uppercase">/mo</span></div>
           <p className="text-xs text-zinc-400 font-mono mb-8 h-8">{plan.desc}</p>
           <div className="flex-1 space-y-3 mb-8">
-            <div className="flex items-center gap-2.5 text-sm text-white font-mono"><Zap className="w-3.5 h-3.5 text-zinc-400 shrink-0" />{plan.pulse} Pulse Credits</div>
-            <div className="flex items-center gap-2.5 text-sm text-zinc-500"><Check className="w-3.5 h-3.5 shrink-0" />Full API Access</div>
-            <div className="flex items-center gap-2.5 text-sm text-zinc-500"><Check className="w-3.5 h-3.5 shrink-0" />Commercial License</div>
+            {plan.features.map((feature, idx) => {
+              const isBlocked = feature.startsWith('No ');
+              return (
+                <div key={idx} className={cn('flex items-center gap-2.5 text-sm font-mono', isBlocked ? 'text-zinc-600 line-through' : 'text-zinc-300')}>
+                  {isBlocked ? (
+                    <span className="w-3.5 h-3.5 flex items-center justify-center text-zinc-600 font-bold shrink-0 text-xs">—</span>
+                  ) : (
+                    <Check className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  )}
+                  <span>{feature}</span>
+                </div>
+              );
+            })}
           </div>
           <button className={cn('w-full py-3 rounded-sm text-[10px] font-mono uppercase tracking-widest font-bold transition-all', plan.recommended ? 'bg-white text-black hover:bg-zinc-100' : 'border border-white/10 text-white hover:bg-white hover:text-black')}>Get Started</button>
         </motion.div>
@@ -618,7 +676,7 @@ const CtaBanner = () => (
 const Footer = () => (
   <footer className="relative z-10 pt-20 pb-10 border-t border-white/5 overflow-hidden">
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-      <span className="text-[20vw] font-black text-white/[0.018] tracking-tighter whitespace-nowrap">iPulse</span>
+      <span className="text-[18vw] text-white/[0.018] tracking-tighter whitespace-nowrap">iPulse</span>
     </div>
     <div className="max-w-7xl mx-auto px-6 relative">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
@@ -627,8 +685,8 @@ const Footer = () => (
           <p className="text-xs font-mono text-zinc-500 max-w-xs leading-relaxed">Neural creative studio. High-fidelity Video flow extension, Image synthesis, and studio-grade sound.</p>
         </div>
         <div>
-          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Features</h4>
-          <ul className="space-y-3 text-sm text-zinc-600">
+          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-5">Features</h4>
+          <ul className="space-y-3 text-sm text-zinc-500">
             <li><Link href="#video-flow" className="hover:text-white transition-colors">Video Generation</Link></li>
             <li><Link href="#creative-canvas" className="hover:text-white transition-colors">Image Synthesis</Link></li>
             <li><Link href="#speech-to-text" className="hover:text-white transition-colors">Speech to Text</Link></li>
@@ -636,16 +694,16 @@ const Footer = () => (
           </ul>
         </div>
         <div>
-          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Resources</h4>
-          <ul className="space-y-3 text-sm text-zinc-600"><li><Link href="/docs" target='_blank' className="hover:text-white transition-colors">Documentation</Link></li><li><Link href="/docs/api" target='_blank' className="hover:text-white transition-colors">API Reference</Link></li><li><Link href="#" target='_blank' className="hover:text-white transition-colors">System Status</Link></li></ul>
+          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-5">Resources</h4>
+          <ul className="space-y-3 text-sm text-zinc-500"><li><Link href="/docs" target='_blank' className="hover:text-white transition-colors">Documentation</Link></li><li><Link href="/docs/api" target='_blank' className="hover:text-white transition-colors">API Reference</Link></li><li><Link href="#" target='_blank' className="hover:text-white transition-colors">System Status</Link></li></ul>
         </div>
         <div>
-          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-5">Legal</h4>
-          <ul className="space-y-3 text-sm text-zinc-600"><li><Link href="/privacy-policy" target='_blank' className="hover:text-white transition-colors">Privacy Policy</Link></li><li><Link href="/terms-of-use" target='_blank' className="hover:text-white transition-colors">Terms of Service</Link></li><li><Link href="/refund-policy" target='_blank' className="hover:text-white transition-colors">Refund Policy</Link></li></ul>
+          <h4 className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-5">Legal</h4>
+          <ul className="space-y-3 text-sm text-zinc-500"><li><Link href="/privacy-policy" target='_blank' className="hover:text-white transition-colors">Privacy Policy</Link></li><li><Link href="/terms-of-use" target='_blank' className="hover:text-white transition-colors">Terms of Service</Link></li><li><Link href="/refund-policy" target='_blank' className="hover:text-white transition-colors">Refund Policy</Link></li></ul>
         </div>
       </div>
       <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="text-[10px] font-mono text-zinc-500 tracking-widest">2026 iPulse Labs. All rights reserved.</div>
+        <div className="text-[10px] font-mono text-zinc-400 tracking-widest">2026 iPulse Labs. All rights reserved.</div>
       </div>
     </div>
   </footer>
@@ -701,7 +759,7 @@ const ScrollRevealText = () => {
 
   return (
     // spacerRef sits here to give the scroll distance; sticky child pins inside it.
-    <div ref={spacerRef} className="relative z-10 bg-black h-[700vh]">
+    <div ref={spacerRef} className="relative z-10 h-[700vh]">
       <div className="sticky top-0 h-screen flex items-center">
         <div className="max-w-[1200px] mx-auto px-6 w-full">
           <h2 className="text-3xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tight">
@@ -862,7 +920,7 @@ const FeatureShowcase = () => {
 
   return (
     // Tall spacer — 500vh gives ~400vh of pinned scroll (same idea as ScrollRevealText)
-    <div id="speech-to-text" ref={spacerRef} className="relative z-10 bg-black h-[500vh] border-t border-white/5">
+    <div id="speech-to-text" ref={spacerRef} className="relative z-10 h-[500vh]">
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center">
 

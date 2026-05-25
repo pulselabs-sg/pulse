@@ -16,8 +16,8 @@ export const metadata: Metadata = {
 
 export default function TermsOfUse() {
   return (
-    <div className="min-h-screen bg-black text-zinc-300">
-      <div className="border-b border-white/10 bg-black/80 backdrop-blur-md sticky top-0 z-50">
+    <div className="min-h-screen bg-background text-zinc-300">
+      <div className="border-b border-white/10 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-cyan-400" />

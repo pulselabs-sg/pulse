@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { prompt, feature, referenceImageBase64 } = await req.json();
+    const { prompt, feature, referenceImageBase64, aspectRatio, quality } = await req.json();
     const apiKey = process.env.XAI_API_KEY;
 
     if (!apiKey) {
@@ -53,9 +53,13 @@ export async function POST(req: NextRequest) {
     const url = isEdit ? 'https://api.x.ai/v1/images/edits' : 'https://api.x.ai/v1/images/generations';
 
     const payload: any = {
-      model: "grok-imagine-image-quality",
+      model: quality === '480p' || quality === '720p' ? "grok-imagine-image-fast" : "grok-imagine-image-quality",
       prompt: prompt || 'Generate an image',
     };
+
+    if (aspectRatio) {
+      payload.aspect_ratio = aspectRatio;
+    }
 
     if (referenceImageBase64) {
       payload.image = {

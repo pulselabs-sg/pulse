@@ -1,4 +1,4 @@
-﻿// src/app/dashboard/page.tsx
+// src/app/dashboard/page.tsx
 'use client';
 
 import { useState, useEffect, Suspense, useRef } from 'react';
@@ -217,12 +217,157 @@ function DashboardContent() {
     }
   }, [status, router]);
 
-  if (status === "loading" || status === "unauthenticated") return <div className="flex h-screen items-center justify-center bg-black"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>;
+  if (status === "loading" || status === "unauthenticated") return <div className="flex h-screen items-center justify-center bg-background"><Loader2 className="w-6 h-6 animate-spin text-white" /></div>;
 
   if (!session) return null;
 
+  const plansData = [
+    {
+      id: 'FREE' as Tier,
+      name: 'Free',
+      price: '$0',
+      priceMonthly: 0,
+      priceYearly: 0,
+      desc: 'Test the engine',
+      limit: '40,000 pulses / month',
+      popular: false,
+      features: [
+        'Video Gen & Edit (480p)',
+        'Image Gen & Edit (1K)',
+        '5,000 Char TTS',
+        '5 min STT Limit'
+      ],
+      sections: [
+        {
+          title: 'Visual Production',
+          items: [
+            { checked: true, text: 'Video Gen & Edit (480p)' },
+            { checked: true, text: 'Image Gen & Edit (1K)' },
+            { checked: false, text: 'No Flow Video Extension' },
+            { checked: false, text: 'Agent Autopilot' }
+          ]
+        },
+        {
+          title: 'Voice & Audio',
+          items: [
+            { checked: true, text: '5,000 Char TTS' },
+            { checked: true, text: '5 min STT Limit' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'BASIC' as Tier,
+      name: 'Basic',
+      price: billingCycle === 'monthly' ? '$10 / month' : '$8 / month',
+      priceMonthly: 10,
+      priceYearly: 96,
+      desc: 'For regular creators',
+      limit: '120,000 pulses / month',
+      popular: true,
+      features: [
+        'Video / Flow / Agent (720p HD)',
+        'Image Gen & Edit (2K Quality)',
+        'Flow Video Extension',
+        'Agent Autopilot',
+        '5,000 Char TTS',
+        '5 min STT Limit'
+      ],
+      sections: [
+        {
+          title: 'Visual Production',
+          items: [
+            { checked: true, text: 'Video / Flow / Agent (720p HD)' },
+            { checked: true, text: 'Image Gen & Edit (2K Quality)' },
+            { checked: true, text: 'Flow Video Extension' },
+            { checked: true, text: 'Agent Autopilot' }
+          ]
+        },
+        {
+          title: 'Voice & Audio',
+          items: [
+            { checked: true, text: '5,000 Char TTS' },
+            { checked: true, text: '5 min STT Limit' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'PREMIUM' as Tier,
+      name: 'Premium',
+      price: billingCycle === 'monthly' ? '$20 / month' : '$16 / month',
+      priceMonthly: 20,
+      priceYearly: 192,
+      desc: 'For serious creators',
+      limit: '300,000 pulses / month',
+      popular: false,
+      features: [
+        'Video / Flow / Agent (720p HD)',
+        'Image Gen & Edit (2K Quality)',
+        'Flow Video Extension',
+        'Agent Autopilot',
+        '10,000 Char TTS',
+        '10 min STT Limit'
+      ],
+      sections: [
+        {
+          title: 'Visual Production',
+          items: [
+            { checked: true, text: 'Video / Flow / Agent (720p HD)' },
+            { checked: true, text: 'Image Gen & Edit (2K Quality)' },
+            { checked: true, text: 'Flow Video Extension' },
+            { checked: true, text: 'Agent Autopilot' }
+          ]
+        },
+        {
+          title: 'Voice & Audio',
+          items: [
+            { checked: true, text: '10,000 Char TTS' },
+            { checked: true, text: '10 min STT Limit' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'PRO' as Tier,
+      name: 'Pro',
+      price: billingCycle === 'monthly' ? '$100 / month' : '$80 / month',
+      priceMonthly: 100,
+      priceYearly: 960,
+      desc: 'High-volume production',
+      limit: '1,500,000 pulses / month',
+      popular: false,
+      features: [
+        'Video / Flow / Agent (720p HD)',
+        'Image Gen & Edit (2K Quality)',
+        'Flow Video Extension',
+        'Agent Autopilot',
+        '15,000 Char TTS',
+        '15 min STT Limit'
+      ],
+      sections: [
+        {
+          title: 'Visual Production',
+          items: [
+            { checked: true, text: 'Video / Flow / Agent (720p HD)' },
+            { checked: true, text: 'Image Gen & Edit (2K Quality)' },
+            { checked: true, text: 'Flow Video Extension' },
+            { checked: true, text: 'Agent Autopilot' }
+          ]
+        },
+        {
+          title: 'Voice & Audio',
+          items: [
+            { checked: true, text: '15,000 Char TTS' },
+            { checked: true, text: '15 min STT Limit' }
+          ]
+        }
+      ]
+    }
+  ];
+
   return (
-    <div className="flex h-[100dvh] bg-black text-zinc-300 font-sans overflow-hidden relative">
+    <div className="flex h-[100dvh] bg-background text-zinc-300 font-sans overflow-hidden relative">
       <div className="fixed inset-0 bg-[url('/noise.png')] bg-repeat opacity-20 mix-blend-overlay z-0 pointer-events-none" />
 
       {/* Mobile Backdrop Overlay */}
@@ -391,10 +536,10 @@ function DashboardContent() {
       <AnimatePresence>
         {showPlanModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center md:p-4" onClick={() => setShowPlanModal(false)}>
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="glass border-y md:border border-white/10 md:rounded-xl max-w-5xl w-full h-[100dvh] md:h-auto md:max-h-[90vh] overflow-auto shadow-[0_0_50px_rgba(0,0,0,1)] custom-scrollbar relative">
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="glass border-y md:border border-white/10 md:rounded-xl max-w-5xl w-full h-[100dvh] md:h-auto md:max-h-[92vh] overflow-auto shadow-[0_0_50px_rgba(0,0,0,1)] custom-scrollbar relative">
               <div className="px-4 md:px-6 pt-4 md:pt-5 pb-3 md:pb-4 flex items-center justify-between border-b border-white/10 sticky top-0 z-20">
                 <div>
-                  <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white ">System Upgrade</h2>
+                  <h2 className="text-base md:text-lg font-mono uppercase tracking-widest text-white ">Pricing</h2>
                   <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-1">Select new capability matrix</p>
                 </div>
                 <button onClick={() => setShowPlanModal(false)} className="p-2 hover:bg-white/10 text-zinc-500 hover:text-white rounded-sm transition-all">
@@ -421,28 +566,38 @@ function DashboardContent() {
               </div>
 
               <div className="p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 pb-20 md:pb-10 relative z-10 pt-0">
-                {PLANS.map((plan) => {
+                {plansData.map((plan) => {
                   const isCurrent = userState.tier === plan.id;
-                  const price = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly;
-                  const period = billingCycle === 'monthly' ? '/mo' : '/yr';
 
                   return (
-                    <div key={plan.id} className={cn("rounded-xl border p-4 md:p-5 transition-all flex flex-col relative group", isCurrent ? "border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.05)]" : "border-white/10 hover:border-white/20")}>
-                      {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-white text-black inline-block px-2 py-0.5 mb-2 md:mb-3 self-start shadow-[0_0_10px_rgba(255,255,255,0.2)]">RECOMMENDED</div>}
-                      <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
-                      <div className="flex items-baseline gap-1 mb-3 md:mb-4">
-                        <span className="text-xl md:text-3xl font-mono font-bold text-white">${price}</span>
-                        <span className="text-[9px] md:text-[10px] font-mono uppercase text-zinc-500">{period}</span>
-                      </div>
-                      <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-4 md:mb-6">{plan.desc}</p>
-                      <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-1">
-                        {plan.features.map((f, i) => (
-                          <li key={i} className="flex items-start gap-2 text-[9px] md:text-[10px] font-mono uppercase tracking-wider text-zinc-400">
-                            <Check className="w-3 h-3 text-white shrink-0 mt-0.5" /> <span className="group-hover:text-zinc-200 transition-colors">{f}</span>
-                          </li>
+                    <div key={plan.id} className={cn("rounded-xl border p-4 md:p-5 transition-all flex flex-col justify-between relative group", isCurrent ? "border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.05)]" : "border-white/10 hover:border-white/20")}>
+                      <div>
+                        {plan.popular && <div className="text-[9px] font-mono uppercase tracking-widest text-black bg-white text-black inline-block px-2 py-0.5 mb-2 md:mb-3 self-start shadow-[0_0_10px_rgba(255,255,255,0.2)]">RECOMMENDED</div>}
+                        <div className="text-xs md:text-sm font-mono uppercase tracking-widest text-white mb-1">{plan.name}</div>
+                        <div className="flex items-baseline gap-1 mb-1">
+                          <span className="text-xl md:text-3xl font-mono font-bold text-white">{plan.price}</span>
+                        </div>
+                        <div className="text-[9px] md:text-[10px] font-mono text-zinc-400 mb-3">{plan.limit}</div>
+                        <p className="text-[9px] md:text-[10px] font-mono text-zinc-500 mb-6 leading-relaxed">{plan.desc}</p>
+                        
+                        {plan.sections.map((section, sIdx) => (
+                          <div key={sIdx} className="mb-4 text-left">
+                            <h4 className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest mb-2">{section.title}</h4>
+                            <ul className="space-y-2">
+                              {section.items.map((item, iIdx) => (
+                                <li key={iIdx} className={cn("flex items-start gap-2.5 text-[9px] md:text-[10px] font-mono tracking-wider", item.checked ? "text-zinc-300" : "text-zinc-600")}>
+                                  <span className="shrink-0">{item.checked ? '✓' : '—'}</span>
+                                  <span className={cn(item.checked ? "group-hover:text-zinc-200 transition-colors" : "line-through")}>
+                                    {item.text}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         ))}
-                      </ul>
-                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); setCheckoutTermsAgreed(false); setCheckoutTermsConfirmed(false); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-lg transition-all", isCurrent ? "glass text-zinc-600 cursor-not-allowed border-white/5" : "bg-white text-black hover:bg-zinc-200 text-black shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]")}>
+                      </div>
+
+                      <button onClick={() => { setShowPlanModal(false); if (plan.id !== 'FREE') { setCheckoutPlanContext(plan.id); setShowCheckoutModal(true); setCheckoutTermsAgreed(false); setCheckoutTermsConfirmed(false); } }} disabled={isCurrent} className={cn("w-full py-2.5 font-mono text-[9px] uppercase font-bold rounded-lg transition-all mt-4", isCurrent ? "glass text-zinc-600 cursor-not-allowed border-white/5" : "bg-white text-black hover:bg-zinc-200 text-black shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]")}>
                         {isCurrent ? '[ ACTIVE ]' : 'INITIALIZE'}
                       </button>
                     </div>
@@ -477,7 +632,7 @@ function DashboardContent() {
               {/* --- LEFT: Plan Information --- */}
               <div className="w-full md:w-1/3 glass p-6 md:p-8 flex flex-col border-b md:border-b-0 md:border-r border-white/10 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-50" />
-                {PLANS.filter(p => p.id === checkoutPlanContext).map(selectedPlan => {
+                {plansData.filter(p => p.id === checkoutPlanContext).map(selectedPlan => {
                   const price = billingCycle === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly;
                   const period = billingCycle === 'monthly' ? '/mo' : '/yr';
                   return (
@@ -734,7 +889,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<div className="flex h-[100dvh] items-center justify-center bg-black"><Loader2 className="animate-spin text-white" /></div>}>
+    <Suspense fallback={<div className="flex h-[100dvh] items-center justify-center bg-background"><Loader2 className="animate-spin text-white" /></div>}>
       <DashboardContent />
     </Suspense>
   );

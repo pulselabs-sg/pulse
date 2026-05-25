@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { prompt, referenceImageBase64, intent } = await req.json();
+    const { prompt, referenceImageBase64, intent, aspectRatio, quality, duration } = await req.json();
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
           prompt,
           reference_image: referenceImageBase64 || null,
           intent: intent || null,
+          aspect_ratio: aspectRatio || null,
+          quality: quality || null,
+          duration: duration || null,
         }),
         // signal: AbortSignal.timeout(300_000) // 5 min timeout
       });

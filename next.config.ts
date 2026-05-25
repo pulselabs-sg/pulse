@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
 
   // Add your ngrok domain here
   allowedDevOrigins: [
-    'a555-2402-800-63a8-dc07-cc58-ddc-d063-457e.ngrok-free.app'
+    '192.168.1.9',
+    '7d9e-2402-800-63a8-dc07-fd7e-3b79-a5da-a5b8.ngrok-free.app'
   ],
 };
 

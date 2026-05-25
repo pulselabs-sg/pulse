@@ -196,7 +196,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
         />
       </head>
-      <body className={`${inter.variable} ${playfair.variable} ${inter.className} bg-zinc-950 text-zinc-50 min-h-screen antialiased custom-scrollbar`}>
+      <body className={`${inter.variable} ${playfair.variable} bg-background text-zinc-50 min-h-screen antialiased custom-scrollbar`}>
         <Providers>
           {children}
         </Providers>
