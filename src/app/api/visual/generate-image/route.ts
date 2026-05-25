@@ -33,7 +33,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { user, limit } = validationCredit.data;
+    const { user, limit, tier } = validationCredit.data;
+
+    if (quality === '2k' && tier === 'FREE') {
+      return NextResponse.json({ error: "2K resolution is only available on paid plans. Please upgrade your plan." }, { status: 403 });
+    }
 
     // Deduct credits
     const updatedUser = await prisma.user.updateMany({

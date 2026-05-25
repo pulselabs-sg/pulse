@@ -36,7 +36,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { readAsStringAsync, EncodingType, downloadAsync, documentDirectory } from 'expo-file-system/legacy';
 import {
   Settings, Image as ImageIcon, Video, LayersPlus, Bot, Zap,
-  History, LayoutDashboard, User, Crown, X, ChevronDown, Download, Share, Copy
+  History, LayoutDashboard, User, Crown, X, ChevronDown, Download, Share, Copy, Lock
 } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import api, { BASE_URL, uploadFile } from '../services/api';
@@ -149,6 +149,7 @@ const PromptBar = ({ text }: { text: string }) => {
 
 export default function VisualEngineScreen() {
   const insets = useSafeAreaInsets();
+  const [userState, setUserState] = useState({ tier: 'FREE', usage: 0, limit: 40000 });
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
@@ -166,13 +167,18 @@ export default function VisualEngineScreen() {
 
   // Synchronize duration and quality options when mainMode changes
   useEffect(() => {
+    const isFree = userState?.tier === 'FREE';
     if (mainMode === 'image') {
       if (selectedQuality === '480p' || selectedQuality === '720p') {
+        setSelectedQuality('1080p');
+      } else if (isFree && selectedQuality === '2k') {
         setSelectedQuality('1080p');
       }
     } else {
       if (selectedQuality === '1080p' || selectedQuality === '2k') {
-        setSelectedQuality('720p');
+        setSelectedQuality(isFree ? '480p' : '720p');
+      } else if (isFree && selectedQuality === '720p') {
+        setSelectedQuality('480p');
       }
     }
 
@@ -189,7 +195,7 @@ export default function VisualEngineScreen() {
         setSelectedDuration('30s');
       }
     }
-  }, [mainMode]);
+  }, [mainMode, selectedQuality, userState?.tier]);
 
 
   // Generation state
@@ -232,7 +238,6 @@ export default function VisualEngineScreen() {
   const sidebarOverlay = useRef(new Animated.Value(0)).current;
 
   // User
-  const [userState, setUserState] = useState({ tier: 'FREE', usage: 0, limit: 40000 });
   const [sessionUser, setSessionUser] = useState<{ name: string; email: string; image?: string } | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
@@ -695,6 +700,24 @@ export default function VisualEngineScreen() {
 
   const handleGenerate = async () => {
     if (mainMode === 'agent') { handleRunAgent(); return; }
+    const isFree = userState?.tier === 'FREE';
+    if (isFree) {
+      if (mainMode === 'flow') {
+        Alert.alert("Upgrade Required", "Flow Video Extension is only available on paid plans. Please upgrade your plan.");
+        setShowPlanModal(true);
+        return;
+      }
+      if (mainMode === 'image' && selectedQuality === '2k') {
+        Alert.alert("Upgrade Required", "2K resolution is only available on paid plans. Please upgrade your plan.");
+        setShowPlanModal(true);
+        return;
+      }
+      if (mainMode === 'video' && selectedQuality === '720p') {
+        Alert.alert("Upgrade Required", "720p HD quality is only available on paid plans. Please upgrade your plan.");
+        setShowPlanModal(true);
+        return;
+      }
+    }
     const currentPrompt = mainMode === 'flow' ? flowPrompt : prompt;
     if (!currentPrompt.trim() && !referenceImage && mainMode !== 'flow') {
       Alert.alert('Missing Input', 'Please enter a prompt or select a reference.'); return;
@@ -787,6 +810,12 @@ export default function VisualEngineScreen() {
   };
 
   const handleRunAgent = async () => {
+    const isFree = userState?.tier === 'FREE';
+    if (isFree) {
+      Alert.alert("Upgrade Required", "Autonomous Agent Autopilot is only available on paid plans. Please upgrade your plan.");
+      setShowPlanModal(true);
+      return;
+    }
     if (!prompt.trim()) { Alert.alert('Missing', 'Please enter a director prompt.'); return; }
     setAgentStatus('running'); setAgentSteps([]); setAgentLogs([]); setFinalVideoUrl(null); setFinalScript(null); setSubmittedPrompt(prompt);
     try {
@@ -1234,18 +1263,36 @@ export default function VisualEngineScreen() {
                 <View style={styles.settingsModesPill}>
                   {(['image', 'video', 'flow', 'agent'] as MainMode[]).map(mode => {
                     const isActive = mainMode === mode;
+                    const isFree = userState?.tier === 'FREE';
+                    const isLocked = isFree && (mode === 'flow' || mode === 'agent');
                     let ModeIcon = mode === 'image' ? ImageIcon : mode === 'video' ? Video : mode === 'flow' ? LayersPlus : Bot;
                     return (
                       <TouchableOpacity
                         key={mode}
-                        onPress={() => setMainMode(mode)}
-                        style={[styles.settingsModeBtn, isActive && styles.settingsModeBtnActive]}
+                        onPress={() => {
+                          if (isLocked) {
+                            closeSettings();
+                            Alert.alert(
+                              "Upgrade Required",
+                              `${mode === 'flow' ? 'Flow Video Extension' : 'Autonomous Agent Autopilot'} is only available on paid plans. Please upgrade your plan.`
+                            );
+                            setShowPlanModal(true);
+                            return;
+                          }
+                          setMainMode(mode);
+                        }}
+                        style={[
+                          styles.settingsModeBtn,
+                          isActive && styles.settingsModeBtnActive,
+                          isLocked && { opacity: 0.5 }
+                        ]}
                         activeOpacity={0.75}
                       >
                         <ModeIcon color={isActive ? '#000' : COLORS.zinc400} size={14} />
                         <Text style={[styles.settingsModeBtnText, isActive && { color: '#000' }]}>
                           {mode.toUpperCase()}
                         </Text>
+                        {isLocked && <Lock color={COLORS.zinc400} size={10} style={{ marginLeft: 2 }} />}
                       </TouchableOpacity>
                     );
                   })}
@@ -1280,14 +1327,37 @@ export default function VisualEngineScreen() {
                   <View style={styles.settingsOptionsRow}>
                     {(mainMode === 'image' ? QUALITY_OPTIONS.filter(q => ['1080p', '2k'].includes(q.id)) : QUALITY_OPTIONS.filter(q => ['480p', '720p'].includes(q.id))).map(q => {
                       const isActive = selectedQuality === q.id;
+                      const isFree = userState?.tier === 'FREE';
+                      const isLocked = isFree && (
+                        (mainMode === 'image' && q.id === '2k') ||
+                        (mainMode !== 'image' && q.id === '720p')
+                      );
                       return (
                         <TouchableOpacity
                           key={q.id}
-                          onPress={() => setSelectedQuality(q.id)}
-                          style={[styles.settingsOptionBtn, isActive && styles.settingsOptionBtnActive]}
+                          onPress={() => {
+                            if (isLocked) {
+                              closeSettings();
+                              Alert.alert(
+                                "Upgrade Required",
+                                `${q.id === '2k' ? '2K resolution' : '720p HD quality'} is only available on paid plans. Please upgrade your plan.`
+                              );
+                              setShowPlanModal(true);
+                              return;
+                            }
+                            setSelectedQuality(q.id);
+                          }}
+                          style={[
+                            styles.settingsOptionBtn,
+                            isActive && styles.settingsOptionBtnActive,
+                            isLocked && { opacity: 0.5 }
+                          ]}
                           activeOpacity={0.75}
                         >
-                          <Text style={[styles.settingsOptionBig, isActive && { color: COLORS.white }]}>{q.id}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Text style={[styles.settingsOptionBig, isActive && { color: COLORS.white }]}>{q.id}</Text>
+                            {isLocked && <Lock color={COLORS.zinc500} size={12} />}
+                          </View>
                           <Text style={[styles.settingsOptionSub, isActive && { color: 'rgba(255,255,255,0.7)' }]}>{q.label}</Text>
                         </TouchableOpacity>
                       );

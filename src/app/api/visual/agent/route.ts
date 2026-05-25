@@ -12,6 +12,19 @@ export async function POST(req: NextRequest) {
     }
 
     const { prompt, referenceImageBase64, intent, aspectRatio, quality, duration } = await req.json();
+
+    const validationCredit = await validateCredits(session.user.id, 0);
+    if (validationCredit.error || !validationCredit.data) {
+      return NextResponse.json(
+        { error: validationCredit.error || "Credit validation failed" }, 
+        { status: validationCredit.status || 400 }
+      );
+    }
+
+    const { tier } = validationCredit.data;
+    if (tier === 'FREE') {
+      return NextResponse.json({ error: "Agent Autopilot is only available on paid plans. Please upgrade your plan." }, { status: 403 });
+    }
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }

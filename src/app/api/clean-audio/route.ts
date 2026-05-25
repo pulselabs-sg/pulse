@@ -5,21 +5,10 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { getPrisma } from '@/lib/prisma';
-import { apiResponse, validateRequest, cleanAudioSchema } from '@/lib/security';
+import { apiResponse, validateRequest, cleanAudioSchema, validateCredits, TIER_LIMITS } from '@/lib/security';
 import { parseBuffer } from 'music-metadata';
 import { del } from '@vercel/blob';
 import { ratelimit } from '@/lib/ratelimit';
-
-// ---------------------------------------------------------------------------
-// Tier configuration
-// ---------------------------------------------------------------------------
-
-const TIER_LIMITS = {
-  FREE: { pulse: 20000, maxAudioMins: 5, maxFileMB: 50 },
-  BASIC: { pulse: 60000, maxAudioMins: 5, maxFileMB: 300 },
-  PREMIUM: { pulse: 150000, maxAudioMins: 10, maxFileMB: 500 },
-  PRO: { pulse: 800000, maxAudioMins: 15, maxFileMB: 500 },
-} as const;
 
 // Pulse cost: 1,000 pulse per minute of audio processed.
 const PULSE_COST_PER_MIN = 1000;
@@ -93,10 +82,12 @@ export async function POST(req: Request) {
       if (!success) return apiResponse("Too many clean-audio requests. Please slow down.", 429);
     }
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (!user) return apiResponse("User not found", 404);
+    const validationCredit = await validateCredits(session.user.id, 0);
+    if (validationCredit.error || !validationCredit.data) {
+      return apiResponse(validationCredit.error || "Credit validation failed", validationCredit.status || 400);
+    }
 
-    const tier = (user.tier || 'FREE') as keyof typeof TIER_LIMITS;
+    const { user, tier } = validationCredit.data;
     const limits = TIER_LIMITS[tier];
 
     // ------------------------------------------------------------------
@@ -151,10 +142,16 @@ export async function POST(req: Request) {
       ? Math.ceil((durationSeconds / 60) * PULSE_COST_PER_MIN)
       : PULSE_COST_PER_MIN;
 
+    const checkCredit = await validateCredits(session.user.id, pulseCost);
+    if (checkCredit.error || !checkCredit.data) {
+      return apiResponse(checkCredit.error || "Pulse quota exceeded. Please upgrade your plan.", checkCredit.status || 429);
+    }
+    const limit = checkCredit.data.limit;
+
     const updated = await prisma.user.updateMany({
       where: {
         id: user.id,
-        usageCount: { lte: limits.pulse - pulseCost },
+        usageCount: { lte: limit - pulseCost },
       },
       data: { usageCount: { increment: pulseCost } },
     });

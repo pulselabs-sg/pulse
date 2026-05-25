@@ -29,8 +29,8 @@ export const CREDIT_COSTS = {
 } as const;
 
 export const TIER_LIMITS = {
-  FREE: { pulse: 40000, maxTTSChars: 5000, maxAudioMins: 5 },
-  BASIC: { pulse: 120000, maxTTSChars: 5000, maxAudioMins: 5 },
-  PREMIUM: { pulse: 300000, maxTTSChars: 10000, maxAudioMins: 10 },
-  PRO: { pulse: 1500000, maxTTSChars: 15000, maxAudioMins: 15 },
+  FREE: { pulse: 40000, maxTTSChars: 5000, maxAudioMins: 5, maxFileMB: 50 },
+  BASIC: { pulse: 120000, maxTTSChars: 5000, maxAudioMins: 5, maxFileMB: 300 },
+  PREMIUM: { pulse: 300000, maxTTSChars: 10000, maxAudioMins: 10, maxFileMB: 500 },
+  PRO: { pulse: 1500000, maxTTSChars: 15000, maxAudioMins: 15, maxFileMB: 500 },
 } as const;

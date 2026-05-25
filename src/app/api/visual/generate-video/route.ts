@@ -37,7 +37,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { user, limit } = validationCredit.data;
+    const { user, limit, tier } = validationCredit.data;
+
+    if (tier === 'FREE') {
+      if (isHD) {
+        return NextResponse.json({ error: "HD video generation is only available on paid plans. Please upgrade your plan." }, { status: 403 });
+      }
+      if (mode === 'flow') {
+        return NextResponse.json({ error: "Flow Video Extension is only available on paid plans. Please upgrade your plan." }, { status: 403 });
+      }
+    }
 
     // Deduct credits
     const updatedUser = await prisma.user.updateMany({

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Settings, Image as ImageIcon, Video, Send, PanelRight,
-  X, Sparkles, Wand2, Upload, AlertCircle, Loader2, PlayCircle, Menu, Bot, Terminal, CheckCircle2, Cpu, FileText
+  X, Sparkles, Wand2, Upload, AlertCircle, Loader2, PlayCircle, Menu, Bot, Terminal, CheckCircle2, Cpu, FileText, Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { GROK_FEATURES, GrokFeature, ASPECT_RATIOS, QUALITY_OPTIONS, VIDEO_DURATION_OPTIONS, FLOW_DURATION_OPTIONS, AGENT_DURATION_OPTIONS } from '@/lib/visual-constants';
@@ -104,16 +104,21 @@ export default function VisualWorkspace({
   }, []);
 
   useEffect(() => {
+    const isFree = userState?.tier === 'FREE';
     if (mainMode === 'image') {
       if (selectedQuality === '480p' || selectedQuality === '720p') {
+        setSelectedQuality('1080p');
+      } else if (isFree && selectedQuality === '2k') {
         setSelectedQuality('1080p');
       }
     } else {
       if (selectedQuality === '1080p' || selectedQuality === '2k') {
-        setSelectedQuality('720p');
+        setSelectedQuality(isFree ? '480p' : '720p');
+      } else if (isFree && selectedQuality === '720p') {
+        setSelectedQuality('480p');
       }
     }
-  }, [mainMode, selectedQuality]);
+  }, [mainMode, selectedQuality, userState?.tier]);
 
   // Generation State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -422,6 +427,30 @@ export default function VisualWorkspace({
   };
 
   const handleGenerate = async () => {
+    const isFree = userState?.tier === 'FREE';
+    if (isFree) {
+      if (mainMode === 'agent') {
+        alert("Autonomous Agent Autopilot is only available on paid plans. Please upgrade your plan.");
+        onShowPlanModal();
+        return;
+      }
+      if (mainMode === 'flow') {
+        alert("Flow Video Extension is only available on paid plans. Please upgrade your plan.");
+        onShowPlanModal();
+        return;
+      }
+      if (mainMode === 'image' && selectedQuality === '2k') {
+        alert("2K resolution is only available on paid plans. Please upgrade your plan.");
+        onShowPlanModal();
+        return;
+      }
+      if (mainMode === 'video' && selectedQuality === '720p') {
+        alert("720p HD quality is only available on paid plans. Please upgrade your plan.");
+        onShowPlanModal();
+        return;
+      }
+    }
+
     if (mainMode === 'agent') {
       if (!prompt) return;
 
@@ -741,7 +770,9 @@ export default function VisualWorkspace({
             body: JSON.stringify({
               prompt,
               feature: 'basic-image',
-              referenceImageBase64
+              referenceImageBase64,
+              quality: selectedQuality,
+              aspectRatio: selectedAspectRatio
             })
           }),
           new Promise(resolve => setTimeout(resolve, 6000))
@@ -1709,24 +1740,37 @@ export default function VisualWorkspace({
                 {/* Mode Toggles Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-2.5 shrink-0">
                   <div className="flex items-center gap-1 md:gap-1.5 p-1 bg-white/5 rounded-full border border-white/10 w-fit">
-                    {(['image', 'video', 'flow', 'agent'] as const).map(mode => (
-                      <button
-                        key={mode}
-                        onClick={() => setMainMode(mode)}
-                        className={cn(
-                          "px-3 py-1 md:px-4 md:py-1.5 rounded-full font-mono text-[8px] md:text-[9px] uppercase tracking-widest font-bold transition-all flex items-center gap-1 md:gap-2",
-                          mainMode === mode
-                            ? "bg-white text-black shadow-lg"
-                            : "text-zinc-400 hover:text-white hover:bg-white/5"
-                        )}
-                      >
-                        {mode === 'image' && <ImageIcon className="w-2.5 h-2.5 md:w-3 h-3" />}
-                        {mode === 'video' && <Video className="w-2.5 h-2.5 md:w-3 h-3" />}
-                        {mode === 'flow' && <Wand2 className="w-2.5 h-2.5 md:w-3 h-3" />}
-                        {mode === 'agent' && <Bot className="w-2.5 h-2.5 md:w-3 h-3" />}
-                        {mode}
-                      </button>
-                    ))}
+                    {(['image', 'video', 'flow', 'agent'] as const).map(mode => {
+                      const isFree = userState?.tier === 'FREE';
+                      const isLocked = isFree && (mode === 'flow' || mode === 'agent');
+                      return (
+                        <button
+                          key={mode}
+                          onClick={() => {
+                            if (isLocked) {
+                              alert(`${mode === 'flow' ? 'Flow Video Extension' : 'Autonomous Agent Autopilot'} is only available on paid plans. Please upgrade your plan.`);
+                              onShowPlanModal();
+                              return;
+                            }
+                            setMainMode(mode);
+                          }}
+                          className={cn(
+                            "px-3 py-1 md:px-4 md:py-1.5 rounded-full font-mono text-[8px] md:text-[9px] uppercase tracking-widest font-bold transition-all flex items-center gap-1 md:gap-2",
+                            mainMode === mode
+                              ? "bg-white text-black shadow-lg"
+                              : "text-zinc-400 hover:text-white hover:bg-white/5",
+                            isLocked && "opacity-60"
+                          )}
+                        >
+                          {mode === 'image' && <ImageIcon className="w-2.5 h-2.5 md:w-3 h-3" />}
+                          {mode === 'video' && <Video className="w-2.5 h-2.5 md:w-3 h-3" />}
+                          {mode === 'flow' && <Wand2 className="w-2.5 h-2.5 md:w-3 h-3" />}
+                          {mode === 'agent' && <Bot className="w-2.5 h-2.5 md:w-3 h-3" />}
+                          {mode}
+                          {isLocked && <Lock className="w-2.5 h-2.5 ml-1 text-zinc-400" />}
+                        </button>
+                      );
+                    })}
                   </div>
                   <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-300 font-bold hidden md:block">
                     Setting
@@ -1769,23 +1813,41 @@ export default function VisualWorkspace({
                     <div>
                       <p className="text-[8px] md:text-[9px] font-mono uppercase tracking-[0.25em] text-zinc-300 mb-2 font-bold opacity-85">Resolution Quality</p>
                       <div className="grid grid-cols-4 md:grid-cols-2 gap-1 md:gap-2">
-                        {QUALITY_OPTIONS.filter(q => mainMode === 'image' ? ['1080p', '2k'].includes(q.id) : ['480p', '720p'].includes(q.id)).map(quality => (
-                          <button
-                            key={quality.id}
-                            onClick={() => setSelectedQuality(quality.id)}
-                            className={cn(
-                              "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-row md:flex-col items-baseline md:items-center justify-center gap-1 md:gap-0.5 transition-all duration-300",
-                              selectedQuality === quality.id
-                                ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
-                                : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white"
-                            )}
-                          >
-                            <span className="text-[8px] md:text-[10px] font-mono font-bold">{quality.id}</span>
-                            <span className="text-[5.5px] md:text-[7px] font-mono uppercase tracking-wider opacity-60 font-medium">
-                              {quality.id === '480p' ? '(SD)' : quality.id === '720p' ? '(HD)' : quality.id === '1080p' ? '(FHD)' : '(UHD)'}
-                            </span>
-                          </button>
-                        ))}
+                        {QUALITY_OPTIONS.filter(q => mainMode === 'image' ? ['1080p', '2k'].includes(q.id) : ['480p', '720p'].includes(q.id)).map(quality => {
+                          const isFree = userState?.tier === 'FREE';
+                          const isLocked = isFree && (
+                            (mainMode === 'image' && quality.id === '2k') ||
+                            (mainMode !== 'image' && quality.id === '720p')
+                          );
+                          return (
+                            <button
+                              key={quality.id}
+                              onClick={() => {
+                                if (isLocked) {
+                                  alert(`${quality.id === '2k' ? '2K resolution' : '720p HD quality'} is only available on paid plans. Please upgrade your plan.`);
+                                  onShowPlanModal();
+                                  return;
+                                }
+                                setSelectedQuality(quality.id);
+                              }}
+                              className={cn(
+                                "py-1 md:py-1.5 px-1 md:px-2 rounded-lg border flex flex-row md:flex-col items-baseline md:items-center justify-center gap-1 md:gap-0.5 transition-all duration-300",
+                                selectedQuality === quality.id
+                                  ? "border-white bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+                                  : "border-white/5 hover:border-white/15 text-zinc-400 bg-white/[0.02] hover:text-white",
+                                isLocked && "opacity-60"
+                              )}
+                            >
+                              <span className="text-[8px] md:text-[10px] font-mono font-bold flex items-center justify-center gap-1">
+                                {quality.id}
+                                {isLocked && <Lock className="w-2.5 h-2.5 text-zinc-400" />}
+                              </span>
+                              <span className="text-[5.5px] md:text-[7px] font-mono uppercase tracking-wider opacity-60 font-medium">
+                                {quality.id === '480p' ? '(SD)' : quality.id === '720p' ? '(HD)' : quality.id === '1080p' ? '(FHD)' : '(UHD)'}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                     {mainMode !== 'image' && (

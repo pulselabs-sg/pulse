@@ -514,6 +514,13 @@ export default function AudioEngineScreen() {
     switch (activeTab) {
       case 'tts': {
         if (!textInput.trim()) { Alert.alert('Empty input', 'Enter your script.'); return; }
+        if (textInput.length > userState.maxChars) {
+          Alert.alert(
+            'Limit Exceeded',
+            `Your plan tier allows a maximum of ${userState.maxChars.toLocaleString()} characters per TTS request. Your current input contains ${textInput.length.toLocaleString()} characters. Please reduce the length or upgrade your plan.`
+          );
+          return;
+        }
         setLoading(true); startTimer();
         try {
           const uri = await generateTTS({ text: textInput.trim(), voiceId: selectedVoice, format: selectedFormat });
