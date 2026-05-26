@@ -795,7 +795,7 @@ export default function AudioEngineScreen() {
             <Animated.View
               style={[styles.settingsSheet, { transform: [{ translateY: settingsAnim }] }]}
             >
-              <LinearGradient colors={['#2a2a2a', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
+              <LinearGradient colors={['#0b0f19', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
 
               {/* Mode tabs */}
               <View style={styles.settingsModesRow}>
@@ -906,7 +906,7 @@ export default function AudioEngineScreen() {
         style={[styles.historyPanel, { transform: [{ translateX: historyAnim }] }]}
         pointerEvents={historyVisible ? 'auto' : 'none'}
       >
-        <LinearGradient colors={['#2a2a2a', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={['#0b0f19', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
         <SafeAreaView edges={['top']} style={{ flex: 1 }}>
           <View style={styles.historyHeader}>
             <Text style={styles.historyTitle}>History ({historyItems.length})</Text>
@@ -981,7 +981,7 @@ export default function AudioEngineScreen() {
         <>
           <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={closeSidebar} activeOpacity={1} />
           <Animated.View style={[styles.sidebarPanel, { transform: [{ translateX: sidebarAnim }] }]}>
-            <LinearGradient colors={['#2a2a2a', '#212121']} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient colors={['#0b0f19', '#03050c']} style={StyleSheet.absoluteFillObject} />
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
               <View style={styles.sidebarHeader}>
                 <TouchableOpacity

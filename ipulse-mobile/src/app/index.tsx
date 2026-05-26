@@ -62,7 +62,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe}>
       {/* Background gradient */}
       <LinearGradient
-        colors={['#212121', '#2a2a2a', '#212121']}
+        colors={['#03050c', '#0b0f19', '#03050c']}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}

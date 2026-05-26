@@ -821,42 +821,53 @@ export default function VisualWorkspace({
     if (!result?.url) return;
     window.location.href = `/api/visual/download?url=${encodeURIComponent(result.url)}`;
   };
-
-  /* ─────────────────────────────────────────────────────────
-     1. LANDING VIEW (No projectId selected)
-     ───────────────────────────────────────────────────────── */
   if (!projectId) {
     return (
-      <div className="flex-1 flex flex-col items-center p-8 gap-8 relative z-10 w-full h-full overflow-y-auto custom-scrollbar">
-        {/* Header Hero Area */}
-        <div className="text-center w-full max-w-2xl mt-12 mb-6">
-          <motion.h1
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-mono font-bold tracking-[0.25em] text-white uppercase text-glow-white mb-4"
-          >
-            iPulse
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-xs md:text-sm font-mono text-zinc-300 tracking-wider leading-relaxed max-w-xl mx-auto mb-10"
-          >
-            Harness advanced visual synthesis models to generate, animate, and extend visual reality with surgical precision.
-          </motion.p>
+      <div className="flex-1 flex flex-col items-center p-2 gap-2 relative z-10 w-full h-full overflow-y-auto custom-scrollbar">
+        {/* Header Hero Area with Video Background */}
+        <div className="relative w-full max-w-5xl rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] h-[50vh] md:h-[60vh] flex flex-col justify-end p-8 md:p-16 shrink-0 mt-8">
+          {/* Background Video */}
+          <video
+            src="https://cdn.ipulselabs.net/videos/0526(1).mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={handleCreateProject}
-            className="px-10 py-4 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.25em] rounded-full hover:bg-zinc-200 transition-all shadow-[0_0_35px_rgba(255,255,255,0.2)] hover:shadow-[0_0_50px_rgba(255,255,255,0.35)]"
-          >
-            Create New Project
-          </motion.button>
+          {/* Dark Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent z-0" />
+
+          {/* Content */}
+          <div className="relative z-10 flex flex-col items-start text-left max-w-2xl">
+            <motion.h1
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-mono font-bold tracking-[0.25em] text-white text-glow-white mb-4"
+            >
+              iPulse
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-xs md:text-sm font-mono text-zinc-300 tracking-wider leading-relaxed mb-8"
+            >
+              Harness advanced visual synthesis models to generate, animate, and extend visual reality with surgical precision.
+            </motion.p>
+
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleCreateProject}
+              className="px-8 py-3.5 bg-white text-black font-bold font-mono text-xs uppercase tracking-[0.25em] rounded-full hover:bg-zinc-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+            >
+              Create New Project
+            </motion.button>
+          </div>
         </div>
 
-        {/* Recent Projects Section */}
         <div className="w-full max-w-5xl mt-8">
           <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-6">
             <h3 className="text-[10px] font-mono text-zinc-500 font-bold tracking-[0.3em] uppercase">
@@ -877,7 +888,7 @@ export default function VisualWorkspace({
               <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">No visual canvases initialized yet</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-16">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-16">
               {projects.map(project => (
                 <div
                   key={project.id}

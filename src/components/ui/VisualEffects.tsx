@@ -74,13 +74,13 @@ const ShootingStars = () => {
 
 export const NebulaBackground = () => (
   <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-background" aria-hidden>
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,#2c2c2c_0%,#212121_100%)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,#0e152d_0%,#03050c_100%)]" />
     <div className="absolute aurora-blob" style={{ width: '130vw', height: '70vh', top: '-10vh', left: '-15vw', background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(20,5,50,0.06), transparent 70%)', filter: 'blur(100px)', animationDuration: '32s' }} />
     <div className="absolute aurora-blob" style={{ width: '110vw', height: '55vh', top: '30vh', right: '-10vw', background: 'radial-gradient(ellipse 60% 45% at 50% 50%, rgba(5,15,60,0.05), transparent 68%)', filter: 'blur(110px)', animationDuration: '40s', animationDelay: '-12s' }} />
     <div className="absolute aurora-blob" style={{ width: '90vw', height: '45vh', bottom: '-5vh', left: '15vw', background: 'radial-gradient(ellipse 55% 40% at 50% 50%, rgba(0,60,80,0.03), transparent 65%)', filter: 'blur(120px)', animationDuration: '28s', animationDelay: '-8s' }} />
     <ShootingStars />
-    <div className="absolute inset-0 bg-gradient-to-b from-[#212121]/70 via-transparent to-[#212121]/90" />
-    <div className="absolute inset-0 shadow-[inset_0_0_200px_rgba(33,33,33,0.7)]" />
+    <div className="absolute inset-0 bg-gradient-to-b from-[#03050c]/70 via-transparent to-[#03050c]/90" />
+    <div className="absolute inset-0 shadow-[inset_0_0_200px_rgba(3,5,12,0.7)]" />
   </div>
 );
 

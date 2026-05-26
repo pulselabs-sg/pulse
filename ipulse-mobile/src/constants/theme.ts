@@ -7,8 +7,8 @@ import { StyleSheet, Platform } from 'react-native';
 
 // ── Core Colors ──────────────────────────────────────────────────────────────
 export const COLORS = {
-  bg: '#212121',          // matches web background
-  bgCard: '#2a2a2a',      // matches web surface/card bg
+  bg: '#03050c',          // matches web background
+  bgCard: '#0b0f19',      // matches web surface/card bg
   bgDeep: '#000000',      // pure black for inputs
   bgGlass: 'rgba(255,255,255,0.03)',
   bgGlassMid: 'rgba(255,255,255,0.06)',
@@ -27,7 +27,7 @@ export const COLORS = {
   zinc700: '#3f3f46',
   zinc800: '#27272a',
   zinc900: '#18181b',
-  zinc950: '#212121',
+  zinc950: '#03050c',
 
   // Engine themes
   purple: '#a855f7',
@@ -231,8 +231,8 @@ export const Colors = {
   dark: {
     text: '#ffffff',
     textSecondary: '#a1a1aa',
-    background: '#212121',
-    backgroundElement: '#2a2a2a',
+    background: '#03050c',
+    backgroundElement: '#0b0f19',
     backgroundSelected: '#27272a',
   },
 };

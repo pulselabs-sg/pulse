@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 // Use local IP for physical devices or Android emulator, localhost for iOS simulator
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://7d9e-2402-800-63a8-dc07-fd7e-3b79-a5da-a5b8.ngrok-free.app';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://c5d6-2402-800-63a8-dc07-7c3b-f169-3116-48db.ngrok-free.app';
 
 const api = axios.create({
   baseURL: BASE_URL,

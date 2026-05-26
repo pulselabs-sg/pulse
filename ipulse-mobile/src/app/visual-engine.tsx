@@ -1255,7 +1255,7 @@ export default function VisualEngineScreen() {
             {/* Slide-up sheet */}
             <Animated.View style={[styles.settingsSheet, { transform: [{ translateY: settingsAnim }] }]}>
               <LinearGradient
-                colors={['#2a2a2a', COLORS.bg]}
+                colors={['#0b0f19', COLORS.bg]}
                 style={StyleSheet.absoluteFillObject}
               />
               {/* Mode tabs */}
@@ -1486,7 +1486,7 @@ export default function VisualEngineScreen() {
         style={[styles.historyPanel, { transform: [{ translateX: historyAnim }] }]}
         pointerEvents={historyVisible ? 'auto' : 'none'}
       >
-        <LinearGradient colors={['#212121', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
+        <LinearGradient colors={['#03050c', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
         {/* Panel header */}
         <SafeAreaView edges={['top']} style={{ flex: 1 }}>
           <View style={styles.historyHeader}>
@@ -1558,7 +1558,7 @@ export default function VisualEngineScreen() {
         <>
           <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={closeSidebar} activeOpacity={1} />
           <Animated.View style={[styles.sidebarPanel, { transform: [{ translateX: sidebarAnim }] }]}>
-            <LinearGradient colors={['#212121', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
+            <LinearGradient colors={['#03050c', COLORS.bg]} style={StyleSheet.absoluteFillObject} />
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
               <View style={styles.sidebarHeader}>
                 <TouchableOpacity

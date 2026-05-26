@@ -119,8 +119,8 @@ const Navbar = () => {
         <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
       </div>
       <div className="flex-1 flex justify-end">
-        <Link href="https://visual.ipulselabs.net" target='_blank' className="px-5 py-2 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-widest font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 group">
-          Launch App <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+        <Link href="https://visual.ipulselabs.net" target='_blank' className="px-5 py-2 bg-white text-black rounded-lg text-xs font-mono tracking-widest font-bold hover:bg-zinc-200 transition-all flex items-center gap-2 group">
+          Try iPulse <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
     </nav>
@@ -135,7 +135,7 @@ const BentoFrames = () => {
         {/* Frame 1: 16:9 Landscape Video */}
         <div className="h-40 sm:h-44 lg:h-48 w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-cyan-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <video
-            src="/0519.mp4"
+            src="https://cdn.ipulselabs.net/videos/0519.mp4"
             autoPlay
             loop
             muted
@@ -147,7 +147,7 @@ const BentoFrames = () => {
         {/* Frame 2: 1:1 Image */}
         <div className="h-64 sm:h-72 lg:h-[20rem] w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <img
-            src="/tree.png"
+            src="https://cdn.ipulselabs.net/images/lion.png"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             alt="Creative Canvas"
           />
@@ -159,7 +159,7 @@ const BentoFrames = () => {
         {/* Frame 3: 9:16 Portrait Video */}
         <div className="h-64 sm:h-72 lg:h-[20rem] w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-pink-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <img
-            src="/lion.png"
+            src="https://cdn.ipulselabs.net/images/img_1779090100289_6u95t.png"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             alt="Creative Canvas"
           />
@@ -168,7 +168,7 @@ const BentoFrames = () => {
         {/* Frame 4: 4:3 Classic Composition */}
         <div className="h-40 sm:h-44 lg:h-48 w-full rounded-2xl border border-white/10 bg-black relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <video
-            src="/0520.mp4"
+            src="https://cdn.ipulselabs.net/videos/0520.mp4"
             autoPlay
             loop
             muted
@@ -196,32 +196,32 @@ const HeroSection = () => (
       >
         <div className="relative inline-flex overflow-hidden rounded-full p-[1px] mb-6">
           <span className="absolute inset-[-1000%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_50%,rgba(255,255,255,0.3)_75%,rgba(255,255,255,0.9)_100%)]" />
-          <div className="inline-flex h-full w-full items-center gap-2 rounded-full bg-zinc-950/50 px-3 py-1.5 text-[10px] font-mono tracking-widest backdrop-blur-xl cursor-default">
-            <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
+          <div className="inline-flex h-full w-full items-center gap-2 rounded-full bg-zinc-950 px-3 py-1.5 text-[10px] font-mono tracking-widest backdrop-blur-xl cursor-default">
+            <span className="w-1.5 h-1.5 bg-white animate-pulse rounded-full" />
             <span className="text-zinc-300">Neural Creative Engine v3.0 - Live</span>
           </div>
         </div>
 
-        <h1 className="text-4xl sm:text-5xl lg:text-5xl tracking-tighter leading-[1.15] text-white mb-5">
+        {/* <h1 className="text-4xl sm:text-5xl lg:text-5xl tracking-tighter leading-[1.15] text-white mb-5">
           The vision of<br />
           <span className="text-white text-glow-white">Artificial</span><br />
           <span className="text-white">Intelligence.</span>
-        </h1>
+        </h1> */}
 
         <p className="text-xs md:text-sm font-mono text-zinc-400 max-w-sm leading-relaxed">
           Synthesize cinematic video, generate stunning imagery, and orchestrate neural audio through a single unified creative API.
         </p>
 
         <div className="mt-6 flex flex-col sm:flex-row items-start gap-3">
-          <Link href="/dashboard" target='_blank' className="px-5 py-2.5 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-2 group">
+          {/* <Link href="/dashboard" target='_blank' className="px-5 py-2.5 bg-white text-black rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-zinc-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.08)] flex items-center gap-2 group">
             Try iPulse <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          </Link> */}
           <Link href="/docs" target='_blank' className="px-5 py-2.5 text-white rounded-lg text-[10px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-white/10 transition-all border border-white/10 flex items-center gap-2">
             <Code className="w-3 h-3" /> Read the Docs
           </Link>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3 text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+        <div className="mt-6 flex flex-wrap items-center gap-3 text-[9px] font-mono text-zinc-500 tracking-widest">
           <span className="flex items-center gap-1"><ShieldCheck className="w-2.5 h-2.5" /> SOC 2 Compliant</span>
           <span className="w-px h-2.5 bg-white/10" />
           <span className="flex items-center gap-1"><Zap className="w-2.5 h-2.5" /> Sub-1.2s Render</span>
@@ -377,38 +377,7 @@ const FeaturesAlternating = () => (
 );
 
 
-const steps = [
-  { num: '01', title: 'Prompt & Direct', desc: 'Define your scene with natural language, reference images, or keyframes. Adjust motion paths and layouts.' },
-  { num: '02', title: 'Neural Synthesis', desc: 'Models analyze context, flow maps, and styles to render high-fidelity video frames or upscale details.' },
-  { num: '03', title: 'Stream & Scale', desc: 'Receive high-fidelity video streams or image variations instantly via REST, WebSocket, or SDKs.' },
-];
 
-const VerticalTimeline = () => (
-  <section id="workflow" className="relative z-10 py-32 border-y border-white/5">
-    <div className="max-w-4xl mx-auto px-6">
-      <div className="text-center mb-20">
-        <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-3">Workflow</p>
-        <h2 className="text-4xl md:text-5xl text-white tracking-tight">From vision to reality.</h2>
-
-      </div>
-      <div className="relative pl-12">
-        <div className="absolute left-[23px] top-10 bottom-10 w-px bg-gradient-to-b from-white/15 via-white/8 to-transparent" />
-        <div className="flex flex-col gap-16">
-          {steps.map((s, i) => (
-            <motion.div key={i} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: i * 0.15 }} className="relative">
-              <div className="absolute -left-12 top-1.5 w-[10px] h-[10px] rounded-full border border-white/30 bg-black flex items-center justify-center">
-                <div className="w-[4px] h-[4px] rounded-full bg-white/60" />
-              </div>
-              <p className="text-[9px] font-mono text-zinc-700 uppercase tracking-widest mb-2">{s.num}</p>
-              <h3 className="text-2xl font-bold text-white mb-3">{s.title}</h3>
-              <p className="text-sm font-mono text-zinc-500 max-w-lg leading-relaxed">{s.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
-);
 
 const StudioPanel = () => {
   const [prompt, setPrompt] = useState('A cinematic landscape of glowing crystal forests, purple gas giant rising in the background, unreal engine 5 render, highly detailed.');
@@ -657,18 +626,54 @@ const PricingSection = () => (
 );
 
 const CtaBanner = () => (
-  <section className="relative z-10 py-40 border-t border-white/5 overflow-hidden">
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-full bg-gradient-to-b from-white/15 via-white/6 to-transparent animate-beam-pulse" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-full bg-gradient-to-b from-white/3 via-transparent to-transparent" style={{ filter: 'blur(40px)' }} />
-    </div>
-    <div className="max-w-3xl mx-auto px-6 relative z-10 text-center">
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full text-[10px] font-mono tracking-widest mb-10 border border-white/8">
-        <span className="w-1.5 h-1.5 bg-cyan-400 animate-pulse rounded-full" />
-        <span className="text-zinc-400">Free plan - no credit card required</span>
+  <section className="relative z-10 py-20 md:py-28 border-t border-white/5 overflow-hidden">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="relative w-full h-[65vh] sm:h-[75vh] md:h-[80vh] rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        {/* Background Video */}
+        <video
+          src="https://cdn.ipulselabs.net/videos/0526.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+
+        {/* Foreground Content */}
+        <div className="absolute inset-0 p-8 md:p-16 flex flex-col justify-end z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end w-full">
+            {/* Left: Heading and description */}
+            <div className="md:col-span-8 flex flex-col items-start">
+              <h2 className="text-3xl md:text-5xl text-white tracking-tight mb-4 leading-none font-bold">
+                Create the<br />
+                <span className="editorial-italic">future.</span>
+              </h2>
+              <p className="text-xs md:text-sm font-mono text-zinc-300 max-w-xl leading-relaxed mb-6">
+                Join thousands of developers and creators powering the next generation of creative experiences with iPulse.
+              </p>
+              <Link
+                href="https://visual.ipulselabs.net"
+                target="_blank"
+                className="px-6 py-3 bg-white text-black rounded-lg text-[11px] font-mono uppercase tracking-[0.15em] font-bold hover:bg-zinc-100 transition-all flex items-center gap-2 group shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+              >
+                Get Started <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+
+            {/* Right: Platforms / Engines links */}
+            <div className="hidden md:flex md:col-span-4 flex-col gap-3.5 border-l border-white/10 pl-8 text-left">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-1">Platform Engines</div>
+              <Link href="https://visual.ipulselabs.net" target="_blank" className="text-xs font-mono text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">Video Flow Extension</Link>
+              <Link href="https://visual.ipulselabs.net" target="_blank" className="text-xs font-mono text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">Creative Image Synthesis</Link>
+              <Link href="https://audio.ipulselabs.net" target="_blank" className="text-xs font-mono text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">Neural TTS & Cloning</Link>
+              <Link href="/docs/api" target="_blank" className="text-xs font-mono text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">Developer Ingress API</Link>
+            </div>
+          </div>
+        </div>
       </div>
-      <h2 className="text-5xl md:text-7xl text-white tracking-tight mb-6 leading-[0.92]">Create the<br /><span className="editorial-italic">future.</span></h2>
-      <p className="text-base text-zinc-500 font-mono mb-10 max-w-xl mx-auto leading-relaxed">Join thousands of developers and creators powering the next generation of creative experiences with iPulse.</p>
     </div>
   </section>
 );
@@ -775,112 +780,7 @@ const ScrollRevealText = () => {
   );
 };
 
-const getDeterministicRandom = (i: number) => {
-  const x = Math.sin(i * 12.345) * 15;
-  const y = Math.cos(i * 43.21) * 15;
-  const rotate = Math.sin(i * 76.54) * 45;
-  return { x, y, rotate };
-};
 
-const InteractiveTypographyGrid = () => {
-  return (
-    <section className="relative z-10 py-32 overflow-hidden border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Frame 1 */}
-          <motion.div
-            whileHover={{ scale: 0.98 }}
-            className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
-          >
-            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10 pointer-events-none">Neural Architecture</div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700">
-              <div className="flex flex-col items-center justify-center font-mono text-[8px] md:text-[10px] leading-[1.8] text-zinc-600 transition-colors duration-500">
-                {[...Array(7)].map((_, row) => (
-                  <div key={row} className="flex gap-2">
-                    {[...Array(11)].map((_, col) => {
-                      const { x, y, rotate } = getDeterministicRandom(row * 11 + col);
-                      return (
-                        <motion.span
-                          key={col}
-                          className="inline-block cursor-default group-hover:text-white transition-colors duration-500"
-                          whileHover={{ scale: 1.8, x, y, rotate, color: '#22d3ee' }} // cyan-400
-                          transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                        >
-                          /
-                        </motion.span>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
-              Infinite Scaling
-            </div>
-          </motion.div>
-
-          {/* Frame 2 */}
-          <motion.div
-            whileHover={{ scale: 0.98 }}
-            className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
-          >
-            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10 pointer-events-none">Latency Metrics</div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700">
-              <motion.div
-                className="grid grid-cols-5 gap-2 md:gap-3"
-              >
-                {[...Array(25)].map((_, i) => {
-                  const { x, y } = getDeterministicRandom(i + 100);
-                  return (
-                    <motion.div
-                      key={i}
-                      className="w-1.5 h-1.5 md:w-2 md:h-2 bg-zinc-600 group-hover:bg-white rounded-full transition-colors duration-500"
-                      whileHover={{ scale: 2.5, x: x * 1.5, y: y * 1.5, backgroundColor: '#22d3ee' }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    />
-                  );
-                })}
-              </motion.div>
-            </div>
-            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
-              Sub-200ms
-            </div>
-          </motion.div>
-
-          {/* Frame 3 */}
-          <motion.div
-            whileHover={{ scale: 0.98 }}
-            className="glass-dark border border-white/10 rounded-2xl p-6 md:p-8 aspect-square sm:aspect-[2/1] lg:aspect-square lg:col-span-1 md:col-span-2 flex flex-col justify-between relative overflow-hidden group shadow-[0_0_30px_rgba(0,0,0,0.5)]"
-          >
-            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative z-10 pointer-events-none">Model Accuracy</div>
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity duration-700">
-              <motion.div
-                className="flex text-5xl md:text-6xl lg:text-8xl font-editorial italic text-zinc-600 transition-colors duration-700 select-none"
-              >
-                {['9', '9', '.', '9', '%'].map((char, i) => {
-                  const { x, y, rotate } = getDeterministicRandom(i + 200);
-                  return (
-                    <motion.span
-                      key={i}
-                      className="inline-block cursor-default group-hover:text-white transition-colors duration-500"
-                      whileHover={{ scale: 1.3, x: x * 0.8, y: y * 0.8, rotate: rotate * 0.3, color: '#22d3ee' }}
-                      transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                    >
-                      {char}
-                    </motion.span>
-                  );
-                })}
-              </motion.div>
-            </div>
-            <div className="text-xl md:text-2xl font-bold text-white mt-auto relative z-10 group-hover:-translate-y-2 transition-transform duration-500 pointer-events-none">
-              Zero-Shot
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 const featureItems = [
   { icon: Video, tag: 'Video Generation', desc: 'Create cinematic videos from prompts or images. Flow technology extends existing shots seamlessly.' },
@@ -995,17 +895,15 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white font-sans relative selection:bg-white/15 overflow-clip">
       <ModernBackground />
       <Navbar />
+      <CtaBanner />
       <HeroSection />
       <FeatureShowcase />
       <ScrollRevealText />
       <StatsStrip />
       <FeaturesAlternating />
-      <InteractiveTypographyGrid />
-      <VerticalTimeline />
       <StudioPanel />
       <CinematicQuote />
       <PricingSection />
-      <CtaBanner />
       <Footer />
     </div>
   );
